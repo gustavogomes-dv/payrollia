@@ -39,3 +39,4 @@ redis_data/
 # Misc
 *.pem
 .turbo
+admin/node_modules/
