@@ -1,4 +1,4 @@
-Payroll
+
 Payroll é um chatbot educacional de investimentos que funciona direto no WhatsApp. O usuário responde um questionário de perfil de investidor baseado nas diretrizes da CVM, e a partir daí tem acesso a um assistente de IA personalizado para o seu perfil — seja conservador, moderado ou arrojado.
 O projeto é construído como um SaaS multi-tenant, o que significa que a estrutura suporta múltiplas empresas ou assessores usando a plataforma com bases de dados separadas.
 
