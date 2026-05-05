@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
   try {
-    const res = await fetch('http://localhost:3000/admin/login', {
+    const res = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -35,7 +35,7 @@ export async function DELETE(request: NextRequest) {
   const token = request.cookies.get('payroll_admin_token')?.value;
 
   if (token) {
-    await fetch('http://localhost:3000/admin/logout', {
+    await fetch(`${process.env.API_URL || 'http://localhost:3000'}/admin/logout`, {
       method: 'POST',
       headers: { 'x-admin-token': token },
     }).catch(() => {});
