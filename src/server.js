@@ -4,6 +4,12 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
+const cors = require('cors');
+app.use(cors({
+  origin: ['https://payrollia.vercel.app', 'http://localhost:3001'],
+  credentials: true,
+}));
+
 // Bypass ngrok browser warning
 app.use((req, res, next) => {
   res.setHeader('ngrok-skip-browser-warning', 'true');
