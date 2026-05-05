@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import API_URL from '@/lib/api';
 
 type Stats = {
   totalUsuarios: number;
@@ -106,15 +107,15 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [hora, setHora] = useState('');
 
- useEffect(() => {
+  useEffect(() => {
   const now = new Date();
   const h = now.getHours();
   const saudacao = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
   setHora(saudacao);
 
   Promise.all([
-    fetch('http://localhost:3000/admin/stats').then(r => r.json()).catch(() => null),
-    fetch('http://localhost:3000/admin/clientes').then(r => r.json()).catch(() => []),
+    fetch(`${API_URL}/admin/stats`).then(r => r.json()).catch(() => null),
+    fetch(`${API_URL}/admin/clientes`).then(r => r.json()).catch(() => []),
   ]).then(([s, c]) => {
     setStats(s);
     setClientes(Array.isArray(c) ? c : []);

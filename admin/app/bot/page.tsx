@@ -1,6 +1,8 @@
+import API_URL from '@/lib/api';
+
 async function getStats() {
   try {
-    const res = await fetch('http://localhost:3000/admin/stats', { cache: 'no-store' });
+    const res = await fetch(`${API_URL}/admin/stats`, { cache: 'no-store' });
     return res.json();
   } catch {
     return { totalUsuarios: 0, totalMensagens: 0, perfis: [] };
@@ -9,7 +11,7 @@ async function getStats() {
 
 async function getClientes() {
   try {
-    const res = await fetch('http://localhost:3000/admin/clientes', { cache: 'no-store' });
+    const res = await fetch(`${API_URL}/admin/clientes`, { cache: 'no-store' });
     return res.json();
   } catch {
     return [];
