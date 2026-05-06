@@ -14,7 +14,7 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 
 async function processarFluxo(user, session, mensagem) {
   const texto = mensagem.trim();
-  const step = session.step;
+  const step = session.step || 'inicio';
   const context = session.context || {};
 
   // Boas vindas — primeira mensagem
