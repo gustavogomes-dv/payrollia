@@ -91,6 +91,12 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
 - "Qual a diferença entre CDB e LCI?"`;
   }
 
+  // Usuário já tem perfil e manda saudação
+if (step === 'concluido' && ['oi', 'olá', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'].includes(texto.toLowerCase())) {
+  const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
+  return `Olá de novo! 👋 Seu perfil é *${perfil}*.\n\nComo posso te ajudar hoje? Pode me perguntar sobre investimentos, mercado, ou qualquer dúvida financeira! 😊`;
+}
+
 if (step === 'concluido') {
   try {
     const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
