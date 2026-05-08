@@ -52,8 +52,9 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       customer: {
         name: user.name || 'Cliente',
         cellphone: user.phone,
+        email: user.email || `${user.phone}@payrollia.com.br`,
         taxId: '',
-      },
+},
     };
 
     if (cupom) body.coupon = cupom;
@@ -107,7 +108,7 @@ async function incrementarPerguntas(userId) {
 
   const { rows } = await pool.query(
     `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1
-     WHERE id = $1 RETURNING tenant_id, phone`,
+    WHERE id = $1 RETURNING tenant_id, phone`,
     [userId]
   );
 
