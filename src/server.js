@@ -16,7 +16,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rotas de webhook - WhatsApp e AbacatePay
 app.use('/webhook', require('./webhook/whatsapp'));
+
+app.use('/webhook/abacatepay', require('./webhook/abacatepay'));
 
 app.post('/teste', async (req, res) => {
   try {
