@@ -36,6 +36,7 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
     const body = {
       products: [{ productId, quantity: 1 }],
       methods: ['PIX'],
+      frequency: 'MONTHLY',
       customer: {
         name: user.name || 'Cliente',
         cellphone: user.phone,
