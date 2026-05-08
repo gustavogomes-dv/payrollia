@@ -97,11 +97,20 @@ function atingiuLimite(user) {
 
 // ─── Incrementar contador de perguntas usadas ─────────────────────────────────
 async function incrementarPerguntas(userId) {
-  const { pool } = require('../db/index');
-  await pool.query(
-    `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1 WHERE id = $1`,
+  const { pool, redisClient } = require('../db/index');
+  
+  // Atualiza no banco
+  const { rows } = await pool.query(
+    `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1 
+    WHERE id = $1 RETURNING tenant_id, phone`,
     [userId]
   );
+  
+  // Invalida o cache do Redis pra próxima mensagem buscar do banco
+  if (rows[0]) {
+    const { tenant_id, phone } = rows[0];
+    await redisClient.del(`user:${tenant_id}:${phone}`);
+  }
 }
 
 // ─── Montar mensagem de limite atingido ───────────────────────────────────────
