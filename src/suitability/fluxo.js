@@ -30,28 +30,33 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 // ─── Gerar link de pagamento via AbacatePay ────────────────────────────────────
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
-    const productId = PRODUTO_IDS[plano];
-    if (!productId) throw new Error(`Plano inválido: ${plano}`);
+    const PLANOS_CONFIG = {
+      pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
+      business: { externalId: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', name: 'Plano Business', price: 2990 },
+    };
+
+    const config = PLANOS_CONFIG[plano];
+    if (!config) throw new Error(`Plano inválido: ${plano}`);
 
     const body = {
-      products: [{ productId, quantity: 1 }],
+      frequency: 'ONE_TIME',
       methods: ['PIX'],
-      frequency: 'MONTHLY',
+      products: [{
+        externalId: config.externalId,
+        name: config.name,
+        quantity: 1,
+        price: config.price,
+      }],
+      returnUrl: 'https://payrollia.com.br',
+      completionUrl: 'https://payrollia.com.br',
       customer: {
         name: user.name || 'Cliente',
         cellphone: user.phone,
         taxId: '',
       },
-      metadata: {
-        userId: user.id,
-        plano,
-        phone: user.phone,
-      },
     };
 
-    if (cupom) {
-      body.coupon = cupom;
-    }
+    if (cupom) body.coupon = cupom;
 
     const response = await fetch('https://api.abacatepay.com/v1/billing/create', {
       method: 'POST',
@@ -69,7 +74,6 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       return null;
     }
 
-    // A AbacatePay pode retornar o link em diferentes campos dependendo da versão
     return data?.data?.url || data?.url || null;
   } catch (err) {
     console.error('[AbacatePay] Exceção ao gerar link:', err.message);
@@ -100,22 +104,21 @@ function atingiuLimite(user) {
 // ─── Incrementar contador de perguntas usadas ─────────────────────────────────
 async function incrementarPerguntas(userId) {
   const { pool, redisClient } = require('../db/index');
-  
-  // Atualiza no banco
+
   const { rows } = await pool.query(
-    `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1 
-    WHERE id = $1 RETURNING tenant_id, phone`,
+    `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1
+     WHERE id = $1 RETURNING tenant_id, phone`,
     [userId]
   );
-  
-  // Invalida o cache do Redis pra próxima mensagem buscar do banco
+
+  // Invalida o cache do Redis para a próxima mensagem buscar do banco
   if (rows[0]) {
     const { tenant_id, phone } = rows[0];
     await redisClient.del(`user:${tenant_id}:${phone}`);
   }
 }
 
-// ─── Montar mensagem de limite atingido ───────────────────────────────────────
+// ─── Mensagem de limite atingido ───────────────────────────────────────────────
 function mensagemLimite(userName) {
   const nome = userName ? `, ${userName}` : '';
   return `Você atingiu o limite de *${LIMITE_FREE} perguntas* do plano gratuito${nome}. 😕
@@ -132,6 +135,11 @@ Para continuar aprendendo sobre investimentos sem limites, escolha um plano:
 ✅ Suporte prioritário
 
 Responda *1* ou *2* para continuar.`;
+}
+
+// ─── Normalizar texto — remove acentos e coloca em minúsculo ──────────────────
+function normalizar(texto) {
+  return texto.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 // ─── Processamento principal ───────────────────────────────────────────────────
@@ -211,12 +219,12 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
 - "Qual a diferença entre CDB e LCI?"`;
   }
 
-  // ── Chat principal (step === 'concluido') ─────────────────────────────────────
+  // ── Chat principal ────────────────────────────────────────────────────────────
   if (step === 'concluido') {
 
     // Saudação simples — não consome pergunta
-    const saudacoes = ['oi', 'olá', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
-    if (saudacoes.includes(texto.toLowerCase())) {
+    const saudacoes = ['oi', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
+    if (saudacoes.includes(normalizar(texto))) {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
       return `Olá de novo! 👋 Seu perfil é *${perfil}*.\n\nComo posso te ajudar hoje? Pode me perguntar sobre investimentos, mercado, ou qualquer dúvida financeira! 😊`;
     }
@@ -254,24 +262,22 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
     if (texto !== '1' && texto !== '2') {
       return `Por favor, responda *1* para o plano Pro ou *2* para o plano Business.`;
     }
-
     const plano = texto === '1' ? 'pro' : 'business';
     await updateSession(user.id, 'aguardando_cupom', { plano });
     return `Ótima escolha! 🎉\n\nVocê possui um *cupom de desconto*?\n\nResponda *SIM* ou *NÃO*.`;
   }
 
   // ── Upgrade: tem cupom? ───────────────────────────────────────────────────────
-  
   if (step === 'aguardando_cupom') {
     const { plano } = context;
-    const resposta = texto.toUpperCase().trim();
+    const resposta = normalizar(texto);
 
-    if (resposta === 'SIM') {
+    if (resposta === 'sim' || resposta === 's') {
       await updateSession(user.id, 'aguardando_codigo_cupom', { plano });
       return `Ótimo! Digite o seu código de cupom:`;
     }
 
-    if (resposta === 'NÃO' || resposta === 'NAO') {
+    if (resposta === 'nao' || resposta === 'n' || resposta === 'no') {
       const link = await gerarLinkPagamento(user, plano);
 
       if (!link) {
@@ -288,40 +294,32 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
   }
 
   // ── Upgrade: validar código do cupom ─────────────────────────────────────────
-  if (step === 'aguardando_cupom') {
-  const { plano } = context;
-  
-  // Remove acentos e normaliza — cobre: sim, SIM, não, nao, NÃO, n, s, no
-  const resposta = texto.trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  if (step === 'aguardando_codigo_cupom') {
+    const { plano } = context;
+    const cupom = texto.toUpperCase().trim();
 
-  if (resposta === 'sim' || resposta === 's') {
-    await updateSession(user.id, 'aguardando_codigo_cupom', { plano });
-    return `Ótimo! Digite o seu código de cupom:`;
-  }
+    const cupomValido = await validarCupom(cupom);
 
-  if (resposta === 'nao' || resposta === 'n' || resposta === 'no') {
-    const link = await gerarLinkPagamento(user, plano);
+    if (!cupomValido) {
+      await updateSession(user.id, 'aguardando_cupom', { plano });
+      return `Cupom *${cupom}* não encontrado ou expirado. 😕\n\nDeseja tentar outro cupom? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
+    }
+
+    const link = await gerarLinkPagamento(user, plano, cupom);
 
     if (!link) {
       await updateSession(user.id, 'concluido', {});
-      return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes ou entre em contato com o suporte. 🙏`;
+      return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes. 🙏`;
     }
 
-    await updateSession(user.id, 'aguardando_pagamento', { plano });
-    const nomeExibicao = plano === 'pro' ? 'Pro — R$12,90/mês' : 'Business — R$29,90/mês';
-    return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
+    await updateSession(user.id, 'aguardando_pagamento', { plano, cupom });
+    const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
+    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
   }
-
-  return `Por favor, responda *SIM* ou *NÃO*.`;
-}
 
   // ── Upgrade: aguardando pagamento ─────────────────────────────────────────────
   if (step === 'aguardando_pagamento') {
-    // Usuário pediu novo link
-    if (texto.toUpperCase() === 'NOVO LINK') {
+    if (normalizar(texto) === 'novo link') {
       const { plano, cupom } = context;
       const link = await gerarLinkPagamento(user, plano, cupom || null);
 
