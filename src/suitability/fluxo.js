@@ -261,6 +261,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
   }
 
   // ── Upgrade: tem cupom? ───────────────────────────────────────────────────────
+  
   if (step === 'aguardando_cupom') {
     const { plano } = context;
     const resposta = texto.toUpperCase().trim();
@@ -287,29 +288,35 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
   }
 
   // ── Upgrade: validar código do cupom ─────────────────────────────────────────
-  if (step === 'aguardando_codigo_cupom') {
-    const { plano } = context;
-    const cupom = texto.toUpperCase().trim();
+  if (step === 'aguardando_cupom') {
+  const { plano } = context;
+  
+  // Remove acentos e normaliza — cobre: sim, SIM, não, nao, NÃO, n, s, no
+  const resposta = texto.trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
-    const cupomValido = await validarCupom(cupom);
+  if (resposta === 'sim' || resposta === 's') {
+    await updateSession(user.id, 'aguardando_codigo_cupom', { plano });
+    return `Ótimo! Digite o seu código de cupom:`;
+  }
 
-    if (!cupomValido) {
-      // Volta para aguardando_cupom para o usuário poder tentar outro ou desistir
-      await updateSession(user.id, 'aguardando_cupom', { plano });
-      return `Cupom *${cupom}* não encontrado ou expirado. 😕\n\nDeseja tentar outro cupom? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
-    }
-
-    const link = await gerarLinkPagamento(user, plano, cupom);
+  if (resposta === 'nao' || resposta === 'n' || resposta === 'no') {
+    const link = await gerarLinkPagamento(user, plano);
 
     if (!link) {
       await updateSession(user.id, 'concluido', {});
-      return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes. 🙏`;
+      return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes ou entre em contato com o suporte. 🙏`;
     }
 
-    await updateSession(user.id, 'aguardando_pagamento', { plano, cupom });
-    const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
-    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
+    await updateSession(user.id, 'aguardando_pagamento', { plano });
+    const nomeExibicao = plano === 'pro' ? 'Pro — R$12,90/mês' : 'Business — R$29,90/mês';
+    return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
   }
+
+  return `Por favor, responda *SIM* ou *NÃO*.`;
+}
 
   // ── Upgrade: aguardando pagamento ─────────────────────────────────────────────
   if (step === 'aguardando_pagamento') {
