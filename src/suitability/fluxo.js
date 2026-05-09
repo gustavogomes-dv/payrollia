@@ -26,8 +26,8 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
     const PLANOS_CONFIG = {
-      pro:      { id: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', quantity: 1 },
-      business: { id: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', quantity: 1 },
+      pro:      { id: 'prod_uLrmaCFtjS5p2Lq3QU5Wygcg', quantity: 1 },
+      business: { id: 'prod_paPRqMFjyRE2SWDXGsZqrgqE', quantity: 1 },
     };
 
     const config = PLANOS_CONFIG[plano];
