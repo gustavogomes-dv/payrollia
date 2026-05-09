@@ -33,6 +33,12 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
     const config = PLANOS_CONFIG[plano];
     if (!config) throw new Error(`Plano inválido: ${plano}`);
 
+    // debug temporário
+    const list = await fetch('https://api.abacatepay.com/v2/products/list', {
+      headers: { Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}` }
+    });
+    console.log('[DEBUG produtos]', JSON.stringify(await list.json()));
+
     const body = {
       items: [{ id: config.id, quantity: config.quantity }],
       methods: ['PIX'],
