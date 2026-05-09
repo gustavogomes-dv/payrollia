@@ -30,25 +30,17 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 // ─── Gerar link de pagamento via AbacatePay ────────────────────────────────────
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
-    // sem SDK — fetch direto na API v2
-
     const PLANOS_CONFIG = {
-      pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
-      business: { externalId: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', name: 'Plano Business', price: 2990 },
+      pro:      { id: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', quantity: 1 },
+      business: { id: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', quantity: 1 },
     };
 
     const config = PLANOS_CONFIG[plano];
     if (!config) throw new Error(`Plano inválido: ${plano}`);
 
     const body = {
-      frequency: 'ONE_TIME',
+      items: [{ id: config.id, quantity: config.quantity }],
       methods: ['PIX'],
-      products: [{
-        externalId: config.externalId,
-        name: config.name,
-        quantity: 1,
-        price: config.price,
-      }],
       returnUrl: 'https://payrollia.com.br',
       completionUrl: 'https://payrollia.com.br',
       customer: {
@@ -61,8 +53,26 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
 
     if (cupom) body.coupon = cupom;
 
-    const billing = await abacate.billing.create(body);
-    return billing?.url || billing?.data?.url || null;
+    console.log('[AbacatePay] Enviando:', JSON.stringify(body));
+
+    const response = await fetch('https://api.abacatepay.com/v2/checkouts/create', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    console.log('[AbacatePay] Resposta:', JSON.stringify(data));
+
+    if (!response.ok || !data.success) {
+      console.error('[AbacatePay] Erro ao gerar link:', data);
+      return null;
+    }
+
+    return data?.data?.url || null;
   } catch (err) {
     console.error('[AbacatePay] Exceção ao gerar link:', err.message);
     return null;
