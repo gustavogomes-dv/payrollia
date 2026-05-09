@@ -5,6 +5,9 @@ import Sidebar from '@/components/Sidebar';
 export const metadata: Metadata = {
   title: 'Payroll Admin',
   description: 'Painel administrativo do Payroll',
+  other: {
+    'facebook-domain-verification': 'exumchcnorrm7d34k7twvl7xlym123',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
