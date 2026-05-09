@@ -59,7 +59,7 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
 
     if (cupom) body.coupon = cupom;
 
-    const response = await fetch('https://api.abacatepay.com/v1/billing/create', {
+    const response = await fetch('https://api.abacatepay.com/v2/billing', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
