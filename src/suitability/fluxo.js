@@ -180,7 +180,7 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
 
     console.log('[AbacatePay] Enviando:', JSON.stringify(body));
 
-    const response = await fetch('https://api.abacatepay.com/v2/billing/create', {
+    const response = await fetch('https://api.abacatepay.com/v2/billings', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
