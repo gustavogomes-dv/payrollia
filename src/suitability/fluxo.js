@@ -26,18 +26,12 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
     const PLANOS_CONFIG = {
-      pro:      { id: 'prod_uLrmaCFtjS5p2Lq3QU5Wygcg', quantity: 1 },
+      pro:      { id: 'prod_uLrmaCFtjSSp2Lq3QU5Wygcg', quantity: 1 },
       business: { id: 'prod_paPRqMFjyRE2SWDXGsZqrgqE', quantity: 1 },
-    };
+};
 
     const config = PLANOS_CONFIG[plano];
     if (!config) throw new Error(`Plano inválido: ${plano}`);
-
-    // debug temporário
-    const list = await fetch('https://api.abacatepay.com/v2/products/list', {
-      headers: { Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}` }
-    });
-    console.log('[DEBUG produtos]', JSON.stringify(await list.json()));
 
     const body = {
       items: [{ id: config.id, quantity: config.quantity }],
