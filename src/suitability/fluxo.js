@@ -30,6 +30,9 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 // ─── Gerar link de pagamento via AbacatePay ────────────────────────────────────
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
+    const AbacatePay = require('abacatepay-nodejs-sdk');
+    const abacate = AbacatePay(process.env.ABACATEPAY_API_KEY);
+
     const PLANOS_CONFIG = {
       pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
       business: { externalId: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', name: 'Plano Business', price: 2990 },
@@ -51,37 +54,21 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       completionUrl: 'https://payrollia.com.br',
       customer: {
         name: user.name || 'Cliente',
-        cellphone: user.phone,
         email: user.email || `${user.phone}@payrollia.com.br`,
+        cellphone: user.phone,
         taxId: '',
-},
+      },
     };
 
     if (cupom) body.coupon = cupom;
 
-    const response = await fetch('https://api.abacatepay.com/v2/billing', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('[AbacatePay] Erro ao gerar link:', data);
-      return null;
-    }
-
-    return data?.data?.url || data?.url || null;
+    const billing = await abacate.billing.create(body);
+    return billing?.url || billing?.data?.url || null;
   } catch (err) {
     console.error('[AbacatePay] Exceção ao gerar link:', err.message);
     return null;
   }
 }
-
 // ─── Validar cupom na AbacatePay ───────────────────────────────────────────────
 async function validarCupom(cupom) {
   try {
@@ -161,7 +148,47 @@ async function processarFluxo(user, session, mensagem) {
     await updateSession(user.id, 'aguardando_disclaimer', { nome: texto });
     return `Prazer, *${texto}*! 😊\n\n${DISCLAIMER}`;
   }
+async function gerarLinkPagamento(user, plano, cupom = null) {
+  try {
+    const AbacatePay = require('abacatepay-nodejs-sdk');
+    const abacate = AbacatePay(process.env.ABACATEPAY_API_KEY);
 
+    const PLANOS_CONFIG = {
+      pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
+      business: { externalId: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', name: 'Plano Business', price: 2990 },
+    };
+
+    const config = PLANOS_CONFIG[plano];
+    if (!config) throw new Error(`Plano inválido: ${plano}`);
+
+    const body = {
+      frequency: 'ONE_TIME',
+      methods: ['PIX'],
+      products: [{
+        externalId: config.externalId,
+        name: config.name,
+        quantity: 1,
+        price: config.price,
+      }],
+      returnUrl: 'https://payrollia.com.br',
+      completionUrl: 'https://payrollia.com.br',
+      customer: {
+        name: user.name || 'Cliente',
+        email: user.email || `${user.phone}@payrollia.com.br`,
+        cellphone: user.phone,
+        taxId: '',
+      },
+    };
+
+    if (cupom) body.coupon = cupom;
+
+    const billing = await abacate.billing.create(body);
+    return billing?.url || billing?.data?.url || null;
+  } catch (err) {
+    console.error('[AbacatePay] Exceção ao gerar link:', err.message);
+    return null;
+  }
+}
   // ── Confirmação do disclaimer ────────────────────────────────────────────────
   if (step === 'aguardando_disclaimer') {
     if (texto !== '1') {
