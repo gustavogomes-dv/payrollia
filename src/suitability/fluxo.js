@@ -30,8 +30,8 @@ Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
 // ─── Gerar link de pagamento via AbacatePay ────────────────────────────────────
 async function gerarLinkPagamento(user, plano, cupom = null) {
   try {
-    const AbacatePay = require('abacatepay-nodejs-sdk');
-    const abacate = AbacatePay(process.env.ABACATEPAY_API_KEY);
+    const { AbacatePay } = require('abacatepay-nodejs-sdk');
+    const abacate = new AbacatePay(process.env.ABACATEPAY_API_KEY);
 
     const PLANOS_CONFIG = {
       pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
