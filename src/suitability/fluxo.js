@@ -14,11 +14,6 @@ const {
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const LIMITE_FREE = 3;
 
-const PRODUTO_IDS = {
-  pro: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a',
-  business: 'prod_b0gGP0CH4t6nyQETnyPAQDaz',
-};
-
 const DISCLAIMER = `⚠️ *Aviso importante (CVM)*
 
 O Payroll é um assistente *educacional* de investimentos. Não somos uma corretora, banco ou assessor de investimentos certificado.
@@ -43,15 +38,9 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       methods: ['PIX'],
       returnUrl: 'https://payrollia.com.br',
       completionUrl: 'https://payrollia.com.br',
-      customer: {
-        name: user.name || 'Cliente',
-        email: user.email || `${user.phone}@payrollia.com.br`,
-        cellphone: user.phone,
-        taxId: '',
-      },
     };
 
-    if (cupom) body.coupon = cupom;
+    if (cupom) body.coupons = [cupom];
 
     console.log('[AbacatePay] Enviando:', JSON.stringify(body));
 
@@ -78,10 +67,11 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
     return null;
   }
 }
+
 // ─── Validar cupom na AbacatePay ───────────────────────────────────────────────
 async function validarCupom(cupom) {
   try {
-    const response = await fetch(`https://api.abacatepay.com/v1/coupon/${cupom}`, {
+    const response = await fetch(`https://api.abacatepay.com/v2/coupons/${cupom}`, {
       headers: {
         Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
       },
@@ -104,11 +94,10 @@ async function incrementarPerguntas(userId) {
 
   const { rows } = await pool.query(
     `UPDATE users SET perguntas_usadas = COALESCE(perguntas_usadas, 0) + 1
-    WHERE id = $1 RETURNING tenant_id, phone`,
+     WHERE id = $1 RETURNING tenant_id, phone`,
     [userId]
   );
 
-  // Invalida o cache do Redis para a próxima mensagem buscar do banco
   if (rows[0]) {
     const { tenant_id, phone } = rows[0];
     await redisClient.del(`user:${tenant_id}:${phone}`);
@@ -157,62 +146,7 @@ async function processarFluxo(user, session, mensagem) {
     await updateSession(user.id, 'aguardando_disclaimer', { nome: texto });
     return `Prazer, *${texto}*! 😊\n\n${DISCLAIMER}`;
   }
-async function gerarLinkPagamento(user, plano, cupom = null) {
-  try {
-    const PLANOS_CONFIG = {
-      pro:      { externalId: 'prod_gPsYzrzDUgnJLcJCsZWSMc0a', name: 'Plano Pro',      price: 1290 },
-      business: { externalId: 'prod_b0gGP0CH4t6nyQETnyPAQDaz', name: 'Plano Business', price: 2990 },
-    };
 
-    const config = PLANOS_CONFIG[plano];
-    if (!config) throw new Error(`Plano inválido: ${plano}`);
-
-    const body = {
-      frequency: 'ONE_TIME',
-      methods: ['PIX'],
-      products: [{
-        externalId: config.externalId,
-        name: config.name,
-        quantity: 1,
-        price: config.price,
-      }],
-      returnUrl: 'https://payrollia.com.br',
-      completionUrl: 'https://payrollia.com.br',
-      customer: {
-        name: user.name || 'Cliente',
-        email: user.email || `${user.phone}@payrollia.com.br`,
-        cellphone: user.phone,
-        taxId: '',
-      },
-    };
-
-    if (cupom) body.coupon = cupom;
-
-    console.log('[AbacatePay] Enviando:', JSON.stringify(body));
-
-    const response = await fetch('https://api.abacatepay.com/v2/billings', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-    console.log('[AbacatePay] Resposta:', JSON.stringify(data));
-
-    if (!response.ok) {
-      console.error('[AbacatePay] Erro ao gerar link:', data);
-      return null;
-    }
-
-    return data?.url || data?.data?.url || null;
-  } catch (err) {
-    console.error('[AbacatePay] Exceção ao gerar link:', err.message);
-    return null;
-  }
-}
   // ── Confirmação do disclaimer ────────────────────────────────────────────────
   if (step === 'aguardando_disclaimer') {
     if (texto !== '1') {
@@ -248,7 +182,6 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       return PERGUNTAS[proximoIndex].texto;
     }
 
-    // Questionário finalizado — calcula e salva perfil
     const resultado = calcularPerfil(novosPontos);
     await saveInvestorProfile(user.id, respostas, resultado.perfil, novosPontos);
     await updateUser(user.id, { onboarding_complete: true });
@@ -274,20 +207,17 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
   // ── Chat principal ────────────────────────────────────────────────────────────
   if (step === 'concluido') {
 
-    // Saudação simples — não consome pergunta
     const saudacoes = ['oi', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
     if (saudacoes.includes(normalizar(texto))) {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
       return `Olá de novo! 👋 Seu perfil é *${perfil}*.\n\nComo posso te ajudar hoje? Pode me perguntar sobre investimentos, mercado, ou qualquer dúvida financeira! 😊`;
     }
 
-    // Usuário atingiu o limite do plano Free
     if (atingiuLimite(user)) {
       await updateSession(user.id, 'aguardando_escolha_plano', {});
       return mensagemLimite(user.name);
     }
 
-    // Responder com IA
     try {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
       const marketContext = await getMarketData(texto);
@@ -297,7 +227,6 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
       const resposta = await askClaude(texto, marketContext, perfil, historico);
       await saveMessage(user.id, 'assistant', resposta);
 
-      // Incrementa contador apenas no plano Free
       if ((user.plano || 'free') === 'free') {
         await incrementarPerguntas(user.id);
       }
