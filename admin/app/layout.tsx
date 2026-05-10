@@ -13,9 +13,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body style={{ display: 'flex', background: '#000', minHeight: '100vh', margin: 0 }}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body style={{ display: 'flex', background: '#000', minHeight: '100vh', margin: 0, color: '#fff' }}>
         <Sidebar />
-        <main style={{ flex: 1, overflow: 'auto' }}>
+        <main style={{ flex: 1, overflow: 'auto', padding: '32px 28px', minWidth: 0 }}>
           {children}
         </main>
       </body>
