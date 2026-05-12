@@ -1,5 +1,5 @@
-    // src/webhook/abacatepay.js
-// Recebe eventos de assinatura do AbacatePay e atualiza o plano do usuário
+// src/webhook/abacatepay.js
+// Recebe eventos de pagamento do AbacatePay e atualiza o plano do usuário
 
 const express = require('express');
 const router = express.Router();
@@ -11,7 +11,6 @@ const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 
 // ─── Validar assinatura do webhook ────────────────────────────────────────────
 function validarAssinatura(req) {
-  // A AbacatePay envia o secret no header x-webhook-secret
   const secret = req.headers['x-webhook-secret'];
   return secret === WEBHOOK_SECRET;
 }
@@ -48,7 +47,7 @@ async function enviarWhatsApp(telefone, mensagem) {
   }
 }
 
-// ─── Buscar usuário pelo telefone salvo nos metadata ──────────────────────────
+// ─── Buscar usuário pelo telefone ─────────────────────────────────────────────
 async function buscarUsuarioPorPhone(phone) {
   const { rows } = await pool.query(
     `SELECT * FROM users WHERE phone = $1 LIMIT 1`,
@@ -73,10 +72,14 @@ async function atualizarPlano(userId, plano, status) {
 
 // ─── Endpoint POST /webhook/abacatepay ────────────────────────────────────────
 router.post('/', async (req, res) => {
-  // Responde 200 imediatamente para a AbacatePay não reenviar o evento
+  // Responde 200 imediatamente para o AbacatePay não reenviar o evento
   res.sendStatus(200);
 
   try {
+    // Log completo para debug
+    console.log(`[AbacatePay] ⚡ Evento recebido: "${req.body?.event}"`);
+    console.log(`[AbacatePay] Payload:`, JSON.stringify(req.body, null, 2));
+
     // Valida o secret
     if (!validarAssinatura(req)) {
       console.warn('[AbacatePay] Assinatura inválida — requisição ignorada');
@@ -90,31 +93,23 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    console.log(`[AbacatePay] Evento recebido: ${event}`);
-      
-    console.log(`[AbacatePay] Payload completo:`, JSON.stringify(req.body, null, 2));
+    // ── checkout.completed — pagamento ONE_TIME confirmado ───────────────────
+    if (event === 'checkout.completed') {
+      const phone = data?.metadata?.phone;
+      const plano = data?.metadata?.plano;
 
-    // Extrai telefone do metadata (salvo no momento da criação do link)
-    const phone = data?.metadata?.phone || data?.customer?.cellphone;
-    const plano = data?.metadata?.plano;
+      if (!phone) {
+        console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
+        return;
+      }
 
-    if (!phone) {
-      console.warn('[AbacatePay] Telefone não encontrado no payload:', data);
-      return;
-    }
+      const user = await buscarUsuarioPorPhone(phone);
 
-    // Busca o usuário no banco
-    const user = await buscarUsuarioPorPhone(phone);
+      if (!user) {
+        console.warn(`[AbacatePay] Usuário não encontrado para o telefone ${phone}`);
+        return;
+      }
 
-    if (!user) {
-      console.warn(`[AbacatePay] Usuário não encontrado para o telefone ${phone}`);
-      return;
-    }
-
-    // ── Processa cada tipo de evento ────────────────────────────────────────────
-
-    if (event === 'subscription.completed') {
-      // Pagamento confirmado — ativa o plano
       await atualizarPlano(user.id, plano || 'pro', 'active');
 
       // Volta a sessão para 'concluido' para o usuário poder usar o bot normalmente
@@ -131,9 +126,44 @@ router.post('/', async (req, res) => {
       return;
     }
 
+    // ── subscription.completed — assinatura recorrente confirmada ────────────
+    if (event === 'subscription.completed') {
+      const phone = data?.metadata?.phone;
+      const plano = data?.metadata?.plano;
+
+      if (!phone) {
+        console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
+        return;
+      }
+
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+
+      await atualizarPlano(user.id, plano || 'pro', 'active');
+
+      await pool.query(
+        `UPDATE sessions SET step = 'concluido', context = '{}' WHERE user_id = $1`,
+        [user.id]
+      );
+
+      const nomeExibicao = plano === 'business' ? 'Business' : 'Pro';
+      await enviarWhatsApp(
+        phone,
+        `✅ *Pagamento confirmado!*\n\nSeu plano *${nomeExibicao}* está ativo agora! 🎉\n\nPode continuar perguntando sobre investimentos sem limites. Aproveite! 😊`
+      );
+      return;
+    }
+
+    // ── subscription.renewed — renovação mensal ───────────────────────────────
     if (event === 'subscription.renewed') {
-      // Renovação mensal — mantém o plano ativo e zera o contador
-      await atualizarPlano(user.id, plano || user.plano || 'pro', 'active');
+      const phone = data?.metadata?.phone;
+
+      if (!phone) return;
+
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+
+      await atualizarPlano(user.id, user.plano || 'pro', 'active');
 
       await enviarWhatsApp(
         phone,
@@ -142,19 +172,33 @@ router.post('/', async (req, res) => {
       return;
     }
 
+    // ── subscription.cancelled — cancelamento ─────────────────────────────────
     if (event === 'subscription.cancelled') {
-      // Cancelamento — rebaixa para Free
+      const phone = data?.metadata?.phone;
+
+      if (!phone) return;
+
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+
       await atualizarPlano(user.id, 'free', 'cancelled');
 
       await enviarWhatsApp(
         phone,
-        `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado. Você voltou para o plano *Gratuito* (${3} perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`
+        `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado e você voltou para o plano *Gratuito* (${3} perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`
       );
       return;
     }
 
+    // ── subscription.payment_failed — pagamento falhou ────────────────────────
     if (event === 'subscription.payment_failed') {
-      // Pagamento falhou — marca como inadimplente mas não cancela ainda
+      const phone = data?.metadata?.phone;
+
+      if (!phone) return;
+
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+
       await pool.query(
         `UPDATE users SET plano_status = 'payment_failed' WHERE id = $1`,
         [user.id]
@@ -163,6 +207,24 @@ router.post('/', async (req, res) => {
       await enviarWhatsApp(
         phone,
         `⚠️ *Pagamento não processado.*\n\nTivemos um problema com o pagamento da sua assinatura. Por favor, verifique seus dados de pagamento para não perder o acesso. 🙏`
+      );
+      return;
+    }
+
+    // ── checkout.refunded — reembolso ─────────────────────────────────────────
+    if (event === 'checkout.refunded') {
+      const phone = data?.metadata?.phone;
+
+      if (!phone) return;
+
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+
+      await atualizarPlano(user.id, 'free', 'refunded');
+
+      await enviarWhatsApp(
+        phone,
+        `↩️ *Reembolso processado.*\n\nSeu pagamento foi estornado e você voltou para o plano *Gratuito*.\n\nSe tiver dúvidas, entre em contato com o suporte. 🙏`
       );
       return;
     }
