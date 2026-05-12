@@ -91,6 +91,8 @@ router.post('/', async (req, res) => {
     }
 
     console.log(`[AbacatePay] Evento recebido: ${event}`);
+      
+    console.log(`[AbacatePay] Payload completo:`, JSON.stringify(req.body, null, 2));
 
     // Extrai telefone do metadata (salvo no momento da criação do link)
     const phone = data?.metadata?.phone || data?.customer?.cellphone;
