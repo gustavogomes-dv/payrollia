@@ -14,13 +14,15 @@ const {
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const LIMITE_FREE = 3;
 
-const DISCLAIMER = `⚠️ *Aviso importante (CVM)*
+const DISCLAIMER = `⚠️ *Aviso Importante — CVM*
 
-O Payroll é um assistente *educacional* de investimentos. Não somos uma corretora, banco ou assessor de investimentos certificado.
+O *Payrollia* é um assistente *educacional* de investimentos. Não somos uma corretora, banco ou assessor de investimentos certificado pela CVM.
 
-As informações fornecidas *não constituem recomendação de investimento*. Sempre consulte um profissional certificado pela CVM antes de tomar decisões financeiras.
+As informações fornecidas *não constituem recomendação de investimento*. Antes de tomar qualquer decisão financeira, consulte um profissional devidamente certificado.
 
-Para continuar, você confirma que entendeu? (responda *1 para Sim*)`;
+Ao continuar, você declara que leu e compreendeu este aviso.
+
+Responda *1* para confirmar e prosseguir.`;
 
 // ─── Gerar link de pagamento via AbacatePay ────────────────────────────────────
 async function gerarLinkPagamento(user, plano, cupom = null) {
@@ -28,7 +30,7 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
     const PLANOS_CONFIG = {
       pro:      { id: 'prod_uLrmaCFtjSSp2Lq3QU5Wygcg', quantity: 1 },
       business: { id: 'prod_paPRqMFjyRE2SWDXGsZqrgqE', quantity: 1 },
-};
+    };
 
     const config = PLANOS_CONFIG[plano];
     if (!config) throw new Error(`Plano inválido: ${plano}`);
@@ -109,18 +111,18 @@ function mensagemLimite(userName) {
   const nome = userName ? `, ${userName}` : '';
   return `Você atingiu o limite de *${LIMITE_FREE} perguntas* do plano gratuito${nome}. 😕
 
-Para continuar aprendendo sobre investimentos sem limites, escolha um plano:
+Para continuar aprendendo sobre investimentos sem restrições, escolha um dos planos abaixo:
 
-*1 - Plano Pro* — R$12,90/mês
+*1️⃣ Plano Pro — R$ 12,90/mês*
 ✅ Perguntas ilimitadas
-✅ Análise completa do seu perfil
+✅ Análise completa do seu perfil de investidor
 
-*2 - Plano Business* — R$29,90/mês
-✅ Tudo do Pro
-✅ Alertas de mercado
+*2️⃣ Plano Business — R$ 29,90/mês*
+✅ Tudo do plano Pro
+✅ Alertas de mercado em tempo real
 ✅ Suporte prioritário
 
-Responda *1* ou *2* para continuar.`;
+Responda *1* ou *2* para escolher seu plano.`;
 }
 
 // ─── Normalizar texto — remove acentos e coloca em minúsculo ──────────────────
@@ -134,26 +136,26 @@ async function processarFluxo(user, session, mensagem) {
   const step = session.step || 'inicio';
   const context = session.context || {};
 
-  // ── Boas vindas ──────────────────────────────────────────────────────────────
+  // ── Boas-vindas ──────────────────────────────────────────────────────────────
   if (step === 'inicio') {
     await updateSession(user.id, 'aguardando_nome', {});
-    return `Olá! 👋 Bem-vindo ao *Payroll*, seu assistente educacional de investimentos!\n\nPara começar, qual é o seu nome?`;
+    return `👋 Olá! Bem-vindo ao *Payrollia*, seu assistente educacional de investimentos.\n\nEstou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.\n\nPara começar, qual é o seu nome?`;
   }
 
   // ── Coleta o nome ────────────────────────────────────────────────────────────
   if (step === 'aguardando_nome') {
     await updateUser(user.id, { name: texto });
     await updateSession(user.id, 'aguardando_disclaimer', { nome: texto });
-    return `Prazer, *${texto}*! 😊\n\n${DISCLAIMER}`;
+    return `Prazer em conhecê-lo, *${texto}*! 😊\n\n${DISCLAIMER}`;
   }
 
   // ── Confirmação do disclaimer ────────────────────────────────────────────────
   if (step === 'aguardando_disclaimer') {
     if (texto !== '1') {
-      return `Para usar o Payroll você precisa confirmar que entendeu o aviso. Responda *1* para continuar.`;
+      return `Para utilizar o Payrollia, é necessário confirmar que você leu e compreendeu o aviso acima. Responda *1* para continuar.`;
     }
     await updateSession(user.id, 'suitability_0', { ...context, respostas: {} });
-    return `Ótimo! Antes de começar, vou fazer *8 perguntas rápidas* para entender seu perfil de investidor.\n\nIsso leva menos de 2 minutos! 😊\n\n${PERGUNTAS[0].texto}`;
+    return `Ótimo! Antes de começar, vou fazer *8 perguntas rápidas* para identificar o seu perfil de investidor.\n\nIsso leva menos de 2 minutos. Vamos lá! 🚀\n\n${PERGUNTAS[0].texto}`;
   }
 
   // ── Questionário suitability ─────────────────────────────────────────────────
@@ -163,7 +165,7 @@ async function processarFluxo(user, session, mensagem) {
 
     if (!perguntaAtual.opcoes[texto]) {
       const maxOpcao = Object.keys(perguntaAtual.opcoes).length;
-      return `Resposta inválida. Por favor, responda com um número entre 1 e ${maxOpcao}.`;
+      return `Resposta inválida. Por favor, responda com um número entre *1* e *${maxOpcao}*.`;
     }
 
     const respostas = context.respostas || {};
@@ -196,12 +198,12 @@ ${resultado.explicacao}
 ${resultado.aviso}
 
 ---
-Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e orientar* com base no seu perfil.
+Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar e educar* com base no seu perfil de investidor.
 
 💬 Experimente perguntar:
-- "O que é Tesouro Direto?"
-- "Como funciona um FII?"
-- "Qual a diferença entre CDB e LCI?"`;
+• "O que é Tesouro Direto?"
+• "Como funcionam os FIIs?"
+• "Qual a diferença entre CDB e LCI?"`;
   }
 
   // ── Chat principal ────────────────────────────────────────────────────────────
@@ -210,7 +212,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
     const saudacoes = ['oi', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
     if (saudacoes.includes(normalizar(texto))) {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
-      return `Olá de novo! 👋 Seu perfil é *${perfil}*.\n\nComo posso te ajudar hoje? Pode me perguntar sobre investimentos, mercado, ou qualquer dúvida financeira! 😊`;
+      return `Olá novamente! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊`;
     }
 
     if (atingiuLimite(user)) {
@@ -234,18 +236,18 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
       return resposta;
     } catch (error) {
       console.error('[Fluxo] Erro ao chamar Claude:', error);
-      return `Desculpe, tive um problema ao processar sua pergunta. Tente novamente em instantes. 🙏`;
+      return `Desculpe, ocorreu um problema ao processar sua pergunta. Por favor, tente novamente em instantes. 🙏`;
     }
   }
 
   // ── Upgrade: escolha do plano ─────────────────────────────────────────────────
   if (step === 'aguardando_escolha_plano') {
     if (texto !== '1' && texto !== '2') {
-      return `Por favor, responda *1* para o plano Pro ou *2* para o plano Business.`;
+      return `Por favor, responda *1* para o Plano Pro ou *2* para o Plano Business.`;
     }
     const plano = texto === '1' ? 'pro' : 'business';
     await updateSession(user.id, 'aguardando_cupom', { plano });
-    return `Ótima escolha! 🎉\n\nVocê possui um *cupom de desconto*?\n\nResponda *SIM* ou *NÃO*.`;
+    return `Ótima escolha! 🎉\n\nVocê possui algum *cupom de desconto*?\n\nResponda *SIM* ou *NÃO*.`;
   }
 
   // ── Upgrade: tem cupom? ───────────────────────────────────────────────────────
@@ -255,7 +257,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
 
     if (resposta === 'sim' || resposta === 's') {
       await updateSession(user.id, 'aguardando_codigo_cupom', { plano });
-      return `Ótimo! Digite o seu código de cupom:`;
+      return `Ótimo! Por favor, digite o seu código de cupom:`;
     }
 
     if (resposta === 'nao' || resposta === 'n' || resposta === 'no') {
@@ -263,12 +265,12 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
 
       if (!link) {
         await updateSession(user.id, 'concluido', {});
-        return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes ou entre em contato com o suporte. 🙏`;
+        return `Ops! Tive um problema ao gerar seu link de pagamento. Por favor, tente novamente em instantes ou entre em contato com o suporte. 🙏`;
       }
 
       await updateSession(user.id, 'aguardando_pagamento', { plano });
-      const nomeExibicao = plano === 'pro' ? 'Pro — R$12,90/mês' : 'Business — R$29,90/mês';
-      return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
+      const nomeExibicao = plano === 'pro' ? 'Pro — R$ 12,90/mês' : 'Business — R$ 29,90/mês';
+      return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
     }
 
     return `Por favor, responda *SIM* ou *NÃO*.`;
@@ -283,19 +285,19 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
 
     if (!cupomValido) {
       await updateSession(user.id, 'aguardando_cupom', { plano });
-      return `Cupom *${cupom}* não encontrado ou expirado. 😕\n\nDeseja tentar outro cupom? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
+      return `O cupom *${cupom}* não foi encontrado ou já expirou. 😕\n\nDeseja tentar outro cupom? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
     }
 
     const link = await gerarLinkPagamento(user, plano, cupom);
 
     if (!link) {
       await updateSession(user.id, 'concluido', {});
-      return `Ops! Tive um problema ao gerar seu link de pagamento. Tente novamente em instantes. 🙏`;
+      return `Ops! Tive um problema ao gerar seu link de pagamento. Por favor, tente novamente em instantes. 🙏`;
     }
 
     await updateSession(user.id, 'aguardando_pagamento', { plano, cupom });
     const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
-    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado automaticamente! ✅`;
+    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
   }
 
   // ── Upgrade: aguardando pagamento ─────────────────────────────────────────────
@@ -305,17 +307,17 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *educar e 
       const link = await gerarLinkPagamento(user, plano, cupom || null);
 
       if (!link) {
-        return `Não consegui gerar um novo link agora. Tente novamente em instantes. 🙏`;
+        return `Não foi possível gerar um novo link no momento. Por favor, tente novamente em instantes. 🙏`;
       }
 
-      return `Aqui está seu novo link:\n\n🔗 ${link}`;
+      return `Aqui está o seu novo link de pagamento:\n\n🔗 ${link}`;
     }
 
-    return `Seu link de pagamento já foi enviado! 😊\n\nAssim que o Pix for confirmado, seu acesso será liberado automaticamente.\n\nPrecisa de um novo link? Responda *NOVO LINK*.`;
+    return `Seu link de pagamento já foi enviado! 😊\n\nAssim que o Pix for confirmado, seu acesso ao plano será liberado automaticamente.\n\nCaso precise de um novo link, responda *NOVO LINK*.`;
   }
 
   // ── Fallback ──────────────────────────────────────────────────────────────────
-  return `Não entendi. Pode reformular sua pergunta? 😊`;
+  return `Não consegui entender sua mensagem. Poderia reformulá-la? 😊`;
 }
 
 module.exports = processarFluxo;
