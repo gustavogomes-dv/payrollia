@@ -95,8 +95,8 @@ router.post('/', async (req, res) => {
 
     // ── checkout.completed — pagamento ONE_TIME confirmado ───────────────────
     if (event === 'checkout.completed') {
-      const phone = data?.metadata?.phone;
-      const plano = data?.metadata?.plano;
+      const phone = data?.checkout?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano;
 
       if (!phone) {
         console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
