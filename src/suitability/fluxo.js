@@ -40,7 +40,12 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       methods: ['PIX'],
       returnUrl: 'https://payrollia.com.br',
       completionUrl: 'https://payrollia.com.br',
-    };
+      metadata: {
+
+        phone: user.phone,
+        plano: plano,
+  },
+};
 
     if (cupom) body.coupons = [cupom];
 
