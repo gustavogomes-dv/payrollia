@@ -3,7 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db/index');
+const { pool, redisClient } = require('../db/index');
 
 const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'payroll_abacate_secret_2024';
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
@@ -56,8 +56,8 @@ async function buscarUsuarioPorPhone(phone) {
   return rows[0] || null;
 }
 
-// ─── Atualizar plano do usuário ───────────────────────────────────────────────
-async function atualizarPlano(userId, plano, status) {
+// ─── Atualizar plano e invalidar cache Redis ──────────────────────────────────
+async function atualizarPlano(userId, tenantId, phone, plano, status) {
   await pool.query(
     `UPDATE users
      SET plano = $1,
@@ -67,6 +67,15 @@ async function atualizarPlano(userId, plano, status) {
      WHERE id = $3`,
     [plano, status, userId]
   );
+
+  // Invalida o cache do Redis para o usuário
+  try {
+    await redisClient.del(`user:${tenantId}:${phone}`);
+    console.log(`[AbacatePay] Cache Redis invalidado para ${phone}`);
+  } catch (err) {
+    console.warn('[AbacatePay] Erro ao invalidar cache Redis:', err.message);
+  }
+
   console.log(`[AbacatePay] Usuário ${userId} → plano ${plano} (${status})`);
 }
 
@@ -78,7 +87,6 @@ router.post('/', async (req, res) => {
   try {
     // Log completo para debug
     console.log(`[AbacatePay] ⚡ Evento recebido: "${req.body?.event}"`);
-    console.log(`[AbacatePay] Payload:`, JSON.stringify(req.body, null, 2));
 
     // Valida o secret
     if (!validarAssinatura(req)) {
@@ -110,7 +118,7 @@ router.post('/', async (req, res) => {
         return;
       }
 
-      await atualizarPlano(user.id, plano || 'pro', 'active');
+      await atualizarPlano(user.id, user.tenant_id, phone, plano || 'pro', 'active');
 
       // Volta a sessão para 'concluido' para o usuário poder usar o bot normalmente
       await pool.query(
@@ -128,18 +136,15 @@ router.post('/', async (req, res) => {
 
     // ── subscription.completed — assinatura recorrente confirmada ────────────
     if (event === 'subscription.completed') {
-      const phone = data?.metadata?.phone;
-      const plano = data?.metadata?.plano;
+      const phone = data?.checkout?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano;
 
-      if (!phone) {
-        console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
-        return;
-      }
+      if (!phone) return;
 
       const user = await buscarUsuarioPorPhone(phone);
       if (!user) return;
 
-      await atualizarPlano(user.id, plano || 'pro', 'active');
+      await atualizarPlano(user.id, user.tenant_id, phone, plano || 'pro', 'active');
 
       await pool.query(
         `UPDATE sessions SET step = 'concluido', context = '{}' WHERE user_id = $1`,
@@ -156,14 +161,15 @@ router.post('/', async (req, res) => {
 
     // ── subscription.renewed — renovação mensal ───────────────────────────────
     if (event === 'subscription.renewed') {
-      const phone = data?.metadata?.phone;
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
 
       if (!phone) return;
 
       const user = await buscarUsuarioPorPhone(phone);
       if (!user) return;
 
-      await atualizarPlano(user.id, user.plano || 'pro', 'active');
+      await atualizarPlano(user.id, user.tenant_id, phone, user.plano || 'pro', 'active');
 
       await enviarWhatsApp(
         phone,
@@ -174,25 +180,27 @@ router.post('/', async (req, res) => {
 
     // ── subscription.cancelled — cancelamento ─────────────────────────────────
     if (event === 'subscription.cancelled') {
-      const phone = data?.metadata?.phone;
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
 
       if (!phone) return;
 
       const user = await buscarUsuarioPorPhone(phone);
       if (!user) return;
 
-      await atualizarPlano(user.id, 'free', 'cancelled');
+      await atualizarPlano(user.id, user.tenant_id, phone, 'free', 'cancelled');
 
       await enviarWhatsApp(
         phone,
-        `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado e você voltou para o plano *Gratuito* (${3} perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`
+        `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado e você voltou para o plano *Gratuito* (3 perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`
       );
       return;
     }
 
     // ── subscription.payment_failed — pagamento falhou ────────────────────────
     if (event === 'subscription.payment_failed') {
-      const phone = data?.metadata?.phone;
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
 
       if (!phone) return;
 
@@ -204,6 +212,12 @@ router.post('/', async (req, res) => {
         [user.id]
       );
 
+      try {
+        await redisClient.del(`user:${user.tenant_id}:${phone}`);
+      } catch (err) {
+        console.warn('[AbacatePay] Erro ao invalidar cache Redis:', err.message);
+      }
+
       await enviarWhatsApp(
         phone,
         `⚠️ *Pagamento não processado.*\n\nTivemos um problema com o pagamento da sua assinatura. Por favor, verifique seus dados de pagamento para não perder o acesso. 🙏`
@@ -213,14 +227,15 @@ router.post('/', async (req, res) => {
 
     // ── checkout.refunded — reembolso ─────────────────────────────────────────
     if (event === 'checkout.refunded') {
-      const phone = data?.metadata?.phone;
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
 
       if (!phone) return;
 
       const user = await buscarUsuarioPorPhone(phone);
       if (!user) return;
 
-      await atualizarPlano(user.id, 'free', 'refunded');
+      await atualizarPlano(user.id, user.tenant_id, phone, 'free', 'refunded');
 
       await enviarWhatsApp(
         phone,

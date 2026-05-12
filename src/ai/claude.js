@@ -2,31 +2,31 @@ const Anthropic = require('@anthropic-ai/sdk');
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const PERFIS = {
-    conservador: {
+  conservador: {
     descricao: 'conservador',
     foco: 'renda fixa, Tesouro Direto, CDBs, LCIs e LCAs',
     tom: 'cauteloso e tranquilizador, priorizando segurança e previsibilidade',
     evitar: 'não mencione ações, criptomoedas ou investimentos de alto risco sem que o usuário pergunte diretamente',
-    },
-    moderado: {
+  },
+  moderado: {
     descricao: 'moderado',
     foco: 'equilíbrio entre renda fixa e variável, fundos multimercado, FIIs e ETFs',
     tom: 'equilibrado, apresentando prós e contras de cada opção',
     evitar: 'evite recomendar concentração excessiva em renda variável ou ativos muito arriscados',
-    },
-    arrojado: {
+  },
+  arrojado: {
     descricao: 'arrojado',
     foco: 'renda variável, ações da B3, ETFs, FIIs, fundos de ações e diversificação global',
     tom: 'direto e analítico, podendo explorar conceitos mais avançados',
     evitar: 'nunca prometa retornos ou minimize riscos reais',
-    },
+  },
 };
 
 function buildSystemPrompt(perfil) {
-    const p = PERFIS[perfil] || PERFIS['moderado'];
+  const p = PERFIS[perfil] || PERFIS['moderado'];
 
-    return `Você é um assistente educacional de investimentos brasileiro chamado Payroll.
-Responda sempre em português, de forma clara e objetiva.
+  return `Você é um assistente educacional de investimentos brasileiro chamado Payroll.
+Responda sempre em português brasileiro, de forma clara, objetiva e acessível.
 
 PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
 - Foco principal: ${p.foco}
@@ -35,37 +35,47 @@ PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
 
 REGRAS GERAIS (sempre seguir):
 - Você é educacional — não indique ativos específicos para compra ou venda
-- Nunca dê garantias de retorno
+- Nunca dê garantias de retorno ou prometa resultados
 - Sempre recomende consulta a um assessor certificado (CFP/CGA) para decisões importantes
 - Siga as diretrizes da CVM sobre educação financeira
 - Se receber dados de mercado no contexto, use-os para enriquecer a resposta
-- Respostas curtas e diretas para WhatsApp — evite textos muito longos`;
+- Seja empático e encoraje o usuário a continuar aprendendo sobre investimentos
+
+FORMATAÇÃO — REGRAS CRÍTICAS:
+- Você está respondendo via WhatsApp — use APENAS a formatação do WhatsApp
+- Para negrito use *texto* (asterisco)
+- Para itálico use _texto_ (underline)
+- NUNCA use markdown como ##, ###, **, __, - lista com traço, ou qualquer outro símbolo markdown
+- NUNCA use bullets com hífen (-) — use • ou números (1. 2. 3.) se precisar listar
+- Respostas curtas e diretas — máximo 3 a 4 parágrafos
+- Separe os parágrafos com uma linha em branco
+- Use emojis com moderação para tornar a leitura mais agradável 😊`;
 }
 
 async function askClaude(userMessage, marketContext = '', perfil = 'moderado', historico = []) {
-    const contextBlock = marketContext
+  const contextBlock = marketContext
     ? `\n\nDados de mercado atuais:\n${marketContext}`
     : '';
 
-    const systemPrompt = buildSystemPrompt(perfil);
+  const systemPrompt = buildSystemPrompt(perfil);
 
   // Monta o array de mensagens com histórico + mensagem atual
-    const messages = [
+  const messages = [
     ...historico,
     {
-        role: 'user',
-        content: userMessage + contextBlock,
+      role: 'user',
+      content: userMessage + contextBlock,
     },
-    ];
+  ];
 
-    const response = await client.messages.create({
+  const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: systemPrompt,
     messages,
-    });
+  });
 
-    return response.content[0].text;
+  return response.content[0].text;
 }
 
 module.exports = { askClaude };
