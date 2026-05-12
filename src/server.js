@@ -6,7 +6,7 @@ app.use(express.json());
 
 const cors = require('cors');
 app.use(cors({
-  origin: ['https://payrollia.vercel.app', 'http://localhost:3001'],
+  origin: ['https://payrollia.vercel.app', 'https://payrollia.com.br', 'http://localhost:3001'],
   credentials: true,
 }));
 
@@ -18,7 +18,6 @@ app.use((req, res, next) => {
 
 // Rotas de webhook - WhatsApp e AbacatePay
 app.use('/webhook', require('./webhook/whatsapp'));
-
 app.use('/webhook/abacatepay', require('./webhook/abacatepay'));
 
 app.post('/teste', async (req, res) => {
@@ -59,16 +58,13 @@ app.post('/admin/login', async (req, res) => {
 
     const admin = rows[0];
 
-    // Por ora compara direto (sem bcrypt ainda, igual ao fluxo atual)
     if (admin.password_hash !== password) {
       return res.status(401).json({ error: 'Senha incorreta' });
     }
 
-    // Gera token simples UUID
     const crypto = require('crypto');
     const token = crypto.randomUUID();
 
-    // Salva token no banco com expiração de 7 dias
     await pool.query(
       `UPDATE admin_users SET session_token = $1, token_expires_at = NOW() + INTERVAL '7 days' WHERE id = $2`,
       [token, admin.id]
@@ -107,7 +103,7 @@ app.get('/admin/verify', async (req, res) => {
     const { pool } = require('./db/index');
     const { rows } = await pool.query(
       `SELECT id, name, email, role FROM admin_users 
-       WHERE session_token = $1 AND token_expires_at > NOW() AND active = true`,
+      WHERE session_token = $1 AND token_expires_at > NOW() AND active = true`,
       [token]
     );
 
@@ -164,17 +160,17 @@ app.get('/admin/stats', async (req, res) => {
       pool.query(`SELECT perfil, COUNT(*) as total FROM investor_profiles GROUP BY perfil`),
       pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '1 day'`),
       pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '7 days'`),
-      pool.query(`SELECT plan, COUNT(*) as total FROM tenants GROUP BY plan`),
+      // ✅ CORRIGIDO: busca planos da tabela users, não tenants
+      pool.query(`SELECT plano, COUNT(*) as total FROM users GROUP BY plano`),
     ]);
 
-    // MRR calculado pelos planos
+    // ✅ CORRIGIDO: usa coluna plano da tabela users
     const planValues = { free: 0, pro: 12.9, business: 29.9 };
     let mrr = 0;
     planos.rows.forEach(p => {
-      mrr += (planValues[p.plan] || 0) * parseInt(p.total);
+      mrr += (planValues[p.plano] || 0) * parseInt(p.total);
     });
 
-    // Onboarding completo
     const onboarding = await pool.query(`
       SELECT 
         COUNT(*) FILTER (WHERE onboarding_complete = true) as completos,
@@ -182,7 +178,6 @@ app.get('/admin/stats', async (req, res) => {
       FROM users
     `);
 
-    // Novos por dia nos últimos 7 dias (para gráfico)
     const crescimento = await pool.query(`
       SELECT DATE(created_at) as dia, COUNT(*) as total
       FROM users
@@ -215,7 +210,8 @@ app.get('/admin/clientes', async (req, res) => {
     const { pool } = require('./db/index');
     const { rows } = await pool.query(`
       SELECT u.id, u.phone, u.name, u.onboarding_complete, u.created_at,
-             ip.perfil, ip.pontuacao
+              u.plano, u.plano_status, u.plano_atualizado_em, u.perguntas_usadas,
+              ip.perfil, ip.pontuacao
       FROM users u
       LEFT JOIN investor_profiles ip ON ip.user_id = u.id
       ORDER BY u.created_at DESC
