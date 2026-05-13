@@ -1,22 +1,8 @@
-import API_URL from '@/lib/api';
+'use client';
 
-async function getStats() {
-  try {
-    const res = await fetch(`${API_URL}/admin/stats`, { cache: 'no-store' });
-    return res.json();
-  } catch {
-    return { totalUsuarios: 0, totalMensagens: 0, perfis: [], crescimento: [] };
-  }
-}
+import { useEffect, useState } from 'react';
 
-async function getClientes() {
-  try {
-    const res = await fetch(`${API_URL}/admin/clientes`, { cache: 'no-store' });
-    return res.json();
-  } catch {
-    return [];
-  }
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const PERFIL_COR: Record<string, string> = {
   conservador: '#3b82f6',
@@ -24,25 +10,144 @@ const PERFIL_COR: Record<string, string> = {
   arrojado: '#ef4444',
 };
 
+const PLANO_PRECO: Record<string, number> = {
+  free: 0,
+  pro: 12.9,
+  business: 29.9,
+};
+
 type Cliente = {
   id: string;
   name: string;
   phone: string;
   perfil: string;
+  plano: string;
   onboarding_complete: boolean;
   created_at: string;
 };
 
-export default async function DashboardPage() {
-  const [stats, clientes] = await Promise.all([getStats(), getClientes()]);
+// ─── Gráfico de barras SVG ────────────────────────────────────────────────────
+function BarChart({
+  dados,
+  cor,
+  formatLabel,
+}: {
+  dados: { label: string; value: number }[];
+  cor: string;
+  formatLabel: (v: number) => string;
+}) {
+  const maxVal = Math.max(...dados.map((d) => d.value), 1);
+  const W = 100;
+  const H = 80;
+  const barW = Math.min(18, (W / dados.length) * 0.55);
+  const gap = W / dados.length;
 
-  const completos = clientes.filter((c: Cliente) => c.onboarding_complete).length;
+  return (
+    <svg viewBox={`0 0 100 ${H + 20}`} style={{ width: '100%', height: 140, overflow: 'visible' }}>
+      {/* Grid lines */}
+      {[0.25, 0.5, 0.75, 1].map((f) => (
+        <line
+          key={f}
+          x1={0}
+          y1={H - f * H}
+          x2={100}
+          y2={H - f * H}
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth={0.5}
+        />
+      ))}
+
+      {dados.map((d, i) => {
+        const x = gap * i + gap / 2;
+        const barH = maxVal > 0 ? (d.value / maxVal) * H : 0;
+        const y = H - barH;
+
+        return (
+          <g key={i}>
+            {/* Barra */}
+            <rect
+              x={x - barW / 2}
+              y={y}
+              width={barW}
+              height={barH}
+              rx={2}
+              fill={cor}
+              opacity={0.8}
+            />
+            {/* Valor no topo */}
+            {d.value > 0 && (
+              <text
+                x={x}
+                y={y - 2}
+                textAnchor="middle"
+                fontSize={4}
+                fill="rgba(255,255,255,0.5)"
+              >
+                {formatLabel(d.value)}
+              </text>
+            )}
+            {/* Label embaixo */}
+            <text
+              x={x}
+              y={H + 7}
+              textAnchor="middle"
+              fontSize={3.5}
+              fill="rgba(255,255,255,0.25)"
+            >
+              {d.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ─── Gerar últimos N meses ────────────────────────────────────────────────────
+function gerarMeses(n: number) {
+  const meses = [];
+  const agora = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(agora.getFullYear(), agora.getMonth() - i, 1);
+    meses.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+    });
+  }
+  return meses;
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<any>(null);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_URL}/admin/stats`, { cache: 'no-store' }).then((r) => r.json()).catch(() => ({})),
+      fetch(`${API_URL}/admin/clientes`, { cache: 'no-store' }).then((r) => r.json()).catch(() => []),
+    ]).then(([s, c]) => {
+      setStats(s);
+      setClientes(Array.isArray(c) ? c : []);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'rgba(255,255,255,0.2)', fontSize: 14 }}>
+        Carregando...
+      </div>
+    );
+  }
+
+  const completos = clientes.filter((c) => c.onboarding_complete).length;
   const pendentes = clientes.length - completos;
   const taxaConversao = clientes.length > 0 ? Math.round((completos / clientes.length) * 100) : 0;
-  const totalPerfis = stats.perfis?.reduce((a: number, p: { total: string }) => a + parseInt(p.total), 0) ?? 0;
+  const totalPerfis = stats?.perfis?.reduce((a: number, p: { total: string }) => a + parseInt(p.total), 0) ?? 0;
 
   const cards = [
-    { label: 'Usuários totais', value: clientes.length, sub: `+${clientes.filter((c: Cliente) => { const d = new Date(c.created_at); const n = new Date(); return d.getMonth() === n.getMonth(); }).length} este mês`, color: '#fff' },
+    { label: 'Usuários totais', value: clientes.length, sub: `+${clientes.filter((c) => { const d = new Date(c.created_at); const n = new Date(); return d.getMonth() === n.getMonth(); }).length} este mês`, color: '#fff' },
     { label: 'Onboarding completo', value: completos, sub: `${taxaConversao}% de conversão`, color: '#4ade80' },
     { label: 'Pendentes', value: pendentes, sub: 'aguardando suitability', color: '#fbbf24' },
     { label: 'Perfis calculados', value: totalPerfis, sub: 'suitability válido', color: '#a78bfa' },
@@ -57,6 +162,27 @@ export default async function DashboardPage() {
     { name: 'WhatsApp Webhook', status: 'configurado', color: '#fbbf24' },
     { name: 'AbacatePay', status: 'ativo', color: '#4ade80' },
   ];
+
+  // ── Dados para gráfico de usuários (últimos 7 dias) ──────────────────────
+  const ultimos7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const found = stats?.crescimento?.find((c: { dia: string; total: string }) => c.dia?.slice(0, 10) === key);
+    return { label, value: found ? parseInt(found.total) : 0 };
+  });
+
+  // ── Dados para gráfico de receita (últimos 6 meses) ──────────────────────
+  const meses = gerarMeses(6);
+  const receitaMensal = meses.map((mes) => {
+    const clientesMes = clientes.filter((c) => {
+      const key = new Date(c.created_at).toISOString().slice(0, 7);
+      return key === mes.key && c.plano && c.plano !== 'free';
+    });
+    const receita = clientesMes.reduce((acc, c) => acc + (PLANO_PRECO[c.plano] || 0), 0);
+    return { label: mes.label, value: receita };
+  });
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -86,6 +212,46 @@ export default async function DashboardPage() {
         ))}
       </div>
 
+      {/* Gráficos */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }} className="grid-2">
+
+        {/* Gráfico — Receita mensal */}
+        <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 20, background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>Receita Mensal</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', marginTop: 2 }}>últimos 6 meses</p>
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#4ade80' }}>
+              R$ {receitaMensal.reduce((a, b) => a + b.value, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+          <BarChart
+            dados={receitaMensal}
+            cor="#4ade80"
+            formatLabel={(v) => `R$${v.toFixed(0)}`}
+          />
+        </div>
+
+        {/* Gráfico — Novos usuários */}
+        <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 20, background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>Novos Usuários</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', marginTop: 2 }}>últimos 7 dias</p>
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#a78bfa' }}>
+              {ultimos7.reduce((a, b) => a + b.value, 0)} total
+            </span>
+          </div>
+          <BarChart
+            dados={ultimos7}
+            cor="#a78bfa"
+            formatLabel={(v) => `${v}`}
+          />
+        </div>
+      </div>
+
       {/* Perfis + Funil */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }} className="grid-2">
 
@@ -98,7 +264,7 @@ export default async function DashboardPage() {
             <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Nenhum perfil calculado ainda.</p>
           ) : (
             ['conservador', 'moderado', 'arrojado'].map((perfil) => {
-              const found = stats.perfis?.find((p: { perfil: string }) => p.perfil === perfil);
+              const found = stats?.perfis?.find((p: { perfil: string }) => p.perfil === perfil);
               const total = found ? parseInt(found.total) : 0;
               const pct = totalPerfis > 0 ? Math.round((total / totalPerfis) * 100) : 0;
               return (
@@ -117,7 +283,7 @@ export default async function DashboardPage() {
           {totalPerfis > 0 && (
             <div style={{ marginTop: 16, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
               {['conservador', 'moderado', 'arrojado'].map((perfil) => {
-                const found = stats.perfis?.find((p: { perfil: string; total: string }) => p.perfil === perfil);
+                const found = stats?.perfis?.find((p: { perfil: string; total: string }) => p.perfil === perfil);
                 const total = found ? parseInt(found.total) : 0;
                 return (
                   <div key={perfil} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -165,7 +331,7 @@ export default async function DashboardPage() {
           {clientes.length === 0 ? (
             <div style={{ padding: '32px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Nenhum cliente ainda.</div>
           ) : (
-            clientes.slice(0, 5).map((c: Cliente, i: number) => (
+            clientes.slice(0, 5).map((c, i) => (
               <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: c.perfil ? `${PERFIL_COR[c.perfil]}18` : 'rgba(255,255,255,0.05)', border: `1px solid ${c.perfil ? PERFIL_COR[c.perfil] + '35' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: c.perfil ? PERFIL_COR[c.perfil] : 'rgba(255,255,255,0.35)', flexShrink: 0 }}>
                   {c.name ? c.name.charAt(0).toUpperCase() : '?'}
