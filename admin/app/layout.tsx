@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
+import LayoutClient from '@/components/LayoutClient';
 
 export const metadata: Metadata = {
   title: 'Payroll Admin',
@@ -16,11 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body style={{ display: 'flex', background: '#000', minHeight: '100vh', margin: 0, color: '#fff' }}>
-        <Sidebar />
-        <main style={{ flex: 1, overflow: 'auto', padding: '32px 28px', minWidth: 0 }}>
-          {children}
-        </main>
+      <body style={{ margin: 0 }}>
+        <LayoutClient>{children}</LayoutClient>
       </body>
     </html>
   );
