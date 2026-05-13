@@ -103,7 +103,7 @@ app.get('/admin/verify', async (req, res) => {
     const { pool } = require('./db/index');
     const { rows } = await pool.query(
       `SELECT id, name, email, role FROM admin_users 
-      WHERE session_token = $1 AND token_expires_at > NOW() AND active = true`,
+       WHERE session_token = $1 AND token_expires_at > NOW() AND active = true`,
       [token]
     );
 
@@ -160,11 +160,9 @@ app.get('/admin/stats', async (req, res) => {
       pool.query(`SELECT perfil, COUNT(*) as total FROM investor_profiles GROUP BY perfil`),
       pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '1 day'`),
       pool.query(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '7 days'`),
-      // ✅ CORRIGIDO: busca planos da tabela users, não tenants
       pool.query(`SELECT plano, COUNT(*) as total FROM users GROUP BY plano`),
     ]);
 
-    // ✅ CORRIGIDO: usa coluna plano da tabela users
     const planValues = { free: 0, pro: 12.9, business: 29.9 };
     let mrr = 0;
     planos.rows.forEach(p => {
@@ -210,8 +208,8 @@ app.get('/admin/clientes', async (req, res) => {
     const { pool } = require('./db/index');
     const { rows } = await pool.query(`
       SELECT u.id, u.phone, u.name, u.onboarding_complete, u.created_at,
-              u.plano, u.plano_status, u.plano_atualizado_em, u.perguntas_usadas,
-              ip.perfil, ip.pontuacao
+             u.plano, u.plano_status, u.plano_atualizado_em, u.perguntas_usadas,
+             ip.perfil, ip.pontuacao
       FROM users u
       LEFT JOIN investor_profiles ip ON ip.user_id = u.id
       ORDER BY u.created_at DESC
@@ -220,6 +218,121 @@ app.get('/admin/clientes', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ─── ADMIN: Cupons — Listar ──────────────────────────────────────────────────
+app.get('/admin/cupons', async (req, res) => {
+  try {
+    const response = await fetch('https://api.abacatepay.com/v2/coupons/list?limit=100', {
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return res.status(500).json({ erro: 'Erro ao listar cupons', detalhe: data });
+    }
+
+    res.json(data.data || []);
+  } catch (error) {
+    console.error('[Cupons] Erro ao listar:', error.message);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ─── ADMIN: Cupons — Criar ───────────────────────────────────────────────────
+app.post('/admin/cupons', async (req, res) => {
+  try {
+    const { code, discount, maxRedeems, notes } = req.body;
+
+    if (!code || !discount) {
+      return res.status(400).json({ erro: 'Código e desconto são obrigatórios' });
+    }
+
+    const body = {
+      code: code.toUpperCase().trim(),
+      discountKind: 'PERCENTAGE',
+      discount: parseFloat(discount),
+      maxRedeems: maxRedeems ? parseInt(maxRedeems) : -1,
+      notes: notes || '',
+    };
+
+    const response = await fetch('https://api.abacatepay.com/v2/coupons/create', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return res.status(400).json({ erro: 'Erro ao criar cupom', detalhe: data });
+    }
+
+    console.log(`[Cupons] Cupom criado: ${body.code} — ${body.discount}%`);
+    res.json({ ok: true, cupom: data.data });
+  } catch (error) {
+    console.error('[Cupons] Erro ao criar:', error.message);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ─── ADMIN: Cupons — Alternar status (ativar/desativar) ──────────────────────
+app.patch('/admin/cupons/:id/toggle', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const response = await fetch(`https://api.abacatepay.com/v2/coupons/toggle/${id}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return res.status(400).json({ erro: 'Erro ao alternar status', detalhe: data });
+    }
+
+    res.json({ ok: true, cupom: data.data });
+  } catch (error) {
+    console.error('[Cupons] Erro ao alternar:', error.message);
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ─── ADMIN: Cupons — Deletar ─────────────────────────────────────────────────
+app.delete('/admin/cupons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const response = await fetch(`https://api.abacatepay.com/v2/coupons/delete/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return res.status(400).json({ erro: 'Erro ao deletar cupom', detalhe: data });
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[Cupons] Erro ao deletar:', error.message);
     res.status(500).json({ erro: error.message });
   }
 });
