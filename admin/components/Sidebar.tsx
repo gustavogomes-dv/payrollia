@@ -152,7 +152,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   // Fecha mobile ao navegar
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => { setMobileOpen (false); }, [pathname]);
 
   // ESC fecha mobile
   useEffect(() => {
