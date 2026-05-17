@@ -11,7 +11,7 @@
 
 -----
 
-## ✨ Funcionalidades
+##  Funcionalidades
 
 - 💬 **Chatbot WhatsApp** — responde mensagens via Meta Cloud API em tempo real
 - 📊 **Suitability CVM** — questionário de 8 perguntas para calcular o perfil do investidor
@@ -23,7 +23,7 @@
 
 -----
 
-## 🏗️ Stack Técnica
+##  Stack Técnica
 
 |Camada          |Tecnologia          |
 |----------------|--------------------|
@@ -40,7 +40,7 @@
 
 -----
 
-## 📁 Estrutura do Projeto
+##  Estrutura do Projeto
 
 ```
 Payroll/
@@ -80,7 +80,7 @@ Payroll/
 
 -----
 
-## 🚀 Como rodar localmente
+##  Como rodar localmente
 
 ### Pré-requisitos
 
@@ -99,24 +99,6 @@ cd payrollia
 
 ```bash
 docker-compose up -d
-```
-
-### 3. Configure as variáveis de ambiente
-
-Crie um arquivo `.env` dentro de `src/`:
-
-```env
-PORT=3000
-ANTHROPIC_API_KEY=sk-ant-...
-WHATSAPP_TOKEN=seu_token_meta
-WHATSAPP_PHONE_ID=seu_phone_id
-WHATSAPP_VERIFY_TOKEN=payroll_webhook_secret_2024
-BRAPI_TOKEN=seu_token_brapi
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/payroll
-REDIS_URL=redis://localhost:6379
-TENANT_ID_DEFAULT=00000000-0000-0000-0000-000000000001
-NODE_ENV=development
-ABACATEPAY_API_KEY=abc_prod_...
 ```
 
 ### 4. Instale as dependências e rode o backend
@@ -150,7 +132,7 @@ O deploy é automático a cada `git push` — Railway para o backend e Vercel pa
 
 -----
 
-## 💬 Fluxo do Bot
+##  Fluxo do Bot
 
 ```
 Usuário envia mensagem
@@ -174,7 +156,7 @@ Pagamento confirmado → plano ativado automaticamente
 
 -----
 
-## 💰 Planos
+##  Planos
 
 |Plano   |Preço      |Perguntas          |
 |--------|-----------|-------------------|
@@ -184,7 +166,7 @@ Pagamento confirmado → plano ativado automaticamente
 
 -----
 
-## 📊 Painel Administrativo
+##  Painel Administrativo
 
 - **Home** — métricas gerais, MRR, novos usuários
 - **Clientes** — listagem com perfil e status de onboarding
@@ -194,7 +176,7 @@ Pagamento confirmado → plano ativado automaticamente
 
 -----
 
-## 🔐 Variáveis de Ambiente (Railway)
+##  Variáveis de Ambiente (Railway)
 
 |Variável               |Descrição                                   |
 |-----------------------|--------------------------------------------|
@@ -210,7 +192,7 @@ Pagamento confirmado → plano ativado automaticamente
 
 -----
 
-## 🏢 Empresa
+##  Empresa
 
 **Payroll Chatbot Inova Simples (I.S.)**
 CNPJ: 66.618.119/0001-30
@@ -218,6 +200,6 @@ Número do bot: (35) 91014-8222
 
 -----
 
-## 📄 Licença
+##  Licença
 
 Projeto privado — todos os direitos reservados.
