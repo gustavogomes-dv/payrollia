@@ -1,4 +1,4 @@
-# 🤖 Payroll — Assistente de Investimentos via WhatsApp
+#  Payroll — Assistente de Investimentos via WhatsApp
 
 > Chatbot educacional de investimentos integrado ao WhatsApp, com análise de perfil de investidor (Suitability CVM), motor de IA e arquitetura SaaS multi-tenant.
 
