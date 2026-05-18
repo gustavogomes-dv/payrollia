@@ -2,6 +2,7 @@ const PERGUNTAS = require('./perguntas');
 const calcularPerfil = require('./calcularPerfil');
 const { askClaude } = require('../ai/claude');
 const { getMarketData } = require('../services/market');
+const { getOrCreateReferralCode, getReferralByCode } = require('../db/referrals');
 const {
   updateSession,
   updateUser,
@@ -16,7 +17,7 @@ const LIMITE_FREE = 3;
 
 const DISCLAIMER = `⚠️ *Aviso Importante — CVM*
 
-O *Payrollia* é um assistente *educacional* de investimentos. Não somos uma corretora, banco ou assessor de investimentos certificado pela CVM.
+O *Payroll* é um assistente *educacional* de investimentos. Não somos uma corretora, banco ou assessor de investimentos certificado pela CVM.
 
 As informações fornecidas *não constituem recomendação de investimento*. Antes de tomar qualquer decisão financeira, consulte um profissional devidamente certificado.
 
@@ -41,11 +42,11 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
       returnUrl: 'https://payrollia.com.br',
       completionUrl: 'https://payrollia.com.br',
       metadata: {
-
         phone: user.phone,
         plano: plano,
-  },
-};
+        cupom_indicacao: cupom || null,
+      },
+    };
 
     if (cupom) body.coupons = [cupom];
 
@@ -141,10 +142,17 @@ async function processarFluxo(user, session, mensagem) {
   const step = session.step || 'inicio';
   const context = session.context || {};
 
+  // ── Comando global de indicação — funciona em qualquer step após onboarding ──
+  if (step === 'concluido' && ['indicar', 'indicacao', 'indicação', 'referral'].includes(normalizar(texto))) {
+    const referral = await getOrCreateReferralCode(user);
+    const expira = new Date(referral.expires_at).toLocaleDateString('pt-BR');
+    return `🎁 *Programa de Indicação Payroll*\n\nCompartilhe seu código com amigos e ambos ganham!\n\n*Seu código:* \`${referral.code}\`\n\n✅ Seu amigo ganha *10% de desconto* na primeira assinatura\n🎉 Você ganha *50% de desconto* quando ele assinar\n\n⏰ Código válido até *${expira}*\n\nBasta enviar este código para seu amigo. Quando ele for assinar, é só digitar o código no campo de cupom!\n\n_Quanto mais amigos você indicar, mais você economiza!_ 😊`;
+  }
+
   // ── Boas-vindas ──────────────────────────────────────────────────────────────
   if (step === 'inicio') {
     await updateSession(user.id, 'aguardando_nome', {});
-    return `👋 Olá! Bem-vindo ao *Payrollia*, seu assistente educacional de investimentos.\n\nEstou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.\n\nPara começar, qual é o seu nome?`;
+    return `👋 Olá! Bem-vindo ao *Payroll*, seu assistente educacional de investimentos.\n\nEstou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.\n\nPara começar, qual é o seu nome?`;
   }
 
   // ── Coleta o nome ────────────────────────────────────────────────────────────
@@ -157,7 +165,7 @@ async function processarFluxo(user, session, mensagem) {
   // ── Confirmação do disclaimer ────────────────────────────────────────────────
   if (step === 'aguardando_disclaimer') {
     if (texto !== '1') {
-      return `Para utilizar o Payrollia, é necessário confirmar que você leu e compreendeu o aviso acima. Responda *1* para continuar.`;
+      return `Para utilizar o Payroll, é necessário confirmar que você leu e compreendeu o aviso acima. Responda *1* para continuar.`;
     }
     await updateSession(user.id, 'suitability_0', { ...context, respostas: {} });
     return `Ótimo! Antes de começar, vou fazer *8 perguntas rápidas* para identificar o seu perfil de investidor.\n\nIsso leva menos de 2 minutos. Vamos lá! 🚀\n\n${PERGUNTAS[0].texto}`;
@@ -208,7 +216,9 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
 💬 Experimente perguntar:
 • "O que é Tesouro Direto?"
 • "Como funcionam os FIIs?"
-• "Qual a diferença entre CDB e LCI?"`;
+• "Qual a diferença entre CDB e LCI?"
+
+💡 Dica: Digite *INDICAR* para ganhar descontos indicando amigos!`;
   }
 
   // ── Chat principal ────────────────────────────────────────────────────────────
@@ -217,7 +227,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
     const saudacoes = ['oi', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
     if (saudacoes.includes(normalizar(texto))) {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
-      return `Olá novamente! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊`;
+      return `Olá novamente! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`;
     }
 
     if (atingiuLimite(user)) {
@@ -252,7 +262,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
     }
     const plano = texto === '1' ? 'pro' : 'business';
     await updateSession(user.id, 'aguardando_cupom', { plano });
-    return `Ótima escolha! 🎉\n\nVocê possui algum *cupom de desconto*?\n\nResponda *SIM* ou *NÃO*.`;
+    return `Ótima escolha! 🎉\n\nVocê possui algum *cupom de desconto* ou *código de indicação*?\n\nResponda *SIM* ou *NÃO*.`;
   }
 
   // ── Upgrade: tem cupom? ───────────────────────────────────────────────────────
@@ -262,7 +272,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
 
     if (resposta === 'sim' || resposta === 's') {
       await updateSession(user.id, 'aguardando_codigo_cupom', { plano });
-      return `Ótimo! Por favor, digite o seu código de cupom:`;
+      return `Ótimo! Por favor, digite o seu código de cupom ou de indicação:`;
     }
 
     if (resposta === 'nao' || resposta === 'n' || resposta === 'no') {
@@ -281,16 +291,42 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
     return `Por favor, responda *SIM* ou *NÃO*.`;
   }
 
-  // ── Upgrade: validar código do cupom ─────────────────────────────────────────
+  // ── Upgrade: validar código do cupom ou indicação ─────────────────────────────
   if (step === 'aguardando_codigo_cupom') {
     const { plano } = context;
     const cupom = texto.toUpperCase().trim();
 
+    // Verifica se é código de indicação (formato XXXX-XXXX)
+    const referral = await getReferralByCode(cupom);
+    if (referral) {
+      // Não pode usar o próprio código
+      if (referral.referrer_id === user.id) {
+        return `Ops! Você não pode usar o seu próprio código de indicação. 😅\n\nDigite outro código ou responda *NÃO* para continuar sem desconto.`;
+      }
+
+      // Cria cupom de 10% na AbacatePay para esse usuário
+      const cupomIndicacao = await criarCupomIndicacao(cupom, referral.discount_pct);
+
+      if (!cupomIndicacao) {
+        // Se não conseguir criar o cupom, prossegue sem desconto
+        const link = await gerarLinkPagamento(user, plano);
+        await updateSession(user.id, 'aguardando_pagamento', { plano, referral_code: cupom });
+        const nomeExibicao = plano === 'pro' ? 'Pro — R$ 12,90/mês' : 'Business — R$ 29,90/mês';
+        return `Código de indicação reconhecido! Porém tive um problema ao aplicar o desconto. Acesse o link para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado. ✅`;
+      }
+
+      const link = await gerarLinkPagamento(user, plano, cupomIndicacao);
+      await updateSession(user.id, 'aguardando_pagamento', { plano, referral_code: cupom });
+      const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
+      return `🎉 Código de indicação *${cupom}* aplicado!\n\nVocê ganhou *${referral.discount_pct}% de desconto* na assinatura!\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
+    }
+
+    // Tenta como cupom normal da AbacatePay
     const cupomValido = await validarCupom(cupom);
 
     if (!cupomValido) {
       await updateSession(user.id, 'aguardando_cupom', { plano });
-      return `O cupom *${cupom}* não foi encontrado ou já expirou. 😕\n\nDeseja tentar outro cupom? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
+      return `O código *${cupom}* não foi encontrado ou já expirou. 😕\n\nDeseja tentar outro código? Responda *SIM* ou *NÃO* para continuar sem desconto.`;
     }
 
     const link = await gerarLinkPagamento(user, plano, cupom);
@@ -323,6 +359,33 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
 
   // ── Fallback ──────────────────────────────────────────────────────────────────
   return `Não consegui entender sua mensagem. Poderia reformulá-la? 😊`;
+}
+
+// ─── Criar cupom temporário de indicação na AbacatePay ───────────────────────
+async function criarCupomIndicacao(referralCode, discountPct) {
+  try {
+    const code = `IND-${referralCode}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+    const response = await fetch('https://api.abacatepay.com/v2/coupons/create', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        discountKind: 'PERCENTAGE',
+        discount: discountPct,
+        maxRedeems: 1,
+        notes: `Indicação ${referralCode}`,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) return null;
+    return data.data.id;
+  } catch {
+    return null;
+  }
 }
 
 module.exports = processarFluxo;

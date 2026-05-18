@@ -1,9 +1,8 @@
 // src/webhook/abacatepay.js
-// Recebe eventos de pagamento do AbacatePay e atualiza o plano do usuário
-
 const express = require('express');
 const router = express.Router();
 const { pool, redisClient } = require('../db/index');
+const { getReferralByCode, incrementReferralUse } = require('../db/referrals');
 
 const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'payroll_abacate_secret_2024';
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
@@ -34,9 +33,7 @@ async function enviarWhatsApp(telefone, mensagem) {
         }),
       }
     );
-
     const data = await response.json();
-
     if (!response.ok) {
       console.error('[AbacatePay] Erro ao enviar WhatsApp:', data);
     } else {
@@ -68,7 +65,6 @@ async function atualizarPlano(userId, tenantId, phone, plano, status) {
     [plano, status, userId]
   );
 
-  // Invalida o cache do Redis para o usuário
   try {
     await redisClient.del(`user:${tenantId}:${phone}`);
     console.log(`[AbacatePay] Cache Redis invalidado para ${phone}`);
@@ -79,16 +75,61 @@ async function atualizarPlano(userId, tenantId, phone, plano, status) {
   console.log(`[AbacatePay] Usuário ${userId} → plano ${plano} (${status})`);
 }
 
+// ─── Recompensar indicador com cupom de 50% ───────────────────────────────────
+async function recompensarIndicador(referralCode) {
+  try {
+    const referral = await getReferralByCode(referralCode);
+    if (!referral) return;
+
+    // Incrementa uso do código
+    await incrementReferralUse(referralCode);
+
+    // Cria cupom de recompensa de 50% na AbacatePay
+    const code = `RECOMP-${referralCode}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+    const response = await fetch('https://api.abacatepay.com/v2/coupons/create', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        discountKind: 'PERCENTAGE',
+        discount: referral.reward_pct,
+        maxRedeems: 1,
+        notes: `Recompensa por indicação ${referralCode}`,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      console.error('[Referral] Erro ao criar cupom de recompensa:', data);
+      return;
+    }
+
+    const expira = new Date();
+    expira.setDate(expira.getDate() + 30);
+    const expiraStr = expira.toLocaleDateString('pt-BR');
+
+    // Envia mensagem para o indicador
+    await enviarWhatsApp(
+      referral.referrer_phone,
+      `🎉 *Parabéns, ${referral.referrer_name || 'amigo'}!*\n\nSeu amigo acabou de assinar o Payroll usando seu código de indicação!\n\nComo recompensa, você ganhou *${referral.reward_pct}% de desconto* na sua próxima assinatura! 🥳\n\n*Seu cupom de recompensa:* \`${code}\`\n\n⏰ Válido até *${expiraStr}*\n\nBasta usar esse código na próxima vez que for assinar ou renovar!`
+    );
+
+    console.log(`[Referral] Indicador ${referral.referrer_phone} recompensado com cupom ${code}`);
+  } catch (err) {
+    console.error('[Referral] Erro ao recompensar indicador:', err.message);
+  }
+}
+
 // ─── Endpoint POST /webhook/abacatepay ────────────────────────────────────────
 router.post('/', async (req, res) => {
-  // Responde 200 imediatamente para o AbacatePay não reenviar o evento
   res.sendStatus(200);
 
   try {
-    // Log completo para debug
     console.log(`[AbacatePay] ⚡ Evento recebido: "${req.body?.event}"`);
 
-    // Valida o secret
     if (!validarAssinatura(req)) {
       console.warn('[AbacatePay] Assinatura inválida — requisição ignorada');
       return;
@@ -101,10 +142,11 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    // ── checkout.completed — pagamento ONE_TIME confirmado ───────────────────
+    // ── checkout.completed ───────────────────────────────────────────────────
     if (event === 'checkout.completed') {
       const phone = data?.checkout?.metadata?.phone;
       const plano = data?.checkout?.metadata?.plano;
+      const referralCode = data?.checkout?.metadata?.cupom_indicacao;
 
       if (!phone) {
         console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
@@ -112,15 +154,13 @@ router.post('/', async (req, res) => {
       }
 
       const user = await buscarUsuarioPorPhone(phone);
-
       if (!user) {
-        console.warn(`[AbacatePay] Usuário não encontrado para o telefone ${phone}`);
+        console.warn(`[AbacatePay] Usuário não encontrado para ${phone}`);
         return;
       }
 
       await atualizarPlano(user.id, user.tenant_id, phone, plano || 'pro', 'active');
 
-      // Volta a sessão para 'concluido' para o usuário poder usar o bot normalmente
       await pool.query(
         `UPDATE sessions SET step = 'concluido', context = '{}' WHERE user_id = $1`,
         [user.id]
@@ -129,15 +169,22 @@ router.post('/', async (req, res) => {
       const nomeExibicao = plano === 'business' ? 'Business' : 'Pro';
       await enviarWhatsApp(
         phone,
-        `✅ *Pagamento confirmado!*\n\nSeu plano *${nomeExibicao}* está ativo agora! 🎉\n\nPode continuar perguntando sobre investimentos sem limites. Aproveite! 😊`
+        `✅ *Pagamento confirmado!*\n\nSeu plano *${nomeExibicao}* está ativo agora! 🎉\n\nPode continuar perguntando sobre investimentos sem limites. Aproveite! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`
       );
+
+      // Recompensa o indicador se houver código de indicação
+      if (referralCode) {
+        await recompensarIndicador(referralCode);
+      }
+
       return;
     }
 
-    // ── subscription.completed — assinatura recorrente confirmada ────────────
+    // ── subscription.completed ───────────────────────────────────────────────
     if (event === 'subscription.completed') {
-      const phone = data?.checkout?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano;
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
+      const referralCode = data?.checkout?.metadata?.cupom_indicacao || data?.metadata?.cupom_indicacao;
 
       if (!phone) return;
 
@@ -156,91 +203,56 @@ router.post('/', async (req, res) => {
         phone,
         `✅ *Pagamento confirmado!*\n\nSeu plano *${nomeExibicao}* está ativo agora! 🎉\n\nPode continuar perguntando sobre investimentos sem limites. Aproveite! 😊`
       );
-      return;
-    }
 
-    // ── subscription.renewed — renovação mensal ───────────────────────────────
-    if (event === 'subscription.renewed') {
-      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
-
-      if (!phone) return;
-
-      const user = await buscarUsuarioPorPhone(phone);
-      if (!user) return;
-
-      await atualizarPlano(user.id, user.tenant_id, phone, user.plano || 'pro', 'active');
-
-      await enviarWhatsApp(
-        phone,
-        `🔄 *Assinatura renovada!*\n\nSeu plano foi renovado com sucesso. Continue aprendendo sobre investimentos! 😊`
-      );
-      return;
-    }
-
-    // ── subscription.cancelled — cancelamento ─────────────────────────────────
-    if (event === 'subscription.cancelled') {
-      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
-
-      if (!phone) return;
-
-      const user = await buscarUsuarioPorPhone(phone);
-      if (!user) return;
-
-      await atualizarPlano(user.id, user.tenant_id, phone, 'free', 'cancelled');
-
-      await enviarWhatsApp(
-        phone,
-        `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado e você voltou para o plano *Gratuito* (3 perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`
-      );
-      return;
-    }
-
-    // ── subscription.payment_failed — pagamento falhou ────────────────────────
-    if (event === 'subscription.payment_failed') {
-      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
-
-      if (!phone) return;
-
-      const user = await buscarUsuarioPorPhone(phone);
-      if (!user) return;
-
-      await pool.query(
-        `UPDATE users SET plano_status = 'payment_failed' WHERE id = $1`,
-        [user.id]
-      );
-
-      try {
-        await redisClient.del(`user:${user.tenant_id}:${phone}`);
-      } catch (err) {
-        console.warn('[AbacatePay] Erro ao invalidar cache Redis:', err.message);
+      if (referralCode) {
+        await recompensarIndicador(referralCode);
       }
 
-      await enviarWhatsApp(
-        phone,
-        `⚠️ *Pagamento não processado.*\n\nTivemos um problema com o pagamento da sua assinatura. Por favor, verifique seus dados de pagamento para não perder o acesso. 🙏`
-      );
       return;
     }
 
-    // ── checkout.refunded — reembolso ─────────────────────────────────────────
-    if (event === 'checkout.refunded') {
+    // ── subscription.renewed ────────────────────────────────────────────────
+    if (event === 'subscription.renewed') {
       const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
-
       if (!phone) return;
-
       const user = await buscarUsuarioPorPhone(phone);
       if (!user) return;
+      await atualizarPlano(user.id, user.tenant_id, phone, user.plano || 'pro', 'active');
+      await enviarWhatsApp(phone, `🔄 *Assinatura renovada!*\n\nSeu plano foi renovado com sucesso. Continue aprendendo sobre investimentos! 😊`);
+      return;
+    }
 
+    // ── subscription.cancelled ───────────────────────────────────────────────
+    if (event === 'subscription.cancelled') {
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      if (!phone) return;
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+      await atualizarPlano(user.id, user.tenant_id, phone, 'free', 'cancelled');
+      await enviarWhatsApp(phone, `😔 *Assinatura cancelada.*\n\nSeu plano foi cancelado e você voltou para o plano *Gratuito* (3 perguntas/mês).\n\nQualquer hora que quiser reativar, é só me chamar aqui! 💚`);
+      return;
+    }
+
+    // ── subscription.payment_failed ─────────────────────────────────────────
+    if (event === 'subscription.payment_failed') {
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      if (!phone) return;
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
+      await pool.query(`UPDATE users SET plano_status = 'payment_failed' WHERE id = $1`, [user.id]);
+      try { await redisClient.del(`user:${user.tenant_id}:${phone}`); } catch {}
+      await enviarWhatsApp(phone, `⚠️ *Pagamento não processado.*\n\nTivemos um problema com o pagamento da sua assinatura. Por favor, verifique seus dados de pagamento para não perder o acesso. 🙏`);
+      return;
+    }
+
+    // ── checkout.refunded ────────────────────────────────────────────────────
+    if (event === 'checkout.refunded') {
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      if (!phone) return;
+      const user = await buscarUsuarioPorPhone(phone);
+      if (!user) return;
       await atualizarPlano(user.id, user.tenant_id, phone, 'free', 'refunded');
-
-      await enviarWhatsApp(
-        phone,
-        `↩️ *Reembolso processado.*\n\nSeu pagamento foi estornado e você voltou para o plano *Gratuito*.\n\nSe tiver dúvidas, entre em contato com o suporte. 🙏`
-      );
+      await enviarWhatsApp(phone, `↩️ *Reembolso processado.*\n\nSeu pagamento foi estornado e você voltou para o plano *Gratuito*.\n\nSe tiver dúvidas, entre em contato com o suporte. 🙏`);
       return;
     }
 
