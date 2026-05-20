@@ -271,7 +271,7 @@ export default function LandingPage() {
 
         <div className="quote-section">
           <p className="quote-text">&ldquo;Finalmente entendo a diferença entre CDB e Tesouro Direto — sem precisar assistir horas de vídeo no YouTube.&rdquo;</p>
-          <p className="quote-by">Usuário beta · Plano Pro · Minas Gerais</p>
+          <p className="quote-by">Plano free · Plano Pro · Plano Business</p>
         </div>
 
         <section className="pricing-section" id="planos">
@@ -378,7 +378,7 @@ export default function LandingPage() {
               </div>
               <p className="footer-brand-name">Payroll Chatbot</p>
               <p className="footer-brand-p">Educação financeira no WhatsApp.</p>
-              <p className="footer-cnpj">CNPJ 66.618.119/0001-30<br />Payroll Chatbot Inova Simples I.S.<br />Guapé · Minas Gerais · Brasil</p>
+              <p className="footer-cnpj">CNPJ 66.618.119/0001-30<br />Payroll Chatbot Inova Simples I.S.<br />Brasil</p>
             </div>
             <div>
               <p className="footer-col-h">Produto</p>
