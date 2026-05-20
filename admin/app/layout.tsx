@@ -3,7 +3,7 @@ import './globals.css';
 import LayoutClient from '@/components/LayoutClient';
 
 export const metadata: Metadata = {
-  title: 'Payroll Admin',
+  title: 'Payroll Chatbot',
   description: 'Painel administrativo do Payroll',
   other: {
     'facebook-domain-verification': 'exumchcnorrm7d34k7twvl7xlym123',
