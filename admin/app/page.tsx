@@ -363,7 +363,7 @@ export default function LandingPage() {
               <h3 className="legal-h2">6. Limitação de responsabilidade</h3>
               <p className="legal-p">O Payroll Chatbot não se responsabiliza por decisões financeiras tomadas com base no conteúdo educacional do assistente. Cotações e indicadores são fornecidos por fontes externas e podem apresentar atrasos.</p>
               <h3 className="legal-h2">7. Foro</h3>
-              <p className="legal-p">Fica eleito o foro da comarca de <strong>Guapé, Minas Gerais</strong> para dirimir eventuais conflitos.</p>
+              <p className="legal-p">Fica eleito o foro da comarca de <strong>Brasil</strong> para dirimir eventuais conflitos.</p>
             </div>
           </div>
         </section>
