@@ -64,6 +64,7 @@ export default function LandingPage() {
         .p8{left:50%;top:60px;animation-delay:-2.2s;animation-duration:5.4s}
         .p9{right:18%;top:52px;animation-delay:-.5s;animation-duration:6.8s}
         .p10{right:1%;top:58px;animation-delay:-3.5s;animation-duration:5.9s}
+        .p11{right:32%;top:55px;animation-delay:-2.8s;animation-duration:6.1s}
         @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
         .ico-wpp{background:#25D366;color:white}.ico-claude{background:#D97757;color:white;font-size:11px}
         .ico-b3{background:var(--aubergine);color:var(--lime);font-size:9px}.ico-bcb{background:#005CA9;color:white;font-size:8px}
