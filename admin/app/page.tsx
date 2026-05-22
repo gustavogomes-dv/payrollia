@@ -47,31 +47,25 @@ export default function LandingPage() {
         .mb-b strong{font-weight:600;color:var(--aubergine)}
         .mono{font-family:'Geist Mono',monospace;color:var(--aubergine-500);font-weight:500}
         .chat-disclaimer{margin-top:14px;padding:10px 14px;background:rgba(200,242,96,.08);border:1px solid rgba(200,242,96,.12);border-radius:8px;font-size:11px;color:rgba(250,248,244,.4);line-height:1.5}
-        .integrations{background:var(--bone2);border-bottom:1px solid var(--bone3);padding:24px 0;overflow:hidden;position:relative}
-        .int-label{text-align:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
-        .pills-field{position:relative;height:100px;max-width:900px;margin:0 auto}
-        .pill{position:absolute;display:flex;align-items:center;gap:7px;background:white;border:1px solid var(--bone3);border-radius:100px;padding:6px 14px 6px 8px;box-shadow:0 2px 10px rgba(20,16,42,.05);white-space:nowrap;animation:pfloat 6s ease-in-out infinite}
-        .pill-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-        .pill-icon svg{width:13px;height:13px}
-        .pill-text{font-family:'Geist',sans-serif;font-size:12px;font-weight:500;color:var(--ink)}
-        .p1{left:4%;top:5px;animation-delay:0s;animation-duration:5.5s}
-        .p2{left:22%;top:0;animation-delay:-1.2s;animation-duration:6.2s}
-        .p3{left:42%;top:8px;animation-delay:-2.5s;animation-duration:5.8s}
-        .p4{right:22%;top:2px;animation-delay:-.8s;animation-duration:6.5s}
-        .p5{right:3%;top:10px;animation-delay:-3.2s;animation-duration:6s}
-        .p6{left:8%;top:58px;animation-delay:-1.8s;animation-duration:5.6s}
-        .p7{left:28%;top:55px;animation-delay:-4s;animation-duration:6.3s}
-        .p8{left:50%;top:60px;animation-delay:-2.2s;animation-duration:5.4s}
-        .p9{right:18%;top:52px;animation-delay:-.5s;animation-duration:6.8s}
-        .p10{right:1%;top:58px;animation-delay:-3.5s;animation-duration:5.9s}
-        @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-        .ico-wpp{background:#25D366;color:white}.ico-claude{background:#D97757;color:white;font-size:11px}
-        .ico-b3{background:var(--aubergine);color:var(--lime);font-size:9px}.ico-bcb{background:#005CA9;color:white;font-size:8px}
-        .ico-brapi{background:#0EA5E9;color:white}.ico-cvm{background:#1B4332;color:white;font-size:8px}
-        .ico-pix{background:#32BCAD;color:white}.ico-railway{background:var(--ink);color:white}
-        .ico-node{background:#339933;color:white}.ico-pg{background:#336791;color:white}
-        .ico-abacate{background:#22C55E;color:white;font-size:13px}
-        .p11{left:68%;top:55px;animation-delay:-2.8s;animation-duration:6.1s}
+        .integrations{background:var(--bone2);border-bottom:1px solid var(--bone3);padding:28px 48px}
+        .int-label{text-align:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+        .pills-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:860px;margin:0 auto}
+        .pill{display:inline-flex;align-items:center;gap:8px;background:white;border:1px solid var(--bone3);border-radius:100px;padding:7px 16px 7px 8px;box-shadow:0 1px 6px rgba(20,16,42,.05);white-space:nowrap;animation:pfloat 6s ease-in-out infinite}
+        .pill-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--bone2)}
+        .pill-icon img{width:20px;height:20px;object-fit:contain}
+        .pill-text{font-family:'Geist',sans-serif;font-size:13px;font-weight:500;color:var(--ink)}
+        .p1{animation-delay:0s;animation-duration:5.5s}
+        .p2{animation-delay:-1.2s;animation-duration:6.2s}
+        .p3{animation-delay:-2.5s;animation-duration:5.8s}
+        .p4{animation-delay:-.8s;animation-duration:6.5s}
+        .p5{animation-delay:-3.2s;animation-duration:6s}
+        .p6{animation-delay:-1.8s;animation-duration:5.6s}
+        .p7{animation-delay:-4s;animation-duration:6.3s}
+        .p8{animation-delay:-2.2s;animation-duration:5.4s}
+        .p9{animation-delay:-.5s;animation-duration:6.8s}
+        .p10{animation-delay:-3.5s;animation-duration:5.9s}
+        .p11{animation-delay:-2.8s;animation-duration:6.1s}
+        @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .section{padding:88px 48px}
         .section-alt{background:var(--bone2)}
         .sec-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
@@ -161,7 +155,8 @@ export default function LandingPage() {
           .cta-section{grid-template-columns:1fr;padding:56px 20px}.cta-h{font-size:36px}
           .legal-cols{grid-template-columns:1fr}
           .footer-top{grid-template-columns:1fr 1fr}.footer{padding:40px 20px 24px}
-          .integrations{padding:16px 0}.pills-field{height:80px}.pill{padding:5px 10px 5px 6px}.pill-text{font-size:11px}.pill-icon{width:20px;height:20px;font-size:8px}.pill-icon svg{width:11px;height:11px}
+          .integrations{padding:20px 16px}.pills-grid{gap:8px;justify-content:center}
+          .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}.pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
         }
       `}</style>
@@ -191,7 +186,7 @@ export default function LandingPage() {
               <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
               <a href="#planos" className="btn-outline">Ver planos</a>
             </div>
-            <p className="hero-note">(35) 91014-8222 · gratuito para começar · sem cartão</p>
+            <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
           </div>
           <div>
             <div className="chat-wrap">
@@ -213,18 +208,18 @@ export default function LandingPage() {
         {/* INTEGRATIONS */}
         <div className="integrations">
           <p className="int-label">Integrado com</p>
-          <div className="pills-field">
-            <div className="pill p1"><div className="pill-icon ico-wpp"><svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg></div><span className="pill-text">WhatsApp</span></div>
-            <div className="pill p2"><div className="pill-icon ico-claude">✦</div><span className="pill-text">Claude AI</span></div>
-            <div className="pill p3"><div className="pill-icon ico-b3">B3</div><span className="pill-text">B3 Bolsa</span></div>
-            <div className="pill p4"><div className="pill-icon ico-bcb">BCB</div><span className="pill-text">Banco Central</span></div>
-            <div className="pill p5"><div className="pill-icon ico-brapi"><svg viewBox="0 0 24 24" fill="white"><path d="M3 13h4v8H3zm7-4h4v12h-4zm7-6h4v18h-4z"/></svg></div><span className="pill-text">Brapi</span></div>
-            <div className="pill p6"><div className="pill-icon ico-cvm">CVM</div><span className="pill-text">Suitability</span></div>
-            <div className="pill p7"><div className="pill-icon ico-pix"><svg viewBox="0 0 24 24" fill="white"><path d="M13.635 18.257l4.28-4.28a.39.39 0 000-.552l-4.28-4.28a2.26 2.26 0 00-3.192 0l-4.28 4.28a.39.39 0 000 .552l4.28 4.28a2.26 2.26 0 003.192 0z"/></svg></div><span className="pill-text">PIX</span></div>
-            <div className="pill p8"><div className="pill-icon ico-railway"><svg viewBox="0 0 24 24" fill="white"><rect x="5" y="3" width="14" height="18" rx="3.5"/><circle cx="12" cy="16" r="1.8" fill="#14102A"/></svg></div><span className="pill-text">Railway</span></div>
-            <div className="pill p9"><div className="pill-icon ico-node"><svg viewBox="0 0 24 24" fill="white"><path d="M12 21.985c-.275 0-.532-.074-.772-.202l-2.439-1.448c-.365-.203-.182-.275-.066-.316.487-.17.583-.209 1.1-.508.054-.031.125-.019.182.015l1.872 1.115c.067.037.162.037.224 0l7.3-4.224c.067-.038.11-.118.11-.199V7.993c0-.084-.043-.162-.113-.2l-7.293-4.218c-.068-.038-.158-.038-.224 0L4.584 7.793c-.07.04-.113.12-.113.202v8.425c0 .08.043.16.11.198l2 1.157c1.082.542 1.746-.096 1.746-.735V8.72c0-.118.094-.21.21-.21h.927c.114 0 .21.092.21.21v8.32c0 1.44-.783 2.267-2.147 2.267-.42 0-.752 0-1.675-.456l-1.916-1.106a1.55 1.55 0 01-.772-1.343V7.993c0-.552.293-1.066.772-1.343l7.3-4.224a1.597 1.597 0 011.544 0l7.3 4.224c.478.277.772.79.772 1.343v8.425c0 .553-.294 1.066-.772 1.343l-7.3 4.224c-.24.128-.5.2-.772.2z"/></svg></div><span className="pill-text">Node.js</span></div>
-            <div className="pill p10"><div className="pill-icon ico-pg"><svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div><span className="pill-text">PostgreSQL</span></div>
-            <div className="pill p11"><div className="pill-icon ico-abacate">🥑</div><span className="pill-text">AbacatePay</span></div>
+          <div className="pills-grid">
+            <div className="pill p1"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=whatsapp.com&sz=64" alt="WhatsApp" /></div><span className="pill-text">WhatsApp</span></div>
+            <div className="pill p2"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&sz=64" alt="Claude AI" /></div><span className="pill-text">Claude AI</span></div>
+            <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3" /></div><span className="pill-text">B3 Bolsa</span></div>
+            <div className="pill p4"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=bcb.gov.br&sz=64" alt="BCB" /></div><span className="pill-text">Banco Central</span></div>
+            <div className="pill p5"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=brapi.dev&sz=64" alt="Brapi" /></div><span className="pill-text">Brapi</span></div>
+            <div className="pill p6"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=cvm.gov.br&sz=64" alt="CVM" /></div><span className="pill-text">Suitability CVM</span></div>
+            <div className="pill p7"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anbima.com.br&sz=64" alt="ANBIMA" /></div><span className="pill-text">ANBIMA</span></div>
+            <div className="pill p8"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=abacatepay.com&sz=64" alt="AbacatePay" /></div><span className="pill-text">AbacatePay</span></div>
+            <div className="pill p9"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=railway.app&sz=64" alt="Railway" /></div><span className="pill-text">Railway</span></div>
+            <div className="pill p10"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=postgresql.org&sz=64" alt="PostgreSQL" /></div><span className="pill-text">PostgreSQL</span></div>
+            <div className="pill p11"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=redis.io&sz=64" alt="Redis" /></div><span className="pill-text">Redis</span></div>
           </div>
         </div>
 
