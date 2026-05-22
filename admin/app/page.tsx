@@ -64,13 +64,14 @@ export default function LandingPage() {
         .p8{left:50%;top:60px;animation-delay:-2.2s;animation-duration:5.4s}
         .p9{right:18%;top:52px;animation-delay:-.5s;animation-duration:6.8s}
         .p10{right:1%;top:58px;animation-delay:-3.5s;animation-duration:5.9s}
-        .p11{right:32%;top:40px;animation-delay:-2.8s;animation-duration:6.1s}
         @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
         .ico-wpp{background:#25D366;color:white}.ico-claude{background:#D97757;color:white;font-size:11px}
         .ico-b3{background:var(--aubergine);color:var(--lime);font-size:9px}.ico-bcb{background:#005CA9;color:white;font-size:8px}
         .ico-brapi{background:#0EA5E9;color:white}.ico-cvm{background:#1B4332;color:white;font-size:8px}
         .ico-pix{background:#32BCAD;color:white}.ico-railway{background:var(--ink);color:white}
         .ico-node{background:#339933;color:white}.ico-pg{background:#336791;color:white}
+        .ico-abacate{background:#22C55E;color:white;font-size:13px}
+        .p11{left:68%;top:55px;animation-delay:-2.8s;animation-duration:6.1s}
         .section{padding:88px 48px}
         .section-alt{background:var(--bone2)}
         .sec-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
@@ -277,7 +278,7 @@ export default function LandingPage() {
         {/* QUOTE */}
         <div className="quote-section">
           <p className="quote-text">&ldquo;Finalmente entendo a diferença entre CDB e Tesouro Direto — sem precisar assistir horas de vídeo no YouTube.&rdquo;</p>
-          <p className="quote-by">Plano Free · Plano Pro · Plano Business</p>
+          <p className="quote-by">Usuário beta · Plano Pro · Minas Gerais</p>
         </div>
 
         {/* PRICING */}
@@ -358,7 +359,7 @@ export default function LandingPage() {
               <h2 className="legal-h1" id="termos" style={{marginTop:"48px"}}>Termos de uso</h2>
               <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> Ao utilizar o Payroll Chatbot, você concorda com os termos abaixo.</p>
               <div className="legal-box">
-                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021. Consulte um profissional certificado antes de tomar qualquer decisão financeira.</p>
+                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021 e estão em conformidade com as diretrizes da ANBIMA para educação financeira. Rentabilidade passada não é garantia de retorno futuro. Consulte um profissional certificado (CFP/CGA) antes de tomar qualquer decisão financeira.</p>
               </div>
               <h3 className="legal-h2">1. O serviço</h3>
               <p className="legal-p">O Payroll Chatbot é um assistente virtual de educação financeira que utiliza inteligência artificial para responder dúvidas sobre investimentos, fornecer dados de mercado e auxiliar no entendimento do perfil de investidor. O conteúdo é estritamente educacional.</p>
@@ -410,7 +411,7 @@ export default function LandingPage() {
           </div>
           <div className="footer-bottom">
             <span className="footer-copy">&copy; 2026 Payroll Chatbot · Todos os direitos reservados</span>
-            <span className="footer-cvm">Serviço de educação financeira. Não constitui recomendação de investimento conforme Resolução CVM n.º 20/2021. Decisões de investimento são de exclusiva responsabilidade do investidor.</span>
+            <span className="footer-cvm">Serviço de educação financeira em conformidade com a Resolução CVM n.º 20/2021 e diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro. Decisões de investimento são de exclusiva responsabilidade do investidor.</span>
           </div>
         </footer>
       </div>
