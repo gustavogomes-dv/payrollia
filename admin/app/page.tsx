@@ -211,10 +211,10 @@ export default function LandingPage() {
           <div className="pills-grid">
             <div className="pill p1"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=whatsapp.com&sz=64" alt="WhatsApp" /></div><span className="pill-text">WhatsApp</span></div>
             <div className="pill p2"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&sz=64" alt="Claude AI" /></div><span className="pill-text">Claude AI</span></div>
-            <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3" /></div><span className="pill-text">B3 Bolsa</span></div>
+            <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3" /></div><span className="pill-text">B3</span></div>
             <div className="pill p4"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=bcb.gov.br&sz=64" alt="BCB" /></div><span className="pill-text">Banco Central</span></div>
             <div className="pill p5"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=brapi.dev&sz=64" alt="Brapi" /></div><span className="pill-text">Brapi</span></div>
-            <div className="pill p6"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=cvm.gov.br&sz=64" alt="CVM" /></div><span className="pill-text">Suitability CVM</span></div>
+            <div className="pill p6"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=cvm.gov.br&sz=64" alt="CVM" /></div><span className="pill-text">CVM</span></div>
             <div className="pill p7"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anbima.com.br&sz=64" alt="ANBIMA" /></div><span className="pill-text">ANBIMA</span></div>
             <div className="pill p8"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=abacatepay.com&sz=64" alt="AbacatePay" /></div><span className="pill-text">AbacatePay</span></div>
             <div className="pill p9"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=railway.app&sz=64" alt="Railway" /></div><span className="pill-text">Railway</span></div>
@@ -273,7 +273,7 @@ export default function LandingPage() {
         {/* QUOTE */}
         <div className="quote-section">
           <p className="quote-text">&ldquo;Finalmente entendo a diferença entre CDB e Tesouro Direto — sem precisar assistir horas de vídeo no YouTube.&rdquo;</p>
-          <p className="quote-by">Usuário beta · Plano Pro · Minas Gerais</p>
+          <p className="quote-by">Plano Free · Plano Pro · Plano Business</p>
         </div>
 
         {/* PRICING */}
@@ -309,7 +309,7 @@ export default function LandingPage() {
               <div className="plan-cycle">/mês · via PIX</div>
               <ul className="plan-items">
                 <li>Tudo do plano Pro</li><li>Prioridade de resposta</li><li>Programa de indicação</li>
-                <li>Cupons de desconto</li><li>Suporte prioritário</li>
+                <li>Suporte prioritário</li>
               </ul>
               <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-ghost" target="_blank" rel="noopener noreferrer">Assinar Business</a>
             </div>
