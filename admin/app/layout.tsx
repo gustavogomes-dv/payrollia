@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import LayoutClient from "@/components/LayoutClient";
 import "./globals.css";
+// admin/app/layout.tsx — dentro do <head> ou via next/font
+// + Instrument Serif via Google Fonts link no layout
 
 export const metadata: Metadata = {
   title: "Payroll Chatbot — Educação financeira no WhatsApp",
@@ -40,8 +42,7 @@ export default function RootLayout({
       <head>
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
-        />
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
       </head>
       <body>
         <LayoutClient>{children}</LayoutClient>
