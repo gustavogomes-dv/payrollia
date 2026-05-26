@@ -337,6 +337,140 @@ app.delete('/admin/cupons/:id', async (req, res) => {
   }
 });
 
+// ─── Rotas administrativas de CRUD de clientes ───────────────────────────────
+// Adicionar em src/server.js após as rotas existentes de /admin
+
+const express = require('express');
+
+// Cole este bloco no seu src/server.js, logo após as rotas /admin/cupons existentes:
+
+// ── GET /admin/clientes — já existe, mantém
+// ── POST /admin/clientes — criar usuário manualmente
+app.post('/admin/clientes', async (req, res) => {
+  const { name, phone, perfil, plano = 'free' } = req.body;
+  if (!phone) return res.status(400).json({ erro: 'Telefone é obrigatório.' });
+
+  // Formata telefone (remove não numéricos)
+  const phoneClean = phone.replace(/\D/g, '');
+
+  try {
+    const existing = await pool.query('SELECT id FROM users WHERE phone = $1 AND tenant_id = $2', [phoneClean, process.env.TENANT_ID_DEFAULT]);
+    if (existing.rows.length > 0) return res.status(409).json({ erro: 'Usuário com esse telefone já existe.' });
+
+    const result = await pool.query(
+      `INSERT INTO users (phone, name, perfil, plano, plano_status, onboarding_complete, tenant_id, created_at)
+       VALUES ($1, $2, $3, $4, 'active', $5, $6, NOW())
+       RETURNING *`,
+      [phoneClean, name || null, perfil || null, plano, !!perfil, process.env.TENANT_ID_DEFAULT]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao criar cliente:', err);
+    res.status(500).json({ erro: 'Erro interno ao criar cliente.' });
+  }
+});
+
+// ── PUT /admin/clientes/:id — editar usuário
+app.put('/admin/clientes/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, phone, perfil, plano, plano_status, onboarding_complete } = req.body;
+
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (name !== undefined)               { fields.push(`name = $${idx++}`);               values.push(name); }
+    if (phone !== undefined)              { fields.push(`phone = $${idx++}`);              values.push(phone.replace(/\D/g, '')); }
+    if (perfil !== undefined)             { fields.push(`perfil = $${idx++}`);             values.push(perfil || null); }
+    if (plano !== undefined)              { fields.push(`plano = $${idx++}`);              values.push(plano); }
+    if (plano_status !== undefined)       { fields.push(`plano_status = $${idx++}`);       values.push(plano_status); }
+    if (onboarding_complete !== undefined){ fields.push(`onboarding_complete = $${idx++}`); values.push(!!onboarding_complete); }
+
+    if (fields.length === 0) return res.status(400).json({ erro: 'Nenhum campo para atualizar.' });
+
+    values.push(id);
+    const result = await pool.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    // Invalida cache Redis
+    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
+    if (redis) await redis.del(cacheKey);
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao editar cliente:', err);
+    res.status(500).json({ erro: 'Erro interno ao editar cliente.' });
+  }
+});
+
+// ── DELETE /admin/clientes/:id — excluir usuário
+app.delete('/admin/clientes/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Busca o usuário antes de deletar (para invalidar cache)
+    const user = await pool.query('SELECT phone FROM users WHERE id = $1', [id]);
+    if (user.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    // Deleta em cascata (sessions, investor_profiles via CASCADE no schema)
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+    // Invalida cache Redis
+    const cacheKey = `user:${user.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
+    if (redis) await redis.del(cacheKey);
+
+    res.json({ ok: true, mensagem: 'Usuário removido com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao deletar cliente:', err);
+    res.status(500).json({ erro: 'Erro interno ao deletar cliente.' });
+  }
+});
+
+// ── PATCH /admin/clientes/:id/reset-perguntas — zera contador de perguntas
+app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      'UPDATE users SET perguntas_usadas = 0 WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
+    if (redis) await redis.del(cacheKey);
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// ── PATCH /admin/clientes/:id/plano — altera plano manualmente
+app.patch('/admin/clientes/:id/plano', async (req, res) => {
+  const { id } = req.params;
+  const { plano } = req.body;
+  if (!['free', 'pro', 'business'].includes(plano)) return res.status(400).json({ erro: 'Plano inválido.' });
+
+  try {
+    const result = await pool.query(
+      `UPDATE users SET plano = $1, plano_status = 'active', plano_atualizado_em = NOW() WHERE id = $2 RETURNING *`,
+      [plano, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
+    if (redis) await redis.del(cacheKey);
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor na porta ${PORT}`);
