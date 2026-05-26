@@ -1,51 +1,46 @@
 'use client';
 import { useState } from 'react';
 
-const TABS = ['Geral', 'IA & Motor', 'WhatsApp', 'Suitability', 'Integrações', 'Danger Zone'];
-
-const perfilCor: Record<string, string> = {
-  conservador: '#3b82f6',
-  moderado: '#f59e0b',
-  arrojado: '#ef4444',
+const C = {
+  aubergine: '#2D2356', aubergineL: '#4A3B82', lime: '#C8F260',
+  coral: '#FF8A65', bone: '#FAF8F4', bone2: '#F2EFE8',
+  bone3: '#E8E4DA', bone4: '#D4CFC2', mute: '#6B6478', ink: '#14102A',
+  success: '#4ADE80', warning: '#FBBF24', danger: '#F87171',
 };
 
-function Badge({ label, color }: { label: string; color: string }) {
-  return (
-    <span style={{
-      fontSize: 11, padding: '2px 10px', borderRadius: 20,
-      color, background: `${color}15`, border: `1px solid ${color}30`,
-    }}>{label}</span>
-  );
-}
+const TABS = ['Geral', 'IA & Motor', 'WhatsApp', 'Suitability', 'Integrações', 'Danger Zone'];
 
-function Row({ label, value, mono, type = 'text' }: { label: string; value: string; mono?: boolean; type?: string }) {
+const PERFIL_COR: Record<string, { text: string; bg: string; border: string }> = {
+  conservador: { text: C.aubergine, bg: 'rgba(45,35,86,0.08)', border: 'rgba(45,35,86,0.18)' },
+  moderado:    { text: '#C4612A', bg: 'rgba(255,138,101,0.08)', border: 'rgba(255,138,101,0.2)' },
+  arrojado:    { text: '#5A7A10', bg: 'rgba(200,242,96,0.12)', border: 'rgba(200,242,96,0.3)' },
+};
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '13px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)',
-    }}>
-      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{label}</span>
-      {type === 'password' ? (
-        <span style={{ fontFamily: 'monospace', fontSize: 13, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em' }}>{'•'.repeat(24)}</span>
-      ) : type === 'status' ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-          <span style={{ fontSize: 13, color: '#4ade80' }}>{value}</span>
-        </div>
-      ) : (
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontFamily: mono ? 'monospace' : 'inherit' }}>{value}</span>
-      )}
+    <div style={{ background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
+      <div style={{ padding: '10px 20px', borderBottom: `1px solid ${C.bone3}`, background: C.bone }}>
+        <p style={{ fontSize: 10, fontFamily: "'Geist Mono', monospace", color: C.mute, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{title}</p>
+      </div>
+      {children}
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Row({ label, value, mono, type = 'text' }: { label: string; value?: string; mono?: boolean; type?: string }) {
   return (
-    <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden', background: 'rgba(255,255,255,0.02)', marginBottom: 16 }}>
-      <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.01)' }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{title}</p>
-      </div>
-      {children}
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 20px', borderBottom: `1px solid ${C.bone3}` }}>
+      <span style={{ fontSize: 13, color: C.mute }}>{label}</span>
+      {type === 'password' ? (
+        <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 13, color: C.bone4, letterSpacing: '0.1em' }}>{'•'.repeat(20)}</span>
+      ) : type === 'status' ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.success }} />
+          <span style={{ fontSize: 13, color: C.success }}>{value}</span>
+        </div>
+      ) : (
+        <span style={{ fontSize: 13, color: C.ink, fontFamily: mono ? "'Geist Mono', monospace" : 'inherit', fontWeight: mono ? 400 : 500 }}>{value}</span>
+      )}
     </div>
   );
 }
@@ -55,39 +50,41 @@ export default function ConfigPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
+
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px' }}>Config</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginTop: 4 }}>
-            Configurações e parâmetros do sistema Payroll
-          </p>
+          <h1 style={{ fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 38, fontWeight: 400, color: C.aubergine, lineHeight: 1, marginBottom: 6 }}>Config.</h1>
+          <p style={{ color: C.mute, fontSize: 13 }}>Configurações e parâmetros do sistema Payroll</p>
         </div>
-        <Badge label="somente leitura" color="rgba(255,255,255,0.4)" />
+        <span style={{ fontSize: 10, padding: '4px 12px', borderRadius: 20, color: C.mute, background: C.bone3, fontFamily: "'Geist Mono', monospace", letterSpacing: '0.06em' }}>
+          somente leitura
+        </span>
       </div>
 
       {/* Aviso */}
-      <div style={{
-        border: '1px solid rgba(251,191,36,0.2)', borderRadius: 10,
-        padding: '12px 16px', background: 'rgba(251,191,36,0.03)',
-        marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10,
-      }}>
-        <span>⚠️</span>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
-          Para alterar configurações, edite o arquivo{' '}
-          <code style={{ fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.06)', padding: '1px 6px', borderRadius: 4 }}>src/.env</code>
-          {' '}e reinicie o servidor.
+      <div style={{ border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 10, padding: '12px 16px', background: 'rgba(251,191,36,0.04)', marginBottom: 22, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={C.warning} strokeWidth={2} strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p style={{ fontSize: 13, color: C.mute }}>
+          Para alterar configurações, edite{' '}
+          <code style={{ fontFamily: "'Geist Mono', monospace", color: C.ink, background: C.bone3, padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>src/.env</code>
+          {' '}e reinicie o servidor no Railway.
         </p>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 24, background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
-        {TABS.map((tab) => (
+      <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: C.bone2, borderRadius: 10, padding: 4, border: `1px solid ${C.bone3}`, overflowX: 'auto' }}>
+        {TABS.map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            flex: 1, padding: '8px 4px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            fontSize: 12, fontWeight: 500, transition: 'all 0.15s',
-            background: activeTab === tab ? (tab === 'Danger Zone' ? '#ef444420' : 'rgba(255,255,255,0.08)') : 'transparent',
-            color: activeTab === tab ? (tab === 'Danger Zone' ? '#ef4444' : '#fff') : 'rgba(255,255,255,0.35)',
+            flex: 1, padding: '8px 6px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            fontSize: 12, fontWeight: 500, transition: 'all 0.15s', whiteSpace: 'nowrap',
+            background: activeTab === tab
+              ? (tab === 'Danger Zone' ? 'rgba(248,113,113,0.1)' : C.aubergine)
+              : 'transparent',
+            color: activeTab === tab
+              ? (tab === 'Danger Zone' ? C.danger : C.lime)
+              : (tab === 'Danger Zone' ? C.danger : C.mute),
+            fontFamily: 'inherit',
           }}>
             {tab}
           </button>
@@ -96,120 +93,109 @@ export default function ConfigPage() {
 
       {/* Tab: Geral */}
       {activeTab === 'Geral' && (
-        <div>
+        <>
           <Section title="Identidade">
             <Row label="Nome do produto" value="Payroll" />
             <Row label="Versão" value="1.0.0-dev" />
-            <Row label="Ambiente" value="development" />
-            <Row label="Tenant padrão" value="Payroll Default" />
+            <Row label="Ambiente" value="production" />
             <Row label="Tenant ID" value="00000000-0000-0000-0000-000000000001" mono />
           </Section>
           <Section title="Banco de Dados">
-            <Row label="Host" value="localhost" />
-            <Row label="Porta" value="5432" />
-            <Row label="Banco" value="payroll" />
-            <Row label="Usuário" value="payroll" />
-            <Row label="Senha" value="" type="password" />
-            <Row label="Status PostgreSQL" value="Conectado" type="status" />
+            <Row label="Provider" value="PostgreSQL 15 — Railway" />
+            <Row label="Senha" type="password" />
+            <Row label="Status" value="Conectado" type="status" />
           </Section>
           <Section title="Cache">
-            <Row label="Redis Host" value="localhost" />
-            <Row label="Redis Porta" value="6379" />
-            <Row label="TTL do cache de usuário" value="1 hora" />
-            <Row label="Status Redis" value="Conectado" type="status" />
+            <Row label="Provider" value="Redis 7 — Railway" />
+            <Row label="TTL usuário" value="1 hora" />
+            <Row label="Status" value="Conectado" type="status" />
           </Section>
-        </div>
+        </>
       )}
 
       {/* Tab: IA & Motor */}
       {activeTab === 'IA & Motor' && (
-        <div>
+        <>
           <Section title="Modelo de IA">
             <Row label="Provedor" value="Anthropic" />
             <Row label="Modelo" value="claude-sonnet-4-6" mono />
-            <Row label="Máximo de tokens por resposta" value="1.024" />
-            <Row label="Chave API" value="" type="password" />
-            <Row label="Status API" value="Operacional" type="status" />
+            <Row label="Máximo de tokens" value="1.024 por resposta" />
+            <Row label="Chave API" type="password" />
+            <Row label="Status" value="Operacional" type="status" />
           </Section>
           <Section title="Comportamento">
-            <Row label="Mensagens no histórico de contexto" value="Últimas 10" />
-            <Row label="Detecção de ticker automática" value="Ativada" />
-            <Row label="Cotações em tempo real (Brapi)" value="Ativada" />
-            <Row label="Idioma padrão" value="Português (BR)" />
+            <Row label="Mensagens no contexto" value="Últimas 10" />
+            <Row label="Detecção de ticker" value="Ativada (automática)" />
+            <Row label="Cotações em tempo real" value="Ativada (Brapi)" />
+            <Row label="Idioma" value="Português (BR)" />
           </Section>
           <Section title="Perfis de Investidor">
-            {['conservador', 'moderado', 'arrojado'].map((perfil) => (
-              <div key={perfil} style={{
-                padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                display: 'flex', alignItems: 'center', gap: 16,
-              }}>
-                <span style={{
-                  fontSize: 12, padding: '3px 10px', borderRadius: 20, flexShrink: 0,
-                  color: perfilCor[perfil], background: `${perfilCor[perfil]}15`,
-                  border: `1px solid ${perfilCor[perfil]}30`, textTransform: 'capitalize',
-                }}>{perfil}</span>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
-                  {{
-                    conservador: 'Tom cauteloso. Foco em renda fixa, Tesouro Direto, CDBs e LCI/LCA.',
-                    moderado: 'Tom equilibrado. Foco em fundos multimercado, FIIs e ETFs.',
-                    arrojado: 'Tom analítico. Foco em renda variável, ações, ETFs e diversificação global.',
-                  }[perfil]}
-                </p>
-              </div>
-            ))}
+            {['conservador', 'moderado', 'arrojado'].map(perfil => {
+              const cor = PERFIL_COR[perfil];
+              return (
+                <div key={perfil} style={{ padding: '14px 20px', borderBottom: `1px solid ${C.bone3}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, color: cor.text, background: cor.bg, border: `1px solid ${cor.border}`, textTransform: 'capitalize', flexShrink: 0, fontWeight: 500 }}>
+                    {perfil}
+                  </span>
+                  <p style={{ fontSize: 12, color: C.mute, lineHeight: 1.5 }}>
+                    {{ conservador: 'Tom cauteloso. Foco em renda fixa, Tesouro Direto, CDBs e LCI/LCA.', moderado: 'Tom equilibrado. Foco em fundos multimercado, FIIs e ETFs.', arrojado: 'Tom analítico. Foco em renda variável, ações, ETFs e diversificação global.' }[perfil]}
+                  </p>
+                </div>
+              );
+            })}
           </Section>
           <Section title="Diretrizes CVM">
             <Row label="Bot educacional (não recomenda ativos)" value="Ativado" />
             <Row label="Disclaimer obrigatório no onboarding" value="Ativado" />
-            <Row label="Sugere consulta a assessor certificado" value="Ativado" />
+            <Row label="Sugere consulta a assessor" value="Ativado" />
           </Section>
-        </div>
+        </>
       )}
 
       {/* Tab: WhatsApp */}
       {activeTab === 'WhatsApp' && (
-        <div>
+        <>
           <Section title="Meta Cloud API">
-            <Row label="App ID" value="1247920137088263" mono />
-            <Row label="Phone Number ID" value="1132009879990618" mono />
-            <Row label="WhatsApp Business Account ID" value="2420630865075595" mono />
-            <Row label="Access Token" value="" type="password" />
-            <Row label="Verify Token" value="" type="password" />
+            <Row label="App ID" value="1641374667155681" mono />
+            <Row label="Phone Number ID" value="1103477599518286" mono />
+            <Row label="Número" value="(35) 91014-8222" />
+            <Row label="WABA ID" value="8095055753583375" mono />
+            <Row label="Access Token" type="password" />
+            <Row label="Verify Token" type="password" />
             <Row label="Modo do App" value="Development" />
           </Section>
           <Section title="Webhook">
-            <Row label="URL" value="https://orobanchaceous-flittingly-latrisha.ngrok-free.dev/webhook" mono />
-            <Row label="Campo inscrito" value="messages ✓" />
+            <Row label="URL" value="https://payrollia-production.up.railway.app/webhook" mono />
+            <Row label="Campo inscrito" value="messages" />
             <Row label="Versão da API" value="v25.0" />
-            <Row label="Status do webhook" value="Verificado" type="status" />
+            <Row label="Status" value="Verificado" type="status" />
           </Section>
           <Section title="Limitações (modo Development)">
             <div style={{ padding: '16px 20px' }}>
               {[
-                'Mensagens reais não chegam no webhook em modo Development',
-                'Apenas webhooks de teste enviados pelo dashboard funcionam',
                 'Token de acesso é temporário — expira periodicamente',
                 'Necessário criar token permanente via Meta Business Manager',
-                'Para receber mensagens reais, migrar para modo Live',
-              ].map((item) => (
+                'Verificação do negócio pendente — documentos enviados',
+                'Para receber mensagens reais, migrar para modo Live após aprovação',
+              ].map(item => (
                 <div key={item} style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                  <span style={{ color: '#fbbf24', flexShrink: 0 }}>○</span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{item}</span>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.warning, flexShrink: 0, marginTop: 5 }} />
+                  <span style={{ fontSize: 12, color: C.mute }}>{item}</span>
                 </div>
               ))}
             </div>
           </Section>
-        </div>
+        </>
       )}
 
       {/* Tab: Suitability */}
       {activeTab === 'Suitability' && (
-        <div>
+        <>
           <Section title="Questionário">
             <Row label="Total de perguntas" value="8 perguntas" />
             <Row label="Formato de resposta" value="Número (1, 2, 3...)" />
-            <Row label="Validade do perfil calculado" value="1 ano" />
-            <Row label="Segue diretrizes" value="CVM (educacional)" />
+            <Row label="Validade do perfil" value="1 ano" />
+            <Row label="Segue diretrizes" value="CVM + ANBIMA (educacional)" />
           </Section>
           <Section title="Cálculo de Perfil">
             <Row label="Pontuação mínima" value="8 pontos" />
@@ -229,144 +215,74 @@ export default function ConfigPage() {
               { id: 7, tema: 'Dependentes financeiros', opcoes: 2 },
               { id: 8, tema: 'Tolerância ao risco', opcoes: 3 },
             ].map((q, i) => (
-              <div key={q.id} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '12px 20px', borderBottom: i < 7 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-              }}>
+              <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: i < 7 ? `1px solid ${C.bone3}` : 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{
-                    width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.06)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, color: 'rgba(255,255,255,0.4)', flexShrink: 0,
-                  }}>{q.id}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>{q.tema}</span>
+                  <span style={{ width: 22, height: 22, borderRadius: '50%', background: C.aubergine, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: C.lime, flexShrink: 0, fontFamily: "'Geist Mono', monospace" }}>
+                    {q.id}
+                  </span>
+                  <span style={{ fontSize: 13, color: C.ink }}>{q.tema}</span>
                 </div>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>{q.opcoes} opções</span>
+                <span style={{ fontSize: 11, fontFamily: "'Geist Mono', monospace", color: C.mute }}>{q.opcoes} opções</span>
               </div>
             ))}
           </Section>
-        </div>
+        </>
       )}
 
       {/* Tab: Integrações */}
       {activeTab === 'Integrações' && (
-        <div>
+        <>
           {[
-            {
-              name: 'Anthropic Claude API', icon: '🤖', status: 'ativo', statusColor: '#4ade80',
-              items: [
-                { label: 'Endpoint', value: 'https://api.anthropic.com/v1/messages' },
-                { label: 'Modelo', value: 'claude-sonnet-4-6' },
-                { label: 'Custo estimado', value: '~$0,001 por mensagem' },
-                { label: 'Status', value: 'Operacional', type: 'status' },
-              ]
-            },
-            {
-              name: 'Brapi (Cotações B3)', icon: '📈', status: 'ativo', statusColor: '#4ade80',
-              items: [
-                { label: 'Endpoint', value: 'https://brapi.dev/api/quote/{ticker}' },
-                { label: 'Detecção', value: 'Automática por regex no texto' },
-                { label: 'Plano', value: 'Gratuito' },
-                { label: 'Status', value: 'Operacional', type: 'status' },
-              ]
-            },
-            {
-              name: 'Meta WhatsApp API', icon: '💬', status: 'dev mode', statusColor: '#fbbf24',
-              items: [
-                { label: 'Endpoint', value: 'https://graph.facebook.com/v25.0' },
-                { label: 'Modo', value: 'Development' },
-                { label: 'Webhook', value: 'Verificado ✓' },
-                { label: 'Status', value: 'Configurado', type: 'status' },
-              ]
-            },
-            {
-              name: 'AbacatePay', icon: '💳', status: 'pendente', statusColor: '#6b7280',
-              items: [
-                { label: 'Endpoint', value: 'https://api.abacatepay.com' },
-                { label: 'Funcionalidade', value: 'Pix recorrente + planos' },
-                { label: 'Plano sugerido', value: 'Free / Pro R$12,90 / Business R$29,90' },
-                { label: 'Status', value: 'Não implementado' },
-              ]
-            },
-          ].map((integ) => (
-            <Section key={integ.name} title={`${integ.icon} ${integ.name}`}>
-              <div style={{ padding: '8px 20px 4px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Badge label={integ.status} color={integ.statusColor} />
+            { name: 'Anthropic Claude API', status: 'ativo', statusColor: C.success, items: [{ label: 'Modelo', value: 'claude-sonnet-4-6' }, { label: 'Custo estimado', value: '~$0,001 por mensagem' }, { label: 'Status', value: 'Operacional', type: 'status' }] },
+            { name: 'Brapi (Cotações B3)', status: 'ativo', statusColor: C.success, items: [{ label: 'Endpoint', value: 'brapi.dev/api/quote/{ticker}', mono: true }, { label: 'Plano', value: 'Gratuito' }, { label: 'Status', value: 'Operacional', type: 'status' }] },
+            { name: 'Meta WhatsApp API', status: 'dev mode', statusColor: C.warning, items: [{ label: 'Versão', value: 'v25.0' }, { label: 'Modo', value: 'Development' }, { label: 'Status', value: 'Configurado', type: 'status' }] },
+            { name: 'AbacatePay (Pix)', status: 'ativo', statusColor: C.success, items: [{ label: 'Produto Pro', value: 'R$ 12,90 / avulso' }, { label: 'Produto Business', value: 'R$ 29,90 / avulso' }, { label: 'Webhook', value: 'Ativo' }] },
+          ].map(integ => (
+            <Section key={integ.name} title={integ.name}>
+              <div style={{ padding: '10px 20px 6px', display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, color: integ.statusColor, background: `${integ.statusColor}10`, border: `1px solid ${integ.statusColor}25`, fontFamily: "'Geist Mono', monospace" }}>
+                  {integ.status}
+                </span>
               </div>
-              {integ.items.map((item) => (
-                <Row key={item.label} label={item.label} value={item.value} mono={item.label === 'Endpoint'} type={item.type} />
+              {integ.items.map(item => (
+                <Row key={item.label} label={item.label} value={item.value} mono={'mono' in item ? !!item.mono : false} type={'type' in item ? item.type : 'text'} />
               ))}
             </Section>
           ))}
-        </div>
+        </>
       )}
 
       {/* Tab: Danger Zone */}
       {activeTab === 'Danger Zone' && (
-        <div>
-          <div style={{
-            border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12,
-            padding: '20px', background: 'rgba(239,68,68,0.03)', marginBottom: 16,
-          }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#ef4444', marginBottom: 8 }}>⚠️ Zona de Perigo</p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
-              As ações abaixo são irreversíveis e afetam dados reais do banco. Use somente em ambiente de desenvolvimento.
+        <>
+          <div style={{ border: `1px solid rgba(248,113,113,0.2)`, borderRadius: 12, padding: '16px 20px', background: 'rgba(248,113,113,0.03)', marginBottom: 16 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: C.danger, marginBottom: 6 }}>Zona de Perigo</p>
+            <p style={{ fontSize: 13, color: C.mute, lineHeight: 1.6 }}>
+              As ações abaixo são irreversíveis e afetam dados reais do banco. Use somente em desenvolvimento.
             </p>
           </div>
 
           {[
-            {
-              title: 'Limpar dados de teste',
-              desc: 'Remove todos os usuários, sessões e perfis. Mantém o tenant padrão.',
-              cmd: 'docker exec -i payroll_postgres psql -U payroll -d payroll -c "DELETE FROM sessions; DELETE FROM investor_profiles; DELETE FROM users;"',
-              color: '#fbbf24',
-            },
-            {
-              title: 'Recriar tenant padrão',
-              desc: 'Necessário após limpar o banco. Recria o tenant de desenvolvimento.',
-              cmd: `docker exec -i payroll_postgres psql -U payroll -d payroll -c "INSERT INTO tenants (id, name, whatsapp_phone_id) VALUES ('00000000-0000-0000-0000-000000000001', 'Payroll Default', 'default') ON CONFLICT DO NOTHING;"`,
-              color: '#3b82f6',
-            },
-            {
-              title: 'Resetar banco completo',
-              desc: 'Para o Docker, remove os volumes e recria do zero. Todos os dados são perdidos.',
-              cmd: 'docker-compose down -v && docker-compose up -d',
-              color: '#ef4444',
-            },
-          ].map((action) => (
-            <div key={action.title} style={{
-              border: `1px solid ${action.color}20`,
-              borderRadius: 12, padding: '20px',
-              background: `${action.color}05`, marginBottom: 12,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: action.color }}>{action.title}</p>
-              </div>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 12, lineHeight: 1.5 }}>{action.desc}</p>
-              <div style={{
-                background: 'rgba(0,0,0,0.4)', borderRadius: 8, padding: '10px 14px',
-                fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.5)',
-                border: '1px solid rgba(255,255,255,0.06)', wordBreak: 'break-all', lineHeight: 1.6,
-              }}>
+            { title: 'Limpar dados de teste', desc: 'Remove usuários, sessões e perfis. Mantém o tenant padrão.', cmd: 'psql -U payroll -d payroll -c "DELETE FROM sessions; DELETE FROM investor_profiles; DELETE FROM users;"', color: C.warning },
+            { title: 'Recriar tenant padrão', desc: 'Recria o tenant após limpar o banco.', cmd: `INSERT INTO tenants (id, name, whatsapp_phone_id) VALUES ('00000000-...', 'Payroll Default', 'default') ON CONFLICT DO NOTHING;`, color: C.aubergineL },
+            { title: 'Resetar banco completo', desc: 'Para o Railway Postgres, reinicia do zero. Todos os dados são perdidos.', cmd: 'Execute via Railway Dashboard → PostgreSQL → Query', color: C.danger },
+          ].map(action => (
+            <div key={action.title} style={{ border: `1px solid ${action.color}20`, borderRadius: 12, padding: 18, background: `${action.color}04`, marginBottom: 12 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: action.color, marginBottom: 6 }}>{action.title}</p>
+              <p style={{ fontSize: 12, color: C.mute, marginBottom: 12, lineHeight: 1.5 }}>{action.desc}</p>
+              <div style={{ background: C.ink, borderRadius: 8, padding: '10px 14px', fontFamily: "'Geist Mono', monospace", fontSize: 11, color: 'rgba(250,248,244,0.6)', wordBreak: 'break-all', lineHeight: 1.6 }}>
                 {action.cmd}
               </div>
             </div>
           ))}
 
-          {/* Confirmação visual */}
-          <div style={{
-            border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12,
-            padding: '20px', background: 'rgba(255,255,255,0.02)',
-          }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>
-              Os comandos acima devem ser executados no terminal Git Bash dentro de <code style={{ fontFamily: 'monospace', background: 'rgba(255,255,255,0.06)', padding: '1px 6px', borderRadius: 4 }}>C:\Payroll</code>
-            </p>
+          <div style={{ background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 12, padding: '16px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fbbf24' }} />
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Sempre faça backup antes de resetar o banco em produção</span>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.warning, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: C.mute }}>Sempre faça backup antes de resetar o banco em produção</span>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

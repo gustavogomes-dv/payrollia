@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import API_URL from '@/lib/api';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
+type Periodo = '7d' | '30d' | '60d' | '1a';
+
 type Stats = {
   totalUsuarios: number;
   totalMensagens: number;
@@ -28,6 +30,7 @@ type Cliente = {
 // ─── Tokens de cor ────────────────────────────────────────────────────────────
 const C = {
   aubergine:  '#2D2356',
+  aubergineL: '#4A3B82',
   lime:       '#C8F260',
   coral:      '#FF8A65',
   bone:       '#FAF8F4',
@@ -47,59 +50,124 @@ const PERFIL_COR: Record<string, { text: string; bg: string; border: string }> =
   arrojado:    { text: '#5A7A10',    bg: 'rgba(200,242,96,0.12)',  border: 'rgba(200,242,96,0.3)' },
 };
 
-// ─── Gráfico de barras — 7 dias ───────────────────────────────────────────────
-function GrowthChart({ crescimento }: { crescimento: { dia: string; total: string }[] }) {
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+// ─── Filtro de período ────────────────────────────────────────────────────────
+function FiltroPeriodo({ valor, onChange }: { valor: Periodo; onChange: (p: Periodo) => void }) {
+  const opcoes: { label: string; value: Periodo }[] = [
+    { label: '7 dias',  value: '7d' },
+    { label: '30 dias', value: '30d' },
+    { label: '60 dias', value: '60d' },
+    { label: '1 ano',   value: '1a' },
+  ];
+  return (
+    <div style={{ display: 'flex', gap: 3, background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 8, padding: 3 }}>
+      {opcoes.map(op => (
+        <button key={op.value} onClick={() => onChange(op.value)} style={{
+          padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+          fontSize: 11, fontWeight: 500, fontFamily: 'inherit', transition: 'all 0.15s',
+          background: valor === op.value ? C.aubergine : 'transparent',
+          color: valor === op.value ? C.lime : C.mute,
+        }}>
+          {op.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Gráfico de barras dinâmico por período ───────────────────────────────────
+function GrowthChart({
+  crescimento,
+  periodo,
+}: {
+  crescimento: { dia: string; total: string }[];
+  periodo: Periodo;
+}) {
   const hoje = new Date();
-  const ultimos7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(hoje);
-    d.setDate(d.getDate() - (6 - i));
-    const key = d.toISOString().split('T')[0];
-    const found = crescimento.find(c => c.dia?.startsWith(key));
-    return { dia: key, label: days[d.getDay()], total: found ? parseInt(found.total) : 0 };
-  });
-  const max = Math.max(...ultimos7.map(d => d.total), 1);
-  const totalSemana = ultimos7.reduce((a, b) => a + b.total, 0);
+  const dias = { '7d': 7, '30d': 30, '60d': 60, '1a': 365 }[periodo];
+  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  // Para períodos longos, agrupa por semana ou mês
+  let pontos: { label: string; total: number; isHoje: boolean }[] = [];
+
+  if (periodo === '7d') {
+    pontos = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(hoje);
+      d.setDate(d.getDate() - (6 - i));
+      const key = d.toISOString().split('T')[0];
+      const found = crescimento.find(c => c.dia?.startsWith(key));
+      return { label: dayNames[d.getDay()], total: found ? parseInt(found.total) : 0, isHoje: i === 6 };
+    });
+  } else if (periodo === '30d') {
+    // Agrupa por semana (4 semanas)
+    pontos = Array.from({ length: 4 }, (_, w) => {
+      let total = 0;
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(hoje);
+        day.setDate(day.getDate() - (27 - w * 7 - d));
+        const key = day.toISOString().split('T')[0];
+        const found = crescimento.find(c => c.dia?.startsWith(key));
+        if (found) total += parseInt(found.total);
+      }
+      return { label: `S${w + 1}`, total, isHoje: w === 3 };
+    });
+  } else if (periodo === '60d') {
+    // Agrupa por quinzena (4 quinzenas)
+    pontos = Array.from({ length: 4 }, (_, q) => {
+      let total = 0;
+      for (let d = 0; d < 15; d++) {
+        const day = new Date(hoje);
+        day.setDate(day.getDate() - (59 - q * 15 - d));
+        const key = day.toISOString().split('T')[0];
+        const found = crescimento.find(c => c.dia?.startsWith(key));
+        if (found) total += parseInt(found.total);
+      }
+      return { label: `Q${q + 1}`, total, isHoje: q === 3 };
+    });
+  } else {
+    // 1 ano: agrupa por mês (12 meses)
+    pontos = Array.from({ length: 12 }, (_, m) => {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth() - (11 - m), 1);
+      const mesKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const total = crescimento
+        .filter(c => c.dia?.startsWith(mesKey))
+        .reduce((a, c) => a + parseInt(c.total), 0);
+      return {
+        label: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+        total,
+        isHoje: m === 11,
+      };
+    });
+  }
+
+  const max = Math.max(...pontos.map(p => p.total), 1);
+  const totalPeriodo = pontos.reduce((a, p) => a + p.total, 0);
+
+  const labelPeriodo = { '7d': '7 dias', '30d': '30 dias', '60d': '60 dias', '1a': '12 meses' }[periodo];
 
   return (
     <div style={{ background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 14, padding: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 500, color: C.ink }}>Novos cadastros</p>
-          <p style={{ fontSize: 11, color: C.mute, marginTop: 2 }}>últimos 7 dias</p>
+          <p style={{ fontSize: 11, color: C.mute, marginTop: 2 }}>últimos {labelPeriodo}</p>
         </div>
-        <span style={{
-          fontSize: 11, fontFamily: "'Geist Mono', monospace",
-          color: C.mute, background: C.bone3,
-          padding: '3px 10px', borderRadius: 20,
-        }}>
-          {totalSemana} total
+        <span style={{ fontSize: 11, fontFamily: "'Geist Mono', monospace", color: C.mute, background: C.bone3, padding: '3px 10px', borderRadius: 20 }}>
+          {totalPeriodo} total
         </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 72 }}>
-        {ultimos7.map((d) => {
-          const h = d.total > 0 ? Math.max((d.total / max) * 56, 8) : 3;
-          const isToday = d.dia === hoje.toISOString().split('T')[0];
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: pontos.length > 8 ? 4 : 8, height: 72 }}>
+        {pontos.map((p, i) => {
+          const h = p.total > 0 ? Math.max((p.total / max) * 56, 8) : 3;
           return (
-            <div key={d.dia} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              {d.total > 0 && (
-                <span style={{
-                  fontSize: 10, fontFamily: "'Geist Mono', monospace",
-                  color: isToday ? C.aubergine : C.mute, fontWeight: 600,
-                }}>
-                  {d.total}
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              {p.total > 0 && (
+                <span style={{ fontSize: 9, fontFamily: "'Geist Mono', monospace", color: p.isHoje ? C.aubergine : C.mute, fontWeight: 600 }}>
+                  {p.total}
                 </span>
               )}
-              <div style={{
-                width: '100%', height: h,
-                background: isToday ? C.lime : d.total > 0 ? 'rgba(45,35,86,0.35)' : C.bone3,
-                borderRadius: 4,
-              }} />
-              <span style={{
-                fontSize: 10, fontFamily: "'Geist Mono', monospace",
-                color: isToday ? C.aubergine : C.mute,
-              }}>
-                {d.label}
+              <div style={{ width: '100%', height: h, background: p.isHoje ? C.lime : p.total > 0 ? 'rgba(45,35,86,0.3)' : C.bone3, borderRadius: 4 }} />
+              <span style={{ fontSize: 9, fontFamily: "'Geist Mono', monospace", color: p.isHoje ? C.aubergine : C.mute }}>
+                {p.label}
               </span>
             </div>
           );
@@ -113,11 +181,7 @@ function GrowthChart({ crescimento }: { crescimento: { dia: string; total: strin
 function MetricCard({ label, value, sub, color }: { label: string; value: string | number; sub: string; color: string }) {
   return (
     <div style={{ background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 14, padding: '20px 18px' }}>
-      <p style={{
-        fontSize: 10, fontFamily: "'Geist Mono', monospace",
-        color: C.mute, letterSpacing: '0.1em',
-        textTransform: 'uppercase', marginBottom: 10,
-      }}>
+      <p style={{ fontSize: 10, fontFamily: "'Geist Mono', monospace", color: C.mute, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
         {label}
       </p>
       <p style={{ fontSize: 36, fontWeight: 600, letterSpacing: '-1.5px', color, lineHeight: 1 }}>
@@ -148,10 +212,11 @@ function ProgressBar({ label, value, max, color }: { label: string; value: numbe
 
 // ─── Página ───────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [stats, setStats]     = useState<Stats | null>(null);
+  const [stats, setStats]       = useState<Stats | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
   const [saudacao, setSaudacao] = useState('');
+  const [periodo, setPeriodo]   = useState<Periodo>('7d');
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -176,17 +241,16 @@ export default function HomePage() {
     );
   }
 
-  const totalUsuarios   = stats?.totalUsuarios ?? 0;
-  const novosSemana     = stats?.novosSemana ?? 0;
-  const novosHoje       = stats?.novosHoje ?? 0;
-  const mrr             = stats?.mrr ?? '0.00';
-  const completos       = stats?.onboardingCompletos ?? 0;
-  const taxaConversao   = totalUsuarios > 0 ? Math.round((completos / totalUsuarios) * 100) : 0;
-  const totalPerfis     = stats?.perfis?.reduce((a, p) => a + parseInt(p.total), 0) ?? 0;
+  const totalUsuarios = stats?.totalUsuarios ?? 0;
+  const novosSemana   = stats?.novosSemana ?? 0;
+  const novosHoje     = stats?.novosHoje ?? 0;
+  const mrr           = stats?.mrr ?? '0.00';
+  const completos     = stats?.onboardingCompletos ?? 0;
+  const taxaConversao = totalUsuarios > 0 ? Math.round((completos / totalUsuarios) * 100) : 0;
+  const totalPerfis   = stats?.perfis?.reduce((a, p) => a + parseInt(p.total), 0) ?? 0;
 
   const cardStyle: React.CSSProperties = {
-    background: C.bone2, border: `1px solid ${C.bone3}`,
-    borderRadius: 14, padding: 20,
+    background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 14, padding: 20,
   };
 
   return (
@@ -196,12 +260,8 @@ export default function HomePage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{
-            fontFamily: "'Instrument Serif', serif",
-            fontStyle: 'italic',
-            fontSize: 38, fontWeight: 400,
-            letterSpacing: '-0.5px',
-            color: C.aubergine, lineHeight: 1,
-            marginBottom: 6,
+            fontFamily: "'Instrument Serif', serif", fontStyle: 'italic',
+            fontSize: 38, fontWeight: 400, color: C.aubergine, lineHeight: 1, marginBottom: 6,
           }}>
             {saudacao}, Gustavo.
           </h1>
@@ -209,47 +269,31 @@ export default function HomePage() {
             {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          background: 'rgba(74,222,128,0.06)',
-          border: '1px solid rgba(74,222,128,0.2)',
-          borderRadius: 8, padding: '8px 14px',
-        }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.success }} />
-          <span style={{ fontSize: 12, color: C.success, fontWeight: 500 }}>Sistema operacional</span>
-        </div>
+        <FiltroPeriodo valor={periodo} onChange={setPeriodo} />
       </div>
 
       {/* Cards métricas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 14 }} className="grid-4">
-        <MetricCard label="Usuários totais"  value={totalUsuarios} sub={`+${novosSemana} esta semana`}         color={C.aubergine} />
-        <MetricCard label="Online agora"     value={totalUsuarios > 0 ? Math.max(1, Math.floor(totalUsuarios * 0.05)) : 0} sub="estimativa ativa" color={C.success} />
-        <MetricCard label="Novos hoje"       value={novosHoje}     sub="últimas 24h"                           color={C.coral} />
-        <MetricCard label="Novos na semana"  value={novosSemana}   sub="últimos 7 dias"                        color={C.aubergine} />
+        <MetricCard label="Usuários totais" value={totalUsuarios} sub={`+${novosSemana} esta semana`}         color={C.aubergine} />
+        <MetricCard label="Online agora"    value={totalUsuarios > 0 ? Math.max(1, Math.floor(totalUsuarios * 0.05)) : 0} sub="estimativa ativa" color={C.success} />
+        <MetricCard label="Novos hoje"      value={novosHoje}     sub="últimas 24h"                           color={C.coral} />
+        <MetricCard label="Novos na semana" value={novosSemana}   sub="últimos 7 dias"                        color={C.aubergine} />
       </div>
 
       {/* MRR + Gráfico */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginBottom: 14 }} className="grid-mrr">
         <div style={{ background: C.aubergine, borderRadius: 14, padding: '22px 20px' }}>
-          <p style={{
-            fontSize: 10, fontFamily: "'Geist Mono', monospace",
-            color: 'rgba(200,242,96,0.5)',
-            letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12,
-          }}>
+          <p style={{ fontSize: 10, fontFamily: "'Geist Mono', monospace", color: 'rgba(200,242,96,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
             Receita mensal · MRR
           </p>
-          <p style={{
-            fontSize: 38, fontWeight: 600,
-            fontFamily: "'Geist Mono', monospace",
-            letterSpacing: '-2px', color: C.lime, lineHeight: 1,
-          }}>
+          <p style={{ fontSize: 38, fontWeight: 600, fontFamily: "'Geist Mono', monospace", letterSpacing: '-2px', color: C.lime, lineHeight: 1 }}>
             R$ {parseFloat(mrr).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 10 }}>
-            calculado pelos planos ativos
-          </p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 10 }}>calculado pelos planos ativos</p>
         </div>
-        {stats?.crescimento && <GrowthChart crescimento={stats.crescimento} />}
+        {stats?.crescimento && (
+          <GrowthChart crescimento={stats.crescimento} periodo={periodo} />
+        )}
       </div>
 
       {/* Funil + Perfis */}
@@ -258,29 +302,16 @@ export default function HomePage() {
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <p style={{ fontSize: 13, fontWeight: 500, color: C.ink }}>Funil de Onboarding</p>
-            <span style={{
-              fontSize: 16, fontWeight: 600,
-              fontFamily: "'Geist Mono', monospace",
-              color: taxaConversao >= 50 ? C.success : C.warning,
-            }}>
+            <span style={{ fontSize: 16, fontWeight: 600, fontFamily: "'Geist Mono', monospace", color: taxaConversao >= 50 ? C.success : C.warning }}>
               {taxaConversao}%
             </span>
           </div>
           <ProgressBar label="Cadastrados"             value={totalUsuarios} max={totalUsuarios} color={C.bone4} />
-          <ProgressBar label="Iniciaram suitability"   value={totalUsuarios} max={totalUsuarios} color={C.aubergine} />
+          <ProgressBar label="Iniciaram suitability"   value={totalUsuarios} max={totalUsuarios} color={C.aubergineL} />
           <ProgressBar label="Completaram suitability" value={completos}     max={totalUsuarios} color={C.success} />
-          <div style={{
-            marginTop: 8, padding: '10px 14px',
-            background: C.bone,
-            border: `1px solid ${C.bone3}`,
-            borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
+          <div style={{ marginTop: 8, padding: '10px 14px', background: C.bone, border: `1px solid ${C.bone3}`, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: C.mute }}>taxa de conversão</span>
-            <span style={{
-              fontSize: 15, fontWeight: 700,
-              fontFamily: "'Geist Mono', monospace",
-              color: taxaConversao >= 50 ? C.success : C.warning,
-            }}>
+            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Geist Mono', monospace", color: taxaConversao >= 50 ? C.success : C.warning }}>
               {taxaConversao}%
             </span>
           </div>
@@ -306,9 +337,7 @@ export default function HomePage() {
                 <div key={perfil} style={{ marginBottom: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
                     <span style={{ color: C.mute, textTransform: 'capitalize' }}>{perfil}</span>
-                    <span style={{ color: cor.text, fontWeight: 500, fontFamily: "'Geist Mono', monospace" }}>
-                      {total} · {pct}%
-                    </span>
+                    <span style={{ color: cor.text, fontWeight: 500, fontFamily: "'Geist Mono', monospace" }}>{total} · {pct}%</span>
                   </div>
                   <div style={{ height: 5, background: C.bone3, borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, background: cor.text, borderRadius: 4 }} />
@@ -322,14 +351,9 @@ export default function HomePage() {
 
       {/* Últimos clientes */}
       <div style={{ background: C.bone2, border: `1px solid ${C.bone3}`, borderRadius: 14, overflow: 'hidden' }}>
-        <div style={{
-          padding: '14px 20px', borderBottom: `1px solid ${C.bone3}`,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
+        <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.bone3}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: 13, fontWeight: 500, color: C.ink }}>Últimos Clientes</p>
-          <a href="/clientes" style={{ fontSize: 12, color: C.mute, textDecoration: 'none' }}>
-            Ver todos →
-          </a>
+          <a href="/clientes" style={{ fontSize: 12, color: C.mute, textDecoration: 'none' }}>Ver todos →</a>
         </div>
         {clientes.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: C.mute, fontSize: 13 }}>
@@ -339,43 +363,20 @@ export default function HomePage() {
           clientes.slice(0, 5).map((c, i) => {
             const cor = c.perfil ? PERFIL_COR[c.perfil] : null;
             return (
-              <div key={c.id} style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '13px 20px',
-                borderBottom: i < Math.min(clientes.length, 5) - 1 ? `1px solid ${C.bone3}` : 'none',
-              }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                  background: cor ? cor.bg : C.bone3,
-                  border: `1px solid ${cor ? cor.border : C.bone4}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, fontWeight: 700,
-                  color: cor ? cor.text : C.mute,
-                }}>
+              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', borderBottom: i < Math.min(clientes.length, 5) - 1 ? `1px solid ${C.bone3}` : 'none' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: cor ? cor.bg : C.bone3, border: `1px solid ${cor ? cor.border : C.bone4}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: cor ? cor.text : C.mute }}>
                   {c.name ? c.name.charAt(0).toUpperCase() : '?'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {c.name || 'Sem nome'}
-                  </p>
-                  <p style={{ fontSize: 11, color: C.mute, fontFamily: "'Geist Mono', monospace" }}>
-                    +{c.phone}
-                  </p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name || 'Sem nome'}</p>
+                  <p style={{ fontSize: 11, color: C.mute, fontFamily: "'Geist Mono', monospace" }}>+{c.phone}</p>
                 </div>
                 {c.perfil && cor && (
-                  <span style={{
-                    fontSize: 10, padding: '3px 9px', borderRadius: 20,
-                    color: cor.text, background: cor.bg, border: `1px solid ${cor.border}`,
-                    textTransform: 'capitalize', flexShrink: 0, fontWeight: 500,
-                  }}>
+                  <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, color: cor.text, background: cor.bg, border: `1px solid ${cor.border}`, textTransform: 'capitalize', flexShrink: 0, fontWeight: 500 }}>
                     {c.perfil}
                   </span>
                 )}
-                <span style={{
-                  fontSize: 10, fontFamily: "'Geist Mono', monospace",
-                  color: c.onboarding_complete ? '#166534' : '#92400E',
-                  flexShrink: 0,
-                }}>
+                <span style={{ fontSize: 10, fontFamily: "'Geist Mono', monospace", color: c.onboarding_complete ? '#166534' : '#92400E', flexShrink: 0 }}>
                   {c.onboarding_complete ? 'completo' : 'pendente'}
                 </span>
                 <span style={{ fontSize: 11, color: C.mute, flexShrink: 0, fontFamily: "'Geist Mono', monospace" }}>
@@ -394,7 +395,7 @@ export default function HomePage() {
           .grid-2   { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 500px) {
-          .grid-4   { grid-template-columns: 1fr !important; }
+          .grid-4 { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
