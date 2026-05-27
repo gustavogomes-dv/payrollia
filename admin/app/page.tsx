@@ -54,16 +54,11 @@ export default function LandingPage() {
         .pill-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--bone2)}
         .pill-icon img{width:20px;height:20px;object-fit:contain}
         .pill-text{font-family:'Geist',sans-serif;font-size:13px;font-weight:500;color:var(--ink)}
-        .p1{animation-delay:0s;animation-duration:5.5s}
-        .p2{animation-delay:-1.2s;animation-duration:6.2s}
-        .p3{animation-delay:-2.5s;animation-duration:5.8s}
-        .p4{animation-delay:-.8s;animation-duration:6.5s}
-        .p5{animation-delay:-3.2s;animation-duration:6s}
-        .p6{animation-delay:-1.8s;animation-duration:5.6s}
-        .p7{animation-delay:-4s;animation-duration:6.3s}
-        .p8{animation-delay:-2.2s;animation-duration:5.4s}
-        .p9{animation-delay:-.5s;animation-duration:6.8s}
-        .p10{animation-delay:-3.5s;animation-duration:5.9s}
+        .p1{animation-delay:0s;animation-duration:5.5s}.p2{animation-delay:-1.2s;animation-duration:6.2s}
+        .p3{animation-delay:-2.5s;animation-duration:5.8s}.p4{animation-delay:-.8s;animation-duration:6.5s}
+        .p5{animation-delay:-3.2s;animation-duration:6s}.p6{animation-delay:-1.8s;animation-duration:5.6s}
+        .p7{animation-delay:-4s;animation-duration:6.3s}.p8{animation-delay:-2.2s;animation-duration:5.4s}
+        .p9{animation-delay:-.5s;animation-duration:6.8s}.p10{animation-delay:-3.5s;animation-duration:5.9s}
         .p11{animation-delay:-2.8s;animation-duration:6.1s}
         @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .section{padding:88px 48px}
@@ -132,12 +127,19 @@ export default function LandingPage() {
         .legal-box p{font-size:13px;color:var(--mute);line-height:1.65}
         .legal-box p strong{color:var(--ink)}
         .footer{background:var(--ink);padding:56px 48px 32px}
-        .footer-top{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+        .footer-top{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
         .footer-brand-name{font-size:15px;font-weight:600;color:var(--bone);margin-top:12px;margin-bottom:8px}
         .footer-brand-p{font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:12px}
         .footer-cnpj{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);line-height:1.7}
         .footer-col-h{font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;color:var(--bone4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
         .footer-link{display:block;font-size:13px;color:var(--mute);text-decoration:none;margin-bottom:9px}
+        .footer-link:hover{color:var(--bone)}
+        .footer-social{display:flex;gap:10px;margin-top:16px}
+        .social-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);text-decoration:none;transition:all 0.15s}
+        .social-btn:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
+        .social-btn svg{width:14px;height:14px;flex-shrink:0}
+        .social-btn span{font-size:12px;color:var(--mute);font-family:'Geist',sans-serif}
+        .social-btn:hover span{color:var(--bone)}
         .footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:32px}
         .footer-copy{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);white-space:nowrap}
         .footer-cvm{font-size:12px;color:var(--mute);max-width:520px;line-height:1.6;opacity:.55}
@@ -158,6 +160,7 @@ export default function LandingPage() {
           .integrations{padding:20px 16px}.pills-grid{gap:8px;justify-content:center}
           .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}.pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
+          .footer-social{flex-direction:column}
         }
       `}</style>
 
@@ -350,7 +353,6 @@ export default function LandingPage() {
               <p className="legal-p">Você pode acessar, corrigir ou solicitar a exclusão dos seus dados enviando <strong>PRIVACIDADE</strong> para o bot ou escrevendo para <strong>gustavo.godlive@gmail.com</strong>.</p>
               <h3 className="legal-h2">6. Cookies</h3>
               <p className="legal-p">Este site utiliza apenas cookies técnicos essenciais. Não utilizamos cookies de rastreamento publicitário.</p>
-
               <h2 className="legal-h1" id="termos" style={{marginTop:"48px"}}>Termos de uso</h2>
               <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> Ao utilizar o Payroll Chatbot, você concorda com os termos abaixo.</p>
               <div className="legal-box">
@@ -403,7 +405,38 @@ export default function LandingPage() {
               <a href="https://wa.me/5535910148222" className="footer-link" target="_blank" rel="noopener noreferrer">(35) 91014-8222</a>
               <a href="https://payrollia.com.br" className="footer-link">payrollia.com.br</a>
             </div>
+
+            {/* NOVA COLUNA: Redes Sociais */}
+            <div>
+              <p className="footer-col-h">Redes sociais</p>
+              <a href="https://www.instagram.com/payroll.ia/" className="footer-link" target="_blank" rel="noopener noreferrer">
+                Instagram
+              </a>
+              <a href="https://www.linkedin.com/company/payroll-ia/" className="footer-link" target="_blank" rel="noopener noreferrer">
+                LinkedIn
+              </a>
+              {/* Botões com ícone */}
+              <div className="footer-social">
+                <a href="https://www.instagram.com/payroll.ia/" className="social-btn" target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{color:'var(--mute)'}}>
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+                  </svg>
+                  <span>@payroll.ia</span>
+                </a>
+                <a href="https://www.linkedin.com/company/payroll-ia/" className="social-btn" target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{color:'var(--mute)'}}>
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                  </svg>
+                  <span>payroll-ia</span>
+                </a>
+              </div>
+            </div>
           </div>
+
           <div className="footer-bottom">
             <span className="footer-copy">&copy; 2026 Payroll Chatbot · Todos os direitos reservados</span>
             <span className="footer-cvm">Serviço de educação financeira em conformidade com a Resolução CVM n.º 20/2021 e diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro. Decisões de investimento são de exclusiva responsabilidade do investidor.</span>
