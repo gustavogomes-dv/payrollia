@@ -23,11 +23,7 @@ export default function LandingPage() {
         .nav-links{display:flex;align-items:center;gap:28px}
         .nav-link{font-size:14px;color:var(--mute);text-decoration:none}
         .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none}
-
-        /* HERO — chat mais centralizado */
-        .hero{background:var(--aubergine);padding:96px 48px 80px;display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:center;justify-content:center;max-width:1200px;margin:0 auto}
-        .hero-outer{background:var(--aubergine);padding:0}
-        .hero-outer > div{max-width:1200px;margin:0 auto;padding:96px 48px 80px;display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:center}
+        .hero{background:var(--aubergine);padding:96px 48px 80px;display:grid;grid-template-columns:1fr 460px;gap:64px;align-items:center}
         .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;opacity:.85}
         .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:70px;line-height:1.02;color:var(--bone);letter-spacing:-0.025em;margin-bottom:28px}
         .hero-h em{font-style:normal;color:var(--lime)}
@@ -36,165 +32,21 @@ export default function LandingPage() {
         .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;display:inline-block}
         .btn-outline{border:1px solid rgba(250,248,244,.2);color:var(--bone);padding:14px 28px;border-radius:100px;font-size:15px;text-decoration:none;display:inline-block}
         .hero-note{margin-top:24px;font-family:'Geist Mono',monospace;font-size:11px;color:var(--bone4);letter-spacing:.05em}
-
-        /* CHAT MOCKUP — fiel ao WhatsApp real */
-        .chat-wrap{
-          background:#1A1A2E;
-          border-radius:20px;
-          overflow:hidden;
-          border:1px solid rgba(255,255,255,.08);
-          box-shadow:0 32px 64px rgba(0,0,0,.4);
-          width:100%;
-        }
-        /* Topo estilo WhatsApp */
-        .chat-header{
-          background:#1F1B3A;
-          padding:12px 16px;
-          display:flex;
-          align-items:center;
-          gap:10px;
-          border-bottom:1px solid rgba(255,255,255,.06);
-        }
-        .chat-av{
-          width:36px;height:36px;
-          background:var(--lime);
-          border-radius:50%;
-          display:flex;flex-direction:column;
-          align-items:center;justify-content:center;
-          gap:2px;padding:0 7px;
-          flex-shrink:0;
-        }
-        .chat-av .bar{background:var(--aubergine);height:5px;border-radius:3px}
-        .chat-av .bar-s{width:10px}.chat-av .bar-l{width:18px}.chat-av .bar-m{width:14px}
-        .chat-info{flex:1}
-        .chat-name{font-size:13px;font-weight:600;color:#E8E8E8}
-        .chat-status{font-size:11px;color:#8696A0;margin-top:1px;display:flex;align-items:center;gap:4px}
-        .online-dot{width:6px;height:6px;background:#25D366;border-radius:50%}
-        /* Fundo do chat */
-        .chat-body{
-          background:#0B141A;
-          padding:14px 12px;
-          display:flex;
-          flex-direction:column;
-          gap:6px;
-          min-height:360px;
-          position:relative;
-        }
-        /* Timestamp */
-        .chat-time{
-          text-align:center;
-          font-family:'Geist Mono',monospace;
-          font-size:10px;
-          color:#8696A0;
-          background:rgba(17,27,33,.8);
-          padding:4px 12px;
-          border-radius:8px;
-          display:inline-block;
-          margin:4px auto;
-          align-self:center;
-        }
-        /* Mensagem do bot (esquerda) */
-        .msg-bot{
-          display:flex;
-          justify-content:flex-start;
-          max-width:88%;
-        }
-        .msg-bot-b{
-          background:#202C33;
-          color:#E8E8E8;
-          padding:9px 12px;
-          border-radius:0 10px 10px 10px;
-          font-size:12.5px;
-          line-height:1.5;
-          position:relative;
-        }
-        .msg-bot-b strong{color:#C8F260;font-weight:600}
-        .msg-bot-b .warn{color:#FFD700}
-        .msg-time{
-          font-size:10px;
-          color:#8696A0;
-          text-align:right;
-          margin-top:4px;
-          font-family:'Geist Mono',monospace;
-        }
-        /* Mensagem do usuário (direita) */
-        .msg-user{
-          display:flex;
-          justify-content:flex-end;
-        }
-        .msg-user-b{
-          background:#005C4B;
-          color:#E8E8E8;
-          padding:9px 12px;
-          border-radius:10px 0 10px 10px;
-          font-size:12.5px;
-          line-height:1.5;
-          max-width:75%;
-          display:flex;
-          flex-direction:column;
-        }
-        .msg-user-meta{
-          display:flex;
-          align-items:center;
-          justify-content:flex-end;
-          gap:4px;
-          margin-top:3px;
-        }
-        .check{font-size:11px;color:#53BDEB}
-        /* Campo de input fake */
-        .chat-input{
-          background:#1F2C34;
-          padding:10px 14px;
-          display:flex;
-          align-items:center;
-          gap:10px;
-          border-top:1px solid rgba(255,255,255,.04);
-        }
-        .chat-input-field{
-          flex:1;
-          background:#2A3942;
-          border:none;
-          border-radius:20px;
-          padding:8px 14px;
-          font-size:13px;
-          color:#8696A0;
-          font-family:'Geist',sans-serif;
-        }
-        .chat-send{
-          width:36px;height:36px;
-          background:#00A884;
-          border-radius:50%;
-          display:flex;align-items:center;justify-content:center;
-          font-size:16px;
-          cursor:pointer;
-          flex-shrink:0;
-        }
-        /* Opções numeradas */
-        .opt-list{
-          margin-top:6px;
-          display:flex;
-          flex-direction:column;
-          gap:3px;
-        }
-        .opt{
-          display:flex;
-          align-items:center;
-          gap:6px;
-          font-size:12px;
-          color:#E8E8E8;
-        }
-        .opt-num{
-          width:18px;height:18px;
-          background:#1E4A6E;
-          border:1px solid #2D6FA3;
-          border-radius:4px;
-          display:flex;align-items:center;justify-content:center;
-          font-size:10px;font-weight:600;
-          color:#6BB5F0;
-          flex-shrink:0;
-        }
-
-        /* restante igual ao original */
+        .chat-wrap{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:24px}
+        .chat-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+        .chat-av{width:38px;height:38px;background:var(--lime);border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 7px;gap:1px;flex-shrink:0}
+        .chat-av .bar{background:var(--aubergine);height:7px;border-radius:3.5px}
+        .chat-av .bar-s{width:14px}.chat-av .bar-l{width:24px}.chat-av .bar-m{width:19px}
+        .chat-name{font-size:14px;font-weight:600;color:var(--bone)}
+        .chat-sub{font-size:12px;color:var(--aubergine-400);margin-top:1px}
+        .chat-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;margin-left:auto}
+        .mu{display:flex;justify-content:flex-end;margin-bottom:10px}
+        .mu-b{background:var(--aubergine-500);color:var(--bone);padding:10px 15px;border-radius:16px 16px 4px 16px;font-size:13px;max-width:82%;line-height:1.45}
+        .mb{display:flex;justify-content:flex-start;margin-bottom:10px}
+        .mb-b{background:var(--white);color:var(--ink);padding:11px 15px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:92%;line-height:1.5;border:1px solid var(--bone3)}
+        .mb-b strong{font-weight:600;color:var(--aubergine)}
+        .mono{font-family:'Geist Mono',monospace;color:var(--aubergine-500);font-weight:500}
+        .chat-disclaimer{margin-top:14px;padding:10px 14px;background:rgba(200,242,96,.08);border:1px solid rgba(200,242,96,.12);border-radius:8px;font-size:11px;color:rgba(250,248,244,.4);line-height:1.5}
         .integrations{background:var(--bone2);border-bottom:1px solid var(--bone3);padding:28px 48px}
         .int-label{text-align:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
         .pills-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:860px;margin:0 auto}
@@ -202,11 +54,16 @@ export default function LandingPage() {
         .pill-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--bone2)}
         .pill-icon img{width:20px;height:20px;object-fit:contain}
         .pill-text{font-family:'Geist',sans-serif;font-size:13px;font-weight:500;color:var(--ink)}
-        .p1{animation-delay:0s;animation-duration:5.5s}.p2{animation-delay:-1.2s;animation-duration:6.2s}
-        .p3{animation-delay:-2.5s;animation-duration:5.8s}.p4{animation-delay:-.8s;animation-duration:6.5s}
-        .p5{animation-delay:-3.2s;animation-duration:6s}.p6{animation-delay:-1.8s;animation-duration:5.6s}
-        .p7{animation-delay:-4s;animation-duration:6.3s}.p8{animation-delay:-2.2s;animation-duration:5.4s}
-        .p9{animation-delay:-.5s;animation-duration:6.8s}.p10{animation-delay:-3.5s;animation-duration:5.9s}
+        .p1{animation-delay:0s;animation-duration:5.5s}
+        .p2{animation-delay:-1.2s;animation-duration:6.2s}
+        .p3{animation-delay:-2.5s;animation-duration:5.8s}
+        .p4{animation-delay:-.8s;animation-duration:6.5s}
+        .p5{animation-delay:-3.2s;animation-duration:6s}
+        .p6{animation-delay:-1.8s;animation-duration:5.6s}
+        .p7{animation-delay:-4s;animation-duration:6.3s}
+        .p8{animation-delay:-2.2s;animation-duration:5.4s}
+        .p9{animation-delay:-.5s;animation-duration:6.8s}
+        .p10{animation-delay:-3.5s;animation-duration:5.9s}
         .p11{animation-delay:-2.8s;animation-duration:6.1s}
         @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .section{padding:88px 48px}
@@ -286,8 +143,7 @@ export default function LandingPage() {
         .footer-cvm{font-size:12px;color:var(--mute);max-width:520px;line-height:1.6;opacity:.55}
         @media(max-width:900px){
           .nav{padding:0 20px}.nav-links .nav-link{display:none}
-          .hero-outer > div{grid-template-columns:1fr;padding:56px 20px}
-          .hero-h{font-size:48px}.chat-wrap{display:none}
+          .hero{grid-template-columns:1fr;padding:56px 20px}.hero-h{font-size:48px}.chat-wrap{display:none}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
           .feat:first-child{border-radius:16px 16px 0 0}.feat:last-child{border-radius:0 0 16px 16px}
@@ -321,123 +177,33 @@ export default function LandingPage() {
         </nav>
 
         {/* HERO */}
-        <div style={{background:'var(--aubergine)'}}>
-          <div style={{maxWidth:'1200px',margin:'0 auto',padding:'96px 48px 80px',display:'grid',gridTemplateColumns:'1fr 420px',gap:'48px',alignItems:'center'}}>
-            <div>
-              <p className="hero-tag">Educação financeira · WhatsApp</p>
-              <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
-              <p className="hero-p">Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado — tudo pelo WhatsApp, sem app, sem burocracia.</p>
-              <div className="hero-btns">
-                <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
-                <a href="#planos" className="btn-outline">Ver planos</a>
-              </div>
-              <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
+        <section className="hero">
+          <div>
+            <p className="hero-tag">Educação financeira · WhatsApp</p>
+            <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
+            <p className="hero-p">Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado — tudo pelo WhatsApp, sem app, sem burocracia.</p>
+            <div className="hero-btns">
+              <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
+              <a href="#planos" className="btn-outline">Ver planos</a>
             </div>
-
-            {/* CHAT MOCKUP REAL */}
+            <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
+          </div>
+          <div>
             <div className="chat-wrap">
-              {/* Header estilo WhatsApp */}
-              <div className="chat-header">
-                <div className="chat-av">
-                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
-                </div>
-                <div className="chat-info">
-                  <div className="chat-name">Payroll</div>
-                  <div className="chat-status">
-                    <div className="online-dot"/>
-                    <span style={{fontSize:'11px',color:'#8696A0'}}>online</span>
-                  </div>
-                </div>
-                {/* Ícones fake do WhatsApp */}
-                <div style={{display:'flex',gap:'16px',color:'#8696A0',fontSize:'18px'}}>
-                  <span>📹</span><span>📞</span><span>⋮</span>
-                </div>
+              <div className="chat-top">
+                <div className="chat-av"><div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/></div>
+                <div><div className="chat-name">Payroll Chatbot</div><div className="chat-sub">assistente educacional</div></div>
+                <div className="chat-dot"/>
               </div>
-
-              {/* Body do chat */}
-              <div className="chat-body">
-                <div className="chat-time">ter., 12 de maio</div>
-
-                {/* Usuário manda "Oi" */}
-                <div className="msg-user">
-                  <div className="msg-user-b">
-                    <span>Oi</span>
-                    <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
-                      <span className="check">✓✓</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bot: boas-vindas + pede nome */}
-                <div className="msg-bot">
-                  <div className="msg-bot-b">
-                    👋 Olá! Bem-vindo ao <strong>Payrollia</strong>, seu assistente educacional de investimentos.<br/><br/>
-                    Estou aqui para te ajudar a entender o mercado financeiro de forma simples e clara.<br/><br/>
-                    Para começar, qual é o seu nome?
-                    <div className="msg-time">12:03</div>
-                  </div>
-                </div>
-
-                {/* Usuário responde nome */}
-                <div className="msg-user">
-                  <div className="msg-user-b">
-                    <span>Gustavo Gomes</span>
-                    <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
-                      <span className="check">✓✓</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bot: aviso CVM */}
-                <div className="msg-bot">
-                  <div className="msg-bot-b">
-                    Prazer em conhecê-lo, <strong>Gustavo Gomes!</strong> 😊<br/><br/>
-                    <span className="warn">⚠️</span> <strong>Aviso Importante — CVM</strong><br/><br/>
-                    O <strong>Payrollia</strong> é um assistente <strong>educacional</strong> de investimentos. As informações fornecidas <strong>não constituem recomendação de investimento</strong>.<br/><br/>
-                    Responda <strong>1</strong> para confirmar e prosseguir.
-                    <div className="msg-time">12:04</div>
-                  </div>
-                </div>
-
-                {/* Usuário confirma */}
-                <div className="msg-user">
-                  <div className="msg-user-b">
-                    <span>1</span>
-                    <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:04</span>
-                      <span className="check">✓✓</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bot: pergunta 1 */}
-                <div className="msg-bot">
-                  <div className="msg-bot-b">
-                    Ótimo! Vou fazer <strong>8 perguntas rápidas</strong> para identificar seu perfil. Leva menos de 2 minutos. Vamos lá! 🚀<br/><br/>
-                    📌 <strong>Pergunta 1 de 8 — Objetivo</strong><br/><br/>
-                    Qual é o seu principal objetivo ao investir?
-                    <div className="opt-list">
-                      <div className="opt"><span className="opt-num">1</span><span>Preservar meu dinheiro com segurança</span></div>
-                      <div className="opt"><span className="opt-num">2</span><span>Crescer meu patrimônio no longo prazo</span></div>
-                      <div className="opt"><span className="opt-num">3</span><span>Gerar renda passiva (dividendos, juros)</span></div>
-                      <div className="opt"><span className="opt-num">4</span><span>Multiplicar capital, mesmo com mais risco</span></div>
-                    </div>
-                    <br/>Responda com o número da opção desejada:
-                    <div className="msg-time">12:04</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Input fake */}
-              <div className="chat-input">
-                <input className="chat-input-field" placeholder="Mensagem" disabled />
-                <div className="chat-send">➤</div>
-              </div>
+              <div className="mb"><div className="mb-b">Olá! Sou o Payroll Chatbot, seu assistente de <strong>educação financeira</strong>. Posso te ajudar a entender investimentos, conhecer seu perfil e consultar dados do mercado. Por onde quer começar?</div></div>
+              <div className="mu"><div className="mu-b">Quero entender meu perfil de investidor</div></div>
+              <div className="mb"><div className="mb-b">Ótimo ponto de partida! Vou te fazer <strong>8 perguntas</strong> baseadas nas normas da CVM para mapear seu perfil. Leva menos de 3 minutos. Pode começar?</div></div>
+              <div className="mu"><div className="mu-b">Como está a Selic hoje?</div></div>
+              <div className="mb"><div className="mb-b">A Selic está em <span className="mono">10,50% a.a.</span> · CDI: <span className="mono">10,40%</span> · IPCA 12m: <span className="mono">4,83%</span><br/><br/>O retorno real (acima da inflação) é de aproximadamente <span className="mono">5,4%</span> ao ano.</div></div>
+              <div className="chat-disclaimer">Conteúdo educacional. Não constitui recomendação de investimento conforme CVM.</div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* INTEGRATIONS */}
         <div className="integrations">
@@ -584,15 +350,26 @@ export default function LandingPage() {
               <p className="legal-p">Você pode acessar, corrigir ou solicitar a exclusão dos seus dados enviando <strong>PRIVACIDADE</strong> para o bot ou escrevendo para <strong>gustavo.godlive@gmail.com</strong>.</p>
               <h3 className="legal-h2">6. Cookies</h3>
               <p className="legal-p">Este site utiliza apenas cookies técnicos essenciais. Não utilizamos cookies de rastreamento publicitário.</p>
+
               <h2 className="legal-h1" id="termos" style={{marginTop:"48px"}}>Termos de uso</h2>
               <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> Ao utilizar o Payroll Chatbot, você concorda com os termos abaixo.</p>
               <div className="legal-box">
-                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021 e estão em conformidade com as diretrizes da ANBIMA para educação financeira.</p>
+                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021 e estão em conformidade com as diretrizes da ANBIMA para educação financeira. Rentabilidade passada não é garantia de retorno futuro. Consulte um profissional certificado (CFP/CGA) antes de tomar qualquer decisão financeira.</p>
               </div>
               <h3 className="legal-h2">1. O serviço</h3>
-              <p className="legal-p">O Payroll Chatbot é um assistente virtual de educação financeira que utiliza inteligência artificial para responder dúvidas sobre investimentos, fornecer dados de mercado e auxiliar no entendimento do perfil de investidor.</p>
-              <h3 className="legal-h2">2. Planos e pagamentos</h3>
-              <p className="legal-p">Os planos Pro (R$ 12,90/mês) e Business (R$ 29,90/mês) são cobrados mensalmente via PIX. Acesso liberado automaticamente após confirmação de pagamento.</p>
+              <p className="legal-p">O Payroll Chatbot é um assistente virtual de educação financeira que utiliza inteligência artificial para responder dúvidas sobre investimentos, fornecer dados de mercado e auxiliar no entendimento do perfil de investidor. O conteúdo é estritamente educacional.</p>
+              <h3 className="legal-h2">2. Elegibilidade</h3>
+              <p className="legal-p">Destinado a pessoas físicas maiores de 18 anos residentes no Brasil com acesso ao WhatsApp.</p>
+              <h3 className="legal-h2">3. Planos e pagamentos</h3>
+              <p className="legal-p">Os planos Pro (R$ 12,90/mês) e Business (R$ 29,90/mês) são cobrados mensalmente via PIX. Acesso liberado automaticamente após confirmação de pagamento. Não há reembolso de mensalidades já pagas, exceto por falha técnica comprovada.</p>
+              <h3 className="legal-h2">4. Programa de indicação</h3>
+              <p className="legal-p">Códigos de indicação são pessoais e intransferíveis. Digite <strong>INDICAR</strong> no chat para gerar o seu. Tentativas de fraude resultarão em cancelamento da conta sem reembolso.</p>
+              <h3 className="legal-h2">5. Uso aceitável</h3>
+              <p className="legal-p">É vedado usar o serviço para fins ilegais, enviar spam ou tentar comprometer a segurança da plataforma.</p>
+              <h3 className="legal-h2">6. Limitação de responsabilidade</h3>
+              <p className="legal-p">O Payroll Chatbot não se responsabiliza por decisões financeiras tomadas com base no conteúdo educacional do assistente. Cotações e indicadores são fornecidos por fontes externas e podem apresentar atrasos.</p>
+              <h3 className="legal-h2">7. Foro</h3>
+              <p className="legal-p">Fica eleito o foro da comarca do domicílio da empresa para dirimir eventuais conflitos.</p>
             </div>
           </div>
         </section>
@@ -629,7 +406,7 @@ export default function LandingPage() {
           </div>
           <div className="footer-bottom">
             <span className="footer-copy">&copy; 2026 Payroll Chatbot · Todos os direitos reservados</span>
-            <span className="footer-cvm">Serviço de educação financeira em conformidade com a Resolução CVM n.º 20/2021 e diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro.</span>
+            <span className="footer-cvm">Serviço de educação financeira em conformidade com a Resolução CVM n.º 20/2021 e diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro. Decisões de investimento são de exclusiva responsabilidade do investidor.</span>
           </div>
         </footer>
       </div>
