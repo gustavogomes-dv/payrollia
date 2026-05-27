@@ -191,24 +191,28 @@ export default function LandingPage() {
             </div>
             <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
           </div>
+
+          {/* SIMULAÇÃO DE CHAT */}
           <div>
             <div className="chat-wrap">
               <div className="chat-top">
                 <div className="chat-av"><div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/></div>
-                <div><div className="chat-name">Payroll Chatbot</div><div className="chat-sub">assistente educacional</div></div>
+                <div><div className="chat-name">Payroll Chatbot</div><div className="chat-sub">assistente educacional com inteligência artificial</div></div>
                 <div className="chat-dot"/>
               </div>
-              <div className="mb"><div className="mb-b">Olá! Sou o Payroll Chatbot, seu assistente de <strong>educação financeira</strong>. Posso te ajudar a entender investimentos, conhecer seu perfil e consultar dados do mercado. Por onde quer começar?</div></div>
-              <div className="mu"><div className="mu-b">Quero entender meu perfil de investidor</div></div>
-              <div className="mb"><div className="mb-b">Ótimo ponto de partida! Vou te fazer <strong>8 perguntas</strong> baseadas nas normas da CVM para mapear seu perfil. Leva menos de 3 minutos. Pode começar?</div></div>
-              <div className="mu"><div className="mu-b">Como está a Selic hoje?</div></div>
-              <div className="mb"><div className="mb-b">A Selic está em <span className="mono">10,50% a.a.</span> · CDI: <span className="mono">10,40%</span> · IPCA 12m: <span className="mono">4,83%</span><br/><br/>O retorno real (acima da inflação) é de aproximadamente <span className="mono">5,4%</span> ao ano.</div></div>
+              <div className="mb"><div className="mb-b">Olá! Bem-vindo ao <strong>Payroll</strong>, seu assistente educacional de investimentos. Estou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura. Para começar, qual é o seu nome ?</div></div>
+              <div className="mu"><div className="mu-b">Lucas</div></div>
+              <div className="mb"><div className="mb-b">Prazer em conhecê-lo, Lucas! Ótimo! Antes de começar, vou fazer <strong>8 perguntas rapidas</strong> para identificar o seu perfil de investidor. Isso leva menos de 2 minutos. Vamos lá!</div></div>
+              <div className="mb"><div className="mb-b">Qual é o seu principal objetivo ao investir ?\n1️⃣ Preservar meu dinheiro com segurança\n2️⃣ Crescer meu patrimônio no longo prazo\n3️⃣ Gerar renda passiva (dividendos, juros)\n4️⃣ Multiplicar capital, mesmo com mais risco\n\nResponda com o número da opção desejada:`</div></div>
+              <div className="mu"><div className="mu-b">1</div></div>
+              <div className="mb"><div className="mb-b">Agora você pode me perguntar sobre investimentos! Estou aqui para te <strong>orientar e educar</strong> com base no seu perfil de investidor.💬 Experimente perguntar: O que é Tesouro Direto? Como funcionam os FIIs? Qual a diferença entre CDB e LCI?</div></div>
+
               <div className="chat-disclaimer">Conteúdo educacional. Não constitui recomendação de investimento conforme CVM.</div>
             </div>
           </div>
         </section>
 
-        {/* INTEGRATIONS */}
+        {/* INTEGRATIONS PILULAS */}
         <div className="integrations">
           <p className="int-label">Integrado com</p>
           <div className="pills-grid">
