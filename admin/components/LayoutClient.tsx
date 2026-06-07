@@ -5,9 +5,9 @@ import Sidebar from '@/components/Sidebar';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLanding = pathname === '/';
+  const isPublic = pathname === '/' || pathname === '/privacidade' || pathname === '/termos';
 
-  if (isLanding) {
+  if (isPublic) {
     return (
       <div style={{ background: '#FAF8F4', minHeight: '100vh', margin: 0, color: '#14102A' }}>
         {children}
