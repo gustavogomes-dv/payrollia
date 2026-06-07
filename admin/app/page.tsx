@@ -338,8 +338,8 @@ export default function LandingPage() {
           <div className="legal-cols">
             <div>
               <p className="legal-nav-title">Nesta página</p>
-              <a href="#privacidade" className="legal-nav-link">Política de privacidade</a>
-              <a href="#termos" className="legal-nav-link">Termos de uso</a>
+              <a href="/privacidade" className="footer-link">Política de privacidade</a>
+              <a href="/termos" className="footer-link">Termos de uso</a>
               <a href="#contato" className="legal-nav-link">Contato</a>
             </div>
             <div>
