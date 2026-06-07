@@ -400,8 +400,8 @@ export default function LandingPage() {
             </div>
             <div>
               <p className="footer-col-h">Legal</p>
-              <a href="#privacidade" className="footer-link">Política de privacidade</a>
-              <a href="#termos" className="footer-link">Termos de uso</a>
+              <a href="/privacidade" className="footer-link">Política de privacidade</a>
+<a href="/termos" className="footer-link">Termos de uso</a>
             </div>
             <div>
               <p className="footer-col-h">Contato</p>
