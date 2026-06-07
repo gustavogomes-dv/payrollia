@@ -174,7 +174,8 @@ export default function LandingPage() {
           <div className="nav-links">
             <a href="#como-funciona" className="nav-link">Como funciona</a>
             <a href="#planos" className="nav-link">Planos</a>
-            <a href="#privacidade" className="nav-link">Legal</a>
+            <a href="/privacidade" className="footer-link">Política de privacidade</a>
+            <a href="/termos" className="footer-link">Termos de uso</a>
             <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
           </div>
         </nav>
