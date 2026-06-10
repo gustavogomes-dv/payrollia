@@ -23,7 +23,10 @@ export default function LandingPage() {
         .nav-links{display:flex;align-items:center;gap:28px}
         .nav-link{font-size:14px;color:var(--mute);text-decoration:none}
         .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none}
-        .hero{background:var(--aubergine);padding:96px 48px 80px;display:grid;grid-template-columns:1fr 460px;gap:64px;align-items:center}
+
+        /* HERO */
+        .hero{background:var(--aubergine);padding:96px 48px 80px;display:grid;grid-template-columns:1fr 420px;gap:56px;align-items:center;max-width:1280px;margin:0 auto}
+        .hero-outer{background:var(--aubergine)}
         .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;opacity:.85}
         .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:70px;line-height:1.02;color:var(--bone);letter-spacing:-0.025em;margin-bottom:28px}
         .hero-h em{font-style:normal;color:var(--lime)}
@@ -32,21 +35,158 @@ export default function LandingPage() {
         .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;display:inline-block}
         .btn-outline{border:1px solid rgba(250,248,244,.2);color:var(--bone);padding:14px 28px;border-radius:100px;font-size:15px;text-decoration:none;display:inline-block}
         .hero-note{margin-top:24px;font-family:'Geist Mono',monospace;font-size:11px;color:var(--bone4);letter-spacing:.05em}
-        .chat-wrap{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:24px}
-        .chat-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}
-        .chat-av{width:38px;height:38px;background:var(--lime);border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 7px;gap:1px;flex-shrink:0}
-        .chat-av .bar{background:var(--aubergine);height:7px;border-radius:3.5px}
-        .chat-av .bar-s{width:14px}.chat-av .bar-l{width:24px}.chat-av .bar-m{width:19px}
-        .chat-name{font-size:14px;font-weight:600;color:var(--bone)}
-        .chat-sub{font-size:12px;color:var(--aubergine-400);margin-top:1px}
-        .chat-dot{width:7px;height:7px;background:var(--lime);border-radius:50%;margin-left:auto}
-        .mu{display:flex;justify-content:flex-end;margin-bottom:10px}
-        .mu-b{background:var(--aubergine-500);color:var(--bone);padding:10px 15px;border-radius:16px 16px 4px 16px;font-size:13px;max-width:82%;line-height:1.45}
-        .mb{display:flex;justify-content:flex-start;margin-bottom:10px}
-        .mb-b{background:var(--white);color:var(--ink);padding:11px 15px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:92%;line-height:1.5;border:1px solid var(--bone3)}
-        .mb-b strong{font-weight:600;color:var(--aubergine)}
-        .mono{font-family:'Geist Mono',monospace;color:var(--aubergine-500);font-weight:500}
-        .chat-disclaimer{margin-top:14px;padding:10px 14px;background:rgba(200,242,96,.08);border:1px solid rgba(200,242,96,.12);border-radius:8px;font-size:11px;color:rgba(250,248,244,.4);line-height:1.5}
+
+        /* ── CHAT MOCKUP REAL ── */
+        .chat-wrap{
+          width:100%;
+          border-radius:16px;
+          overflow:hidden;
+          box-shadow:0 24px 60px rgba(0,0,0,.45);
+          border:1px solid rgba(255,255,255,.06);
+        }
+
+        /* Header WhatsApp */
+        .chat-header{
+          background:#1F1B3A;
+          padding:10px 14px;
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+        .chat-av{
+          width:34px;height:34px;
+          background:var(--lime);
+          border-radius:50%;
+          display:flex;flex-direction:column;
+          align-items:center;justify-content:center;
+          padding:0 7px;gap:2px;
+          flex-shrink:0;
+        }
+        .chat-av .bar{background:var(--aubergine);height:4px;border-radius:2px}
+        .chat-av .bar-s{width:9px}.chat-av .bar-l{width:17px}.chat-av .bar-m{width:13px}
+        .chat-hinfo{flex:1}
+        .chat-hname{font-size:13px;font-weight:600;color:#E8E8E8;line-height:1.2}
+        .chat-hsub{font-size:11px;color:#8696A0;display:flex;align-items:center;gap:4px}
+        .online-dot{width:5px;height:5px;background:#25D366;border-radius:50%}
+        .chat-icons{color:#8696A0;font-size:16px;display:flex;gap:14px}
+
+        /* Corpo */
+        .chat-body{
+          background:#0B141A;
+          padding:12px 10px;
+          display:flex;
+          flex-direction:column;
+          gap:5px;
+        }
+
+        /* Data */
+        .chat-date{
+          align-self:center;
+          background:rgba(17,27,33,.85);
+          color:#8696A0;
+          font-size:10px;
+          font-family:'Geist Mono',monospace;
+          padding:3px 10px;
+          border-radius:6px;
+          margin:4px 0;
+        }
+
+        /* Separador de etapa */
+        .chat-step{
+          align-self:center;
+          background:rgba(200,242,96,.07);
+          border:1px solid rgba(200,242,96,.15);
+          color:rgba(200,242,96,.6);
+          font-size:9px;
+          font-family:'Geist Mono',monospace;
+          letter-spacing:.08em;
+          text-transform:uppercase;
+          padding:3px 10px;
+          border-radius:6px;
+          margin:6px 0 2px;
+        }
+
+        /* Mensagem bot */
+        .msg-bot{max-width:88%;align-self:flex-start;}
+        .msg-bot-b{
+          background:#202C33;
+          color:#E8E8E8;
+          padding:8px 11px;
+          border-radius:0 8px 8px 8px;
+          font-size:12px;
+          line-height:1.55;
+        }
+        .msg-bot-b strong{color:#C8F260;font-weight:600}
+        .msg-bot-b .warn{color:#FFD700}
+        .msg-meta{
+          font-size:10px;color:#8696A0;
+          text-align:right;margin-top:3px;
+          font-family:'Geist Mono',monospace;
+        }
+
+        /* Mensagem usuário */
+        .msg-user{align-self:flex-end;max-width:72%;}
+        .msg-user-b{
+          background:#005C4B;
+          color:#E8E8E8;
+          padding:8px 11px;
+          border-radius:8px 0 8px 8px;
+          font-size:12px;
+          line-height:1.5;
+          display:flex;flex-direction:column;
+        }
+        .msg-user-meta{
+          display:flex;align-items:center;
+          justify-content:flex-end;gap:3px;
+          margin-top:3px;
+        }
+        .check{font-size:10px;color:#53BDEB}
+
+        /* Opções numeradas */
+        .opt-list{margin-top:5px;display:flex;flex-direction:column;gap:3px;}
+        .opt{display:flex;align-items:flex-start;gap:5px;font-size:11.5px;}
+        .opt-n{
+          width:16px;height:16px;
+          background:#1E4A6E;border:1px solid #2D6FA3;
+          border-radius:3px;
+          display:flex;align-items:center;justify-content:center;
+          font-size:9px;font-weight:600;color:#6BB5F0;
+          flex-shrink:0;margin-top:1px;
+        }
+
+        /* Resultado perfil */
+        .perfil-box{
+          background:rgba(45,35,86,.3);
+          border:1px solid rgba(200,242,96,.15);
+          border-radius:6px;
+          padding:8px 10px;
+          margin-top:5px;
+        }
+        .perfil-title{
+          font-size:12px;font-weight:600;
+          color:#C8F260;margin-bottom:4px;
+        }
+        .perfil-body{font-size:11.5px;color:#D0D0D0;line-height:1.5;}
+
+        /* Input fake */
+        .chat-input{
+          background:#1F2C34;
+          padding:8px 12px;
+          display:flex;align-items:center;gap:8px;
+        }
+        .chat-input-fake{
+          flex:1;background:#2A3942;
+          border-radius:18px;padding:7px 12px;
+          font-size:12px;color:#8696A0;
+          font-family:'Geist',sans-serif;
+        }
+        .send-btn{
+          width:32px;height:32px;background:#00A884;
+          border-radius:50%;display:flex;align-items:center;
+          justify-content:center;font-size:14px;flex-shrink:0;
+        }
+
+        /* restante da página igual ao original */
         .integrations{background:var(--bone2);border-bottom:1px solid var(--bone3);padding:28px 48px}
         .int-label{text-align:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
         .pills-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:860px;margin:0 auto}
@@ -139,13 +279,12 @@ export default function LandingPage() {
         .social-btn:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
         .social-btn svg{width:14px;height:14px;flex-shrink:0}
         .social-btn span{font-size:12px;color:var(--mute);font-family:'Geist',sans-serif}
-        .social-btn:hover span{color:var(--bone)}
         .footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:32px}
         .footer-copy{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);white-space:nowrap}
         .footer-cvm{font-size:12px;color:var(--mute);max-width:520px;line-height:1.6;opacity:.55}
         @media(max-width:900px){
           .nav{padding:0 20px}.nav-links .nav-link{display:none}
-          .hero{grid-template-columns:1fr;padding:56px 20px}.hero-h{font-size:48px}.chat-wrap{display:none}
+          .hero-outer > .hero{grid-template-columns:1fr;padding:56px 20px}.hero-h{font-size:48px}.chat-wrap{display:none}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
           .feat:first-child{border-radius:16px 16px 0 0}.feat:last-child{border-radius:0 0 16px 16px}
@@ -157,7 +296,7 @@ export default function LandingPage() {
           .cta-section{grid-template-columns:1fr;padding:56px 20px}.cta-h{font-size:36px}
           .legal-cols{grid-template-columns:1fr}
           .footer-top{grid-template-columns:1fr 1fr}.footer{padding:40px 20px 24px}
-          .integrations{padding:20px 16px}.pills-grid{gap:8px;justify-content:center}
+          .integrations{padding:20px 16px}.pills-grid{gap:8px}
           .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}.pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
           .footer-social{flex-direction:column}
@@ -174,60 +313,163 @@ export default function LandingPage() {
           <div className="nav-links">
             <a href="#como-funciona" className="nav-link">Como funciona</a>
             <a href="#planos" className="nav-link">Planos</a>
-            <a href="/privacidade" className="nav-link">Política de privacidade</a>
-            <a href="/termos" className="nav-link">Termos de uso</a>
+            <a href="#privacidade" className="nav-link">Legal</a>
             <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
           </div>
         </nav>
 
         {/* HERO */}
-        <section className="hero">
-          <div>
-            <p className="hero-tag">Educação financeira · WhatsApp</p>
-            <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
-            <p className="hero-p">Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado — tudo pelo WhatsApp, sem app, sem burocracia.</p>
-            <div className="hero-btns">
-              <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
-              <a href="#planos" className="btn-outline">Ver planos</a>
-            </div>
-            <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
-          </div>
-
-          {/* SIMULAÇÃO DE CHAT */}
-          <div>
-            <div className="chat-wrap">
-              <div className="chat-top">
-                <div className="chat-av"><div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/></div>
-                <div><div className="chat-name">Payroll Chatbot</div><div className="chat-sub">assistente educacional com inteligência artificial</div></div>
-                <div className="chat-dot"/>
+        <div className="hero-outer">
+          <div className="hero">
+            <div>
+              <p className="hero-tag">Educação financeira · WhatsApp</p>
+              <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
+              <p className="hero-p">Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado — tudo pelo WhatsApp, sem app, sem burocracia.</p>
+              <div className="hero-btns">
+                <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
+                <a href="#planos" className="btn-outline">Ver planos</a>
               </div>
-              <div className="mb"><div className="mb-b">Olá! Bem-vindo ao <strong>Payroll</strong>, seu assistente educacional de investimentos. Estou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura. Para começar, qual é o seu nome ?</div></div>
-              <div className="mu"><div className="mu-b">Lucas</div></div>
-              <div className="mb"><div className="mb-b">Prazer em conhecê-lo, Lucas! Ótimo! Antes de começar, vou fazer <strong>8 perguntas rapidas</strong> para identificar o seu perfil de investidor. Isso leva menos de 2 minutos. Vamos lá!</div></div>
-              <div className="mb"><div className="mb-b">Qual é o seu principal objetivo ao investir ?\n1️⃣ Preservar meu dinheiro com segurança\n2️⃣ Crescer meu patrimônio no longo prazo\n3️⃣ Gerar renda passiva (dividendos, juros)\n4️⃣ Multiplicar capital, mesmo com mais risco\n\nResponda com o número da opção desejada:`</div></div>
-              <div className="mu"><div className="mu-b">1</div></div>
-              <div className="mb"><div className="mb-b">Agora você pode me perguntar sobre investimentos! Estou aqui para te <strong>orientar e educar</strong> com base no seu perfil de investidor.💬 Experimente perguntar: O que é Tesouro Direto? Como funcionam os FIIs? Qual a diferença entre CDB e LCI?</div></div>
+              <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
+            </div>
 
-              <div className="chat-disclaimer">Conteúdo educacional. Não constitui recomendação de investimento conforme CVM.</div>
+            {/* ── CHAT MOCKUP REAL ── */}
+            <div className="chat-wrap">
+
+              {/* Header */}
+              <div className="chat-header">
+                <div className="chat-av">
+                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
+                </div>
+                <div className="chat-hinfo">
+                  <div className="chat-hname">Payroll</div>
+                  <div className="chat-hsub"><div className="online-dot"/><span>online</span></div>
+                </div>
+                <div className="chat-icons"><span>📹</span><span>📞</span></div>
+              </div>
+
+              {/* Body */}
+              <div className="chat-body">
+
+                <div className="chat-date">ter., 12 de maio</div>
+
+                {/* ── ETAPA 1: Boas-vindas ── */}
+                <div className="chat-step">01 · boas-vindas</div>
+
+                {/* Usuário manda Oi */}
+                <div className="msg-user">
+                  <div className="msg-user-b">
+                    <span>Oi</span>
+                    <div className="msg-user-meta">
+                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
+                      <span className="check">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bot: boas-vindas */}
+                <div className="msg-bot">
+                  <div className="msg-bot-b">
+                    👋 Olá! Bem-vindo ao <strong>Payrollia</strong>, seu assistente educacional de investimentos.<br/><br/>
+                    Estou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.<br/><br/>
+                    Para começar, qual é o seu nome?
+                    <div className="msg-meta">12:03</div>
+                  </div>
+                </div>
+
+                {/* Usuário responde nome */}
+                <div className="msg-user">
+                  <div className="msg-user-b">
+                    <span>Gustavo Gomes</span>
+                    <div className="msg-user-meta">
+                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
+                      <span className="check">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── ETAPA 2: Suitability ── */}
+                <div className="chat-step">02 · suitability CVM</div>
+
+                {/* Bot: aviso + pergunta 1 */}
+                <div className="msg-bot">
+                  <div className="msg-bot-b">
+                    Prazer, <strong>Gustavo Gomes!</strong> 😊<br/><br/>
+                    <span className="warn">⚠️</span> <strong>Aviso CVM</strong> — O Payrollia é um assistente <strong>educacional</strong>. As informações não constituem recomendação de investimento. Responda <strong>1</strong> para confirmar.
+                    <div className="msg-meta">12:04</div>
+                  </div>
+                </div>
+
+                {/* Usuário confirma */}
+                <div className="msg-user">
+                  <div className="msg-user-b">
+                    <span>1</span>
+                    <div className="msg-user-meta">
+                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:04</span>
+                      <span className="check">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bot: pergunta 1 */}
+                <div className="msg-bot">
+                  <div className="msg-bot-b">
+                    📌 <strong>Pergunta 1 de 8 — Objetivo</strong><br/><br/>
+                    Qual é o seu principal objetivo ao investir?
+                    <div className="opt-list">
+                      <div className="opt"><span className="opt-n">1</span><span>Preservar meu dinheiro com segurança</span></div>
+                      <div className="opt"><span className="opt-n">2</span><span>Crescer meu patrimônio no longo prazo</span></div>
+                      <div className="opt"><span className="opt-n">3</span><span>Gerar renda passiva (dividendos, juros)</span></div>
+                      <div className="opt"><span className="opt-n">4</span><span>Multiplicar capital, mesmo com mais risco</span></div>
+                    </div>
+                    <div className="msg-meta">12:04</div>
+                  </div>
+                </div>
+
+                {/* ── ETAPA 3: Resultado ── */}
+                <div className="chat-step">03 · resultado do perfil</div>
+
+                {/* Bot: resultado */}
+                <div className="msg-bot">
+                  <div className="msg-bot-b">
+                    ✅ <strong>Questionário concluído!</strong>
+                    <div className="perfil-box">
+                      <div className="perfil-title">🛡️ Perfil Conservador</div>
+                      <div className="perfil-body">
+                        Você prioriza a segurança do seu patrimônio. Indicados para você: <strong>Tesouro Selic, CDBs, LCI/LCA</strong> e fundos de renda fixa.
+                      </div>
+                    </div>
+                    <br/>
+                    Agora você pode me perguntar sobre investimentos! 💬 Experimente: <strong>"O que é Tesouro Direto?"</strong>
+                    <div className="msg-meta">12:04</div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Input fake */}
+              <div className="chat-input">
+                <div className="chat-input-fake">Mensagem</div>
+                <div className="send-btn">➤</div>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* INTEGRATIONS PILULAS */}
+        {/* INTEGRATIONS */}
         <div className="integrations">
           <p className="int-label">Integrado com</p>
           <div className="pills-grid">
-            <div className="pill p1"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=whatsapp.com&sz=64" alt="WhatsApp" /></div><span className="pill-text">WhatsApp</span></div>
-            <div className="pill p2"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&sz=64" alt="Claude AI" /></div><span className="pill-text">Claude AI</span></div>
-            <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3" /></div><span className="pill-text">B3</span></div>
-            <div className="pill p4"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=bcb.gov.br&sz=64" alt="BCB" /></div><span className="pill-text">Banco Central</span></div>
-            <div className="pill p5"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=brapi.dev&sz=64" alt="Brapi" /></div><span className="pill-text">Brapi</span></div>
-            <div className="pill p6"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=cvm.gov.br&sz=64" alt="CVM" /></div><span className="pill-text">CVM</span></div>
-            <div className="pill p7"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anbima.com.br&sz=64" alt="ANBIMA" /></div><span className="pill-text">ANBIMA</span></div>
-            <div className="pill p8"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=abacatepay.com&sz=64" alt="AbacatePay" /></div><span className="pill-text">AbacatePay</span></div>
-            <div className="pill p9"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=railway.app&sz=64" alt="Railway" /></div><span className="pill-text">Railway</span></div>
-            <div className="pill p10"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=postgresql.org&sz=64" alt="PostgreSQL" /></div><span className="pill-text">PostgreSQL</span></div>
-            <div className="pill p11"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=redis.io&sz=64" alt="Redis" /></div><span className="pill-text">Redis</span></div>
+            <div className="pill p1"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=whatsapp.com&sz=64" alt="WhatsApp"/></div><span className="pill-text">WhatsApp</span></div>
+            <div className="pill p2"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&sz=64" alt="Claude AI"/></div><span className="pill-text">Claude AI</span></div>
+            <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3"/></div><span className="pill-text">B3</span></div>
+            <div className="pill p4"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=bcb.gov.br&sz=64" alt="BCB"/></div><span className="pill-text">Banco Central</span></div>
+            <div className="pill p5"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=brapi.dev&sz=64" alt="Brapi"/></div><span className="pill-text">Brapi</span></div>
+            <div className="pill p6"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=cvm.gov.br&sz=64" alt="CVM"/></div><span className="pill-text">CVM</span></div>
+            <div className="pill p7"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anbima.com.br&sz=64" alt="ANBIMA"/></div><span className="pill-text">ANBIMA</span></div>
+            <div className="pill p8"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=abacatepay.com&sz=64" alt="AbacatePay"/></div><span className="pill-text">AbacatePay</span></div>
+            <div className="pill p9"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=railway.app&sz=64" alt="Railway"/></div><span className="pill-text">Railway</span></div>
+            <div className="pill p10"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=postgresql.org&sz=64" alt="PostgreSQL"/></div><span className="pill-text">PostgreSQL</span></div>
+            <div className="pill p11"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=redis.io&sz=64" alt="Redis"/></div><span className="pill-text">Redis</span></div>
           </div>
         </div>
 
@@ -339,13 +581,13 @@ export default function LandingPage() {
           <div className="legal-cols">
             <div>
               <p className="legal-nav-title">Nesta página</p>
-              <a href="/privacidade" className="footer-link">Política de privacidade</a>
-              <a href="/termos" className="footer-link">Termos de uso</a>
+              <a href="#privacidade" className="legal-nav-link">Política de privacidade</a>
+              <a href="#termos" className="legal-nav-link">Termos de uso</a>
               <a href="#contato" className="legal-nav-link">Contato</a>
             </div>
             <div>
               <h2 className="legal-h1 first">Política de privacidade</h2>
-              <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> A Payroll Chatbot Inova Simples I.S., inscrita no CNPJ 66.618.119/0001-30 (&ldquo;Payroll Chatbot&rdquo;), opera o assistente educacional de investimentos acessível pelo WhatsApp no número (35) 91014-8222 e pelo site payrollia.com.br.</p>
+              <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> A Payroll Chatbot Inova Simples I.S., inscrita no CNPJ 66.618.119/0001-30, opera o assistente educacional acessível pelo WhatsApp no número (35) 91014-8222 e pelo site payrollia.com.br.</p>
               <h3 className="legal-h2">1. Dados que coletamos</h3>
               <p className="legal-p">Coletamos seu <strong>número de telefone WhatsApp</strong>, o <strong>nome</strong> informado no início da conversa, suas <strong>respostas ao questionário de suitability</strong> e o <strong>histórico de mensagens</strong> necessário para contextualizar as respostas da IA.</p>
               <h3 className="legal-h2">2. Como usamos seus dados</h3>
@@ -359,9 +601,9 @@ export default function LandingPage() {
               <h3 className="legal-h2">6. Cookies</h3>
               <p className="legal-p">Este site utiliza apenas cookies técnicos essenciais. Não utilizamos cookies de rastreamento publicitário.</p>
               <h2 className="legal-h1" id="termos" style={{marginTop:"48px"}}>Termos de uso</h2>
-              <p className="legal-p"><strong>Última atualização: maio de 2026.</strong> Ao utilizar o Payroll Chatbot, você concorda com os termos abaixo.</p>
+              <p className="legal-p"><strong>Última atualização: maio de 2026.</strong></p>
               <div className="legal-box">
-                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021 e estão em conformidade com as diretrizes da ANBIMA para educação financeira. Rentabilidade passada não é garantia de retorno futuro. Consulte um profissional certificado (CFP/CGA) antes de tomar qualquer decisão financeira.</p>
+                <p><strong>Aviso importante:</strong> o Payroll Chatbot é um serviço de <strong>educação financeira</strong>. As informações fornecidas não constituem recomendação de investimento nos termos da Resolução CVM n.º 20/2021 e estão em conformidade com as diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro. Consulte um profissional certificado (CFP/CGA) antes de tomar qualquer decisão financeira.</p>
               </div>
               <h3 className="legal-h2">1. O serviço</h3>
               <p className="legal-p">O Payroll Chatbot é um assistente virtual de educação financeira que utiliza inteligência artificial para responder dúvidas sobre investimentos, fornecer dados de mercado e auxiliar no entendimento do perfil de investidor. O conteúdo é estritamente educacional.</p>
@@ -370,12 +612,10 @@ export default function LandingPage() {
               <h3 className="legal-h2">3. Planos e pagamentos</h3>
               <p className="legal-p">Os planos Pro (R$ 12,90/mês) e Business (R$ 29,90/mês) são cobrados mensalmente via PIX. Acesso liberado automaticamente após confirmação de pagamento. Não há reembolso de mensalidades já pagas, exceto por falha técnica comprovada.</p>
               <h3 className="legal-h2">4. Programa de indicação</h3>
-              <p className="legal-p">Códigos de indicação são pessoais e intransferíveis. Digite <strong>INDICAR</strong> no chat para gerar o seu. Tentativas de fraude resultarão em cancelamento da conta sem reembolso.</p>
-              <h3 className="legal-h2">5. Uso aceitável</h3>
-              <p className="legal-p">É vedado usar o serviço para fins ilegais, enviar spam ou tentar comprometer a segurança da plataforma.</p>
-              <h3 className="legal-h2">6. Limitação de responsabilidade</h3>
-              <p className="legal-p">O Payroll Chatbot não se responsabiliza por decisões financeiras tomadas com base no conteúdo educacional do assistente. Cotações e indicadores são fornecidos por fontes externas e podem apresentar atrasos.</p>
-              <h3 className="legal-h2">7. Foro</h3>
+              <p className="legal-p">Códigos de indicação são pessoais e intransferíveis. Digite <strong>INDICAR</strong> no chat para gerar o seu.</p>
+              <h3 className="legal-h2">5. Limitação de responsabilidade</h3>
+              <p className="legal-p">O Payroll Chatbot não se responsabiliza por decisões financeiras tomadas com base no conteúdo educacional do assistente.</p>
+              <h3 className="legal-h2">6. Foro</h3>
               <p className="legal-p">Fica eleito o foro da comarca do domicílio da empresa para dirimir eventuais conflitos.</p>
             </div>
           </div>
@@ -401,8 +641,8 @@ export default function LandingPage() {
             </div>
             <div>
               <p className="footer-col-h">Legal</p>
-              <a href="/privacidade" className="footer-link">Política de privacidade</a>
-<a href="/termos" className="footer-link">Termos de uso</a>
+              <a href="#privacidade" className="footer-link">Política de privacidade</a>
+              <a href="#termos" className="footer-link">Termos de uso</a>
             </div>
             <div>
               <p className="footer-col-h">Contato</p>
@@ -410,17 +650,10 @@ export default function LandingPage() {
               <a href="https://wa.me/5535910148222" className="footer-link" target="_blank" rel="noopener noreferrer">(35) 91014-8222</a>
               <a href="https://payrollia.com.br" className="footer-link">payrollia.com.br</a>
             </div>
-
-            {/* NOVA COLUNA: Redes Sociais */}
             <div>
               <p className="footer-col-h">Redes sociais</p>
-              <a href="https://www.instagram.com/payroll.ia/" className="footer-link" target="_blank" rel="noopener noreferrer">
-                Instagram
-              </a>
-              <a href="https://www.linkedin.com/company/payroll-ia/" className="footer-link" target="_blank" rel="noopener noreferrer">
-                LinkedIn
-              </a>
-              {/* Botões com ícone */}
+              <a href="https://www.instagram.com/payroll.ia/" className="footer-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://www.linkedin.com/company/payroll-ia/" className="footer-link" target="_blank" rel="noopener noreferrer">LinkedIn</a>
               <div className="footer-social">
                 <a href="https://www.instagram.com/payroll.ia/" className="social-btn" target="_blank" rel="noopener noreferrer">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{color:'var(--mute)'}}>
@@ -441,7 +674,6 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-
           <div className="footer-bottom">
             <span className="footer-copy">&copy; 2026 Payroll Chatbot · Todos os direitos reservados</span>
             <span className="footer-cvm">Serviço de educação financeira em conformidade com a Resolução CVM n.º 20/2021 e diretrizes da ANBIMA. Rentabilidade passada não é garantia de retorno futuro. Decisões de investimento são de exclusiva responsabilidade do investidor.</span>
