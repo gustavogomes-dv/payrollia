@@ -338,13 +338,7 @@ app.delete('/admin/cupons/:id', async (req, res) => {
 });
 
 // ─── Rotas administrativas de CRUD de clientes ───────────────────────────────
-// Adicionar em src/server.js após as rotas existentes de /admin
 
-const express = require('express');
-
-// Cole este bloco no seu src/server.js, logo após as rotas /admin/cupons existentes:
-
-// ── GET /admin/clientes — já existe, mantém
 // ── POST /admin/clientes — criar usuário manualmente
 app.post('/admin/clientes', async (req, res) => {
   const { name, phone, perfil, plano = 'free' } = req.body;
