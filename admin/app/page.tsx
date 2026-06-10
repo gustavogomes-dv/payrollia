@@ -439,7 +439,7 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <br/>
-                    Agora você pode me perguntar sobre investimentos! 💬 Experimente: <strong>"O que é Tesouro Direto?"</strong>
+                    Agora você pode me perguntar sobre investimentos! 💬 Experimente: <strong>O que é Tesouro Direto?</strong>
                     <div className="msg-meta">12:04</div>
                   </div>
                 </div>
