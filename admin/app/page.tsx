@@ -30,154 +30,142 @@ export default function LandingPage() {
         .hero-outer{background:var(--aubergine)}
         .hero{
           max-width:1280px;margin:0 auto;
-          padding:88px 48px 80px;
+          padding:96px 64px 88px;
           display:grid;
-          grid-template-columns:1fr 440px;
-          gap:64px;
+          grid-template-columns:1fr 460px;
+          gap:72px;
           align-items:center;
         }
-        .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;opacity:.85}
-        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:68px;line-height:1.02;color:var(--bone);letter-spacing:-0.025em;margin-bottom:28px}
+        .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:24px;opacity:.8}
+        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:72px;line-height:1.0;color:var(--bone);letter-spacing:-0.03em;margin-bottom:28px}
         .hero-h em{font-style:normal;color:var(--lime)}
-        .hero-p{font-size:17px;color:var(--bone3);line-height:1.65;max-width:430px;margin-bottom:40px}
-        .hero-btns{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-        .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;display:inline-block}
-        .btn-outline{border:1px solid rgba(250,248,244,.25);color:var(--bone);padding:14px 28px;border-radius:100px;font-size:15px;text-decoration:none;display:inline-block}
-        .hero-note{margin-top:22px;font-family:'Geist Mono',monospace;font-size:11px;color:rgba(250,248,244,.4);letter-spacing:.05em}
+        .hero-p{font-size:17px;color:rgba(250,248,244,.6);line-height:1.7;max-width:400px;margin-bottom:44px}
+        .hero-btns{display:flex;gap:12px;align-items:center}
+        .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:-0.01em}
+        .btn-outline{border:1px solid rgba(250,248,244,.15);color:rgba(250,248,244,.7);padding:14px 28px;border-radius:100px;font-size:14px;text-decoration:none;display:inline-block}
+        .hero-note{margin-top:20px;font-size:12px;color:rgba(250,248,244,.25);letter-spacing:.02em}
 
-        /* CHAT CARD */
+        /* CHAT CARD — estilo fintech limpo */
         .chat-card{
-          background:#1A1F2E;
-          border-radius:16px;
+          background:#FFFFFF;
+          border-radius:20px;
           overflow:hidden;
-          box-shadow:0 32px 80px rgba(0,0,0,.5);
-          border:1px solid rgba(255,255,255,.07);
+          box-shadow:0 40px 100px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06);
           width:100%;
         }
 
-        /* Chat header */
         .chat-header{
-          background:#1E2435;
-          padding:12px 16px;
+          background:#FFFFFF;
+          padding:16px 20px;
           display:flex;align-items:center;gap:12px;
-          border-bottom:1px solid rgba(255,255,255,.05);
+          border-bottom:1px solid #F0EEF8;
         }
         .chat-av{
-          width:36px;height:36px;
+          width:38px;height:38px;
           background:var(--aubergine);
-          border-radius:50%;
+          border-radius:10px;
           display:flex;flex-direction:column;
           align-items:center;justify-content:center;
           padding:0 7px;gap:2px;flex-shrink:0;
-          border:2px solid var(--lime);
         }
         .chat-av .bar{background:var(--lime);height:3px;border-radius:2px}
-        .chat-av .bar-s{width:8px}.chat-av .bar-l{width:16px}.chat-av .bar-m{width:12px}
+        .chat-av .bar-s{width:9px}.chat-av .bar-l{width:17px}.chat-av .bar-m{width:13px}
         .chat-hinfo{flex:1}
-        .chat-hname{font-size:13px;font-weight:600;color:#E8E8E8;line-height:1.2}
-        .chat-hsub{font-size:11px;color:var(--aubergine-400);display:flex;align-items:center;gap:5px}
-        .online-dot{width:6px;height:6px;background:#25D366;border-radius:50%;flex-shrink:0}
-        .chat-actions{display:flex;gap:14px;color:rgba(255,255,255,.3);font-size:15px}
+        .chat-hname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2}
+        .chat-hsub{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:5px;margin-top:1px}
+        .online-dot{width:6px;height:6px;background:#22C55E;border-radius:50%;flex-shrink:0}
+        .chat-more{color:var(--bone4);font-size:18px;letter-spacing:1px;line-height:1;padding-bottom:4px}
 
-        /* Chat body */
         .chat-body{
-          padding:14px 12px;
-          display:flex;flex-direction:column;gap:6px;
-          background:#111827;
-          max-height:480px;
-          overflow:hidden;
+          padding:20px 18px;
+          display:flex;flex-direction:column;gap:10px;
+          background:#FAFAFA;
         }
 
-        .chat-date{
-          align-self:center;
-          background:rgba(255,255,255,.06);
-          color:rgba(255,255,255,.3);
-          font-size:10px;font-family:'Geist Mono',monospace;
-          padding:3px 10px;border-radius:6px;margin:2px 0 4px;
+        /* Bot bubble */
+        .msg-bot{max-width:84%;align-self:flex-start}
+        .msg-bot-b{
+          background:#FFFFFF;
+          border:1px solid #EEE;
+          color:#1a1a2e;
+          padding:12px 14px;
+          border-radius:4px 16px 16px 16px;
+          font-size:13px;line-height:1.65;
+          box-shadow:0 1px 4px rgba(0,0,0,.05);
         }
+        .msg-bot-b strong{color:var(--aubergine);font-weight:600}
+        .msg-time{font-size:10px;color:#B0B0C0;text-align:right;margin-top:5px;font-family:'Geist Mono',monospace}
 
-        .chat-step-label{
+        /* User bubble */
+        .msg-user{align-self:flex-end;max-width:72%}
+        .msg-user-b{
+          background:var(--aubergine);
+          color:rgba(250,248,244,.9);
+          padding:12px 14px;
+          border-radius:16px 4px 16px 16px;
+          font-size:13px;line-height:1.5;
+        }
+        .msg-user-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:5px}
+        .msg-user-time{font-size:10px;color:rgba(200,242,96,.5);font-family:'Geist Mono',monospace}
+        .check{font-size:11px;color:var(--lime);opacity:.7}
+
+        /* Step label */
+        .step-pill{
           align-self:center;
-          background:rgba(200,242,96,.06);
-          border:1px solid rgba(200,242,96,.12);
-          color:rgba(200,242,96,.5);
+          background:#F0EEF8;
+          color:var(--aubergine-400);
           font-size:9px;font-family:'Geist Mono',monospace;
           letter-spacing:.1em;text-transform:uppercase;
-          padding:2px 10px;border-radius:6px;margin:4px 0 2px;
+          padding:3px 10px;border-radius:20px;
+          margin:2px 0;
         }
-
-        /* Bot message */
-        .msg-bot{max-width:86%;align-self:flex-start}
-        .msg-bot-b{
-          background:#1E2D3D;
-          color:#D8D8D8;
-          padding:9px 12px;
-          border-radius:2px 10px 10px 10px;
-          font-size:12.5px;line-height:1.6;
-        }
-        .msg-bot-b strong{color:var(--lime);font-weight:600}
-        .msg-bot-b .warn{color:#FFD700}
-        .msg-time{font-size:10px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;font-family:'Geist Mono',monospace}
-
-        /* User message */
-        .msg-user{align-self:flex-end;max-width:70%}
-        .msg-user-b{
-          background:#1B4F3A;
-          color:#E0E0E0;
-          padding:9px 12px;
-          border-radius:10px 2px 10px 10px;
-          font-size:12.5px;line-height:1.5;
-        }
-        .msg-user-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px}
-        .msg-user-time{font-size:10px;color:rgba(255,255,255,.25);font-family:'Geist Mono',monospace}
-        .check{font-size:11px;color:#53BDEB}
 
         /* Options */
-        .opt-list{margin-top:7px;display:flex;flex-direction:column;gap:4px}
-        .opt{display:flex;align-items:flex-start;gap:6px;font-size:12px}
+        .opt-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+        .opt{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:#333}
         .opt-n{
-          width:17px;height:17px;min-width:17px;
-          background:rgba(45,35,86,.6);border:1px solid rgba(200,242,96,.2);
-          border-radius:4px;display:flex;align-items:center;justify-content:center;
-          font-size:9px;font-weight:600;color:var(--lime);margin-top:1px;
+          min-width:18px;height:18px;
+          background:#F0EEF8;border:1px solid #D8D4F0;
+          border-radius:5px;display:flex;align-items:center;justify-content:center;
+          font-size:9px;font-weight:600;color:var(--aubergine);margin-top:1px;
         }
 
-        /* Perfil box */
-        .perfil-box{
-          background:rgba(200,242,96,.05);
-          border:1px solid rgba(200,242,96,.15);
-          border-radius:8px;padding:9px 11px;margin-top:7px;
-        }
-        .perfil-title{font-size:12px;font-weight:600;color:var(--lime);margin-bottom:4px}
-        .perfil-body{font-size:11.5px;color:#C0C0C0;line-height:1.5}
-        .perfil-body strong{color:#E0E0E0}
-
-        /* Selic response */
+        /* Selic data */
         .selic-box{
-          background:rgba(45,35,86,.4);
-          border:1px solid rgba(117,97,175,.2);
-          border-radius:8px;padding:9px 11px;margin-top:7px;
+          background:#F7F6FD;
+          border:1px solid #E8E4F5;
+          border-radius:10px;padding:10px 12px;margin-top:8px;
         }
-        .selic-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+        .selic-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #EEE}
         .selic-row:last-child{border-bottom:none}
-        .selic-label{font-size:11px;color:rgba(255,255,255,.4);font-family:'Geist Mono',monospace}
-        .selic-val{font-size:12px;font-weight:500;color:var(--lime);font-family:'Geist Mono',monospace}
+        .selic-label{font-size:11px;color:var(--mute);font-family:'Geist Mono',monospace}
+        .selic-val{font-size:12px;font-weight:600;color:var(--aubergine);font-family:'Geist Mono',monospace}
 
-        /* Chat input */
+        /* Perfil result */
+        .perfil-box{
+          background:#F0FDE4;
+          border:1px solid #D4F5A0;
+          border-radius:10px;padding:10px 12px;margin-top:8px;
+        }
+        .perfil-title{font-size:12px;font-weight:600;color:#3A7A0A;margin-bottom:3px}
+        .perfil-body{font-size:11.5px;color:#4A6A20;line-height:1.5}
+
+        /* Input bar */
         .chat-input{
-          background:#1E2435;padding:10px 14px;
+          background:#FFFFFF;
+          padding:12px 16px;
           display:flex;align-items:center;gap:10px;
-          border-top:1px solid rgba(255,255,255,.05);
+          border-top:1px solid #F0EEF8;
         }
         .chat-input-fake{
-          flex:1;background:#111827;border-radius:20px;
-          padding:8px 14px;font-size:12px;color:rgba(255,255,255,.2);
-          font-family:'Geist',sans-serif;border:1px solid rgba(255,255,255,.06);
+          flex:1;background:#F5F4FA;border-radius:20px;
+          padding:9px 14px;font-size:13px;color:#C0BDD0;
+          font-family:'Geist',sans-serif;border:1px solid #EAE8F5;
         }
         .send-btn{
-          width:34px;height:34px;background:#00A884;border-radius:50%;
+          width:36px;height:36px;background:var(--aubergine);border-radius:50%;
           display:flex;align-items:center;justify-content:center;
-          font-size:14px;flex-shrink:0;
+          font-size:14px;flex-shrink:0;color:var(--lime);
         }
 
         /* INTEGRATIONS */
@@ -206,7 +194,7 @@ export default function LandingPage() {
         .feat{padding:32px 28px;background:var(--bone);border:1px solid var(--bone3)}
         .feat:first-child{border-radius:16px 0 0 0}.feat:nth-child(2){border-radius:0 16px 0 0}
         .feat:nth-child(3){border-radius:0 0 0 16px}.feat:last-child{border-radius:0 0 16px 0}
-        .feat-ico{width:46px;height:46px;background:var(--lime);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--aubergine);margin-bottom:18px}
+        .feat-ico{width:46px;height:46px;background:var(--lime);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px}
         .feat-h{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:7px}
         .feat-p{font-size:14px;color:var(--mute);line-height:1.55}
         .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px}
@@ -283,8 +271,7 @@ export default function LandingPage() {
         }
         @media(max-width:900px){
           .nav{padding:0 20px}.nav-links .nav-link{display:none}
-          .hero{padding:56px 20px}
-          .hero-h{font-size:48px}
+          .hero{padding:56px 20px}.hero-h{font-size:48px}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
           .feat:first-child{border-radius:16px 16px 0 0}.feat:last-child{border-radius:0 0 16px 16px}
@@ -308,9 +295,7 @@ export default function LandingPage() {
         <nav className="nav">
           <a href="#" className="logo">
             <div className="logo-mark">
-              <div className="bar bar-s"/>
-              <div className="bar bar-l"/>
-              <div className="bar bar-m"/>
+              <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
             </div>
             <span className="logo-name">Payroll <span>Chatbot</span></span>
           </a>
@@ -325,7 +310,7 @@ export default function LandingPage() {
         {/* HERO */}
         <div className="hero-outer">
           <div className="hero">
-            {/* Lado esquerdo — copy */}
+            {/* Esquerda */}
             <div>
               <p className="hero-tag">Educação financeira · WhatsApp</p>
               <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
@@ -337,54 +322,34 @@ export default function LandingPage() {
               <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
             </div>
 
-            {/* Lado direito — chat card */}
+            {/* Direita — Chat card estilo fintech */}
             <div className="chat-card">
-              {/* Header */}
               <div className="chat-header">
                 <div className="chat-av">
-                  <div className="bar bar-s"/>
-                  <div className="bar bar-l"/>
-                  <div className="bar bar-m"/>
+                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
                 </div>
                 <div className="chat-hinfo">
                   <div className="chat-hname">Payroll Chatbot</div>
-                  <div className="chat-hsub">
-                    <div className="online-dot"/>
-                    <span>assistente educacional</span>
-                  </div>
+                  <div className="chat-hsub"><div className="online-dot"/><span>assistente educacional</span></div>
                 </div>
-                <div className="chat-actions"><span>⋯</span></div>
+                <div className="chat-more">···</div>
               </div>
 
-              {/* Body */}
               <div className="chat-body">
-                <div className="chat-date">ter., 12 de maio</div>
 
-                {/* ETAPA 1 */}
-                <div className="chat-step-label">01 · boas-vindas</div>
-
-                <div className="msg-user">
-                  <div className="msg-user-b">
-                    <span>Oi</span>
-                    <div className="msg-user-meta">
-                      <span className="msg-user-time">12:03</span>
-                      <span className="check">✓✓</span>
-                    </div>
-                  </div>
-                </div>
+                {/* Boas-vindas */}
+                <div className="step-pill">01 · boas-vindas</div>
 
                 <div className="msg-bot">
                   <div className="msg-bot-b">
-                    👋 Olá! Bem-vindo ao <strong>Payrollia</strong>, seu assistente educacional de investimentos.<br/><br/>
-                    Estou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.<br/><br/>
-                    Para começar, qual é o seu nome?
+                    Olá! Sou o <strong>Payroll Chatbot</strong>, seu assistente de <strong>educação financeira</strong>. Posso te ajudar a entender investimentos, conhecer seu perfil e consultar dados do mercado. Por onde quer começar?
                     <div className="msg-time">12:03</div>
                   </div>
                 </div>
 
                 <div className="msg-user">
                   <div className="msg-user-b">
-                    <span>Gustavo Gomes</span>
+                    Quero entender meu perfil de investidor
                     <div className="msg-user-meta">
                       <span className="msg-user-time">12:03</span>
                       <span className="check">✓✓</span>
@@ -392,62 +357,19 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* ETAPA 2 */}
-                <div className="chat-step-label">02 · suitability CVM</div>
+                {/* Suitability */}
+                <div className="step-pill">02 · suitability CVM</div>
 
                 <div className="msg-bot">
                   <div className="msg-bot-b">
-                    Prazer, <strong>Gustavo Gomes!</strong> 😊<br/><br/>
-                    <span className="warn">⚠️</span> <strong>Aviso CVM</strong> — O Payrollia é um assistente <strong>educacional</strong>. As informações não constituem recomendação de investimento. Responda <strong>1</strong> para confirmar.
+                    Ótimo ponto de partida! Vou te fazer <strong>8 perguntas</strong> baseadas nas normas da CVM para mapear seu perfil. Leva menos de 3 minutos. Pode começar?
                     <div className="msg-time">12:04</div>
                   </div>
                 </div>
 
                 <div className="msg-user">
                   <div className="msg-user-b">
-                    <span>1</span>
-                    <div className="msg-user-meta">
-                      <span className="msg-user-time">12:04</span>
-                      <span className="check">✓✓</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="msg-bot">
-                  <div className="msg-bot-b">
-                    📌 <strong>Pergunta 1 de 8 — Objetivo</strong><br/><br/>
-                    Qual é o seu principal objetivo ao investir?
-                    <div className="opt-list">
-                      <div className="opt"><span className="opt-n">1</span><span>Preservar meu dinheiro com segurança</span></div>
-                      <div className="opt"><span className="opt-n">2</span><span>Crescer meu patrimônio no longo prazo</span></div>
-                      <div className="opt"><span className="opt-n">3</span><span>Gerar renda passiva (dividendos, juros)</span></div>
-                      <div className="opt"><span className="opt-n">4</span><span>Multiplicar capital, mesmo com mais risco</span></div>
-                    </div>
-                    <div className="msg-time">12:04</div>
-                  </div>
-                </div>
-
-                {/* ETAPA 3 */}
-                <div className="chat-step-label">03 · resultado do perfil</div>
-
-                <div className="msg-bot">
-                  <div className="msg-bot-b">
-                    ✅ <strong>Questionário concluído!</strong>
-                    <div className="perfil-box">
-                      <div className="perfil-title">🛡️ Perfil Conservador</div>
-                      <div className="perfil-body">
-                        Você prioriza segurança. Indicados: <strong>Tesouro Selic, CDB, LCI/LCA</strong> e fundos de renda fixa.
-                      </div>
-                    </div>
-                    <br/>
-                    Agora pergunte o que quiser! Experimente: <strong>Como está a Selic hoje?</strong>
-                    <div className="msg-time">12:05</div>
-                  </div>
-                </div>
-
-                <div className="msg-user">
-                  <div className="msg-user-b">
-                    <span>Como está a Selic hoje?</span>
+                    Como está a Selic hoje?
                     <div className="msg-user-meta">
                       <span className="msg-user-time">12:05</span>
                       <span className="check">✓✓</span>
@@ -455,9 +377,10 @@ export default function LandingPage() {
                   </div>
                 </div>
 
+                {/* Resposta Selic */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
-                    📊 <strong>Indicadores econômicos</strong> (dados BCB)
+                    📊 Dados do <strong>Banco Central</strong> (BCB):
                     <div className="selic-box">
                       <div className="selic-row">
                         <span className="selic-label">Selic</span>
@@ -472,14 +395,13 @@ export default function LandingPage() {
                         <span className="selic-val">4,83%</span>
                       </div>
                     </div>
-                    <br/>
-                    O retorno real (acima da inflação) é de ~<strong>5,4% ao ano</strong>. 📈
+                    O retorno real (acima da inflação) é de aproximadamente <strong>5,4% ao ano</strong>.
                     <div className="msg-time">12:05</div>
                   </div>
                 </div>
+
               </div>
 
-              {/* Input */}
               <div className="chat-input">
                 <div className="chat-input-fake">Mensagem</div>
                 <div className="send-btn">➤</div>
@@ -668,9 +590,7 @@ export default function LandingPage() {
             <div>
               <div className="logo">
                 <div className="logo-mark">
-                  <div className="bar bar-s"/>
-                  <div className="bar bar-l"/>
-                  <div className="bar bar-m"/>
+                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
                 </div>
               </div>
               <p className="footer-brand-name">Payroll Chatbot</p>
