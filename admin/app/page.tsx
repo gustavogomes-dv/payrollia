@@ -1,5 +1,17 @@
 "use client";
 
+// Logo oficial Payroll — SVG fiel ao design system (viewBox 64, barras curta·longa·média, ordem FIXA)
+function PayrollLogo() {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Payroll Chatbot">
+      <rect width="64" height="64" rx="14" fill="#2D2356"/>
+      <rect x="12" y="14" width="24" height="11" rx="5.5" fill="#C8F260"/>
+      <rect x="12" y="27" width="40" height="11" rx="5.5" fill="#C8F260"/>
+      <rect x="12" y="40" width="32" height="11" rx="5.5" fill="#C8F260"/>
+    </svg>
+  );
+}
+
 export default function LandingPage() {
   return (
     <>
@@ -17,9 +29,8 @@ export default function LandingPage() {
         /* NAV */
         .nav{display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:var(--bone);border-bottom:1px solid var(--bone3);position:sticky;top:0;z-index:100}
         .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .logo-mark{width:34px;height:34px;background:var(--aubergine);border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 7px;gap:3px}
-        .bar{background:var(--lime);border-radius:4px;height:5px}
-        .bar-s{width:9px}.bar-l{width:15px}.bar-m{width:12px}
+        .logo-mark{width:34px;height:34px;flex-shrink:0}
+        .logo-mark svg{width:100%;height:100%;display:block}
         .logo-name{font-size:15px;font-weight:600;color:var(--aubergine);letter-spacing:-0.01em}
         .logo-name span{font-weight:300;color:var(--mute)}
         .nav-links{display:flex;align-items:center;gap:28px}
@@ -60,16 +71,8 @@ export default function LandingPage() {
           display:flex;align-items:center;gap:12px;
           border-bottom:1px solid #F0EEF8;
         }
-        .chat-av{
-          width:38px;height:38px;
-          background:var(--aubergine);
-          border-radius:9px;
-          display:flex;flex-direction:column;
-          align-items:flex-start;justify-content:center;
-          padding:0 8px;gap:3px;flex-shrink:0;
-        }
-        .chat-av .bar{background:var(--lime);height:4px;border-radius:3px}
-        .chat-av .bar-s{width:8px}.chat-av .bar-l{width:14px}.chat-av .bar-m{width:11px}
+        .chat-av{width:38px;height:38px;flex-shrink:0}
+        .chat-av svg{width:100%;height:100%;display:block}
         .chat-hinfo{flex:1}
         .chat-hname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2}
         .chat-hsub{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:5px;margin-top:1px}
@@ -296,7 +299,7 @@ export default function LandingPage() {
         <nav className="nav">
           <a href="#" className="logo">
             <div className="logo-mark">
-              <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
+              <PayrollLogo/>
             </div>
             <span className="logo-name">Payroll <span>Chatbot</span></span>
           </a>
@@ -327,7 +330,7 @@ export default function LandingPage() {
             <div className="chat-card">
               <div className="chat-header">
                 <div className="chat-av">
-                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
+                  <PayrollLogo/>
                 </div>
                 <div className="chat-hinfo">
                   <div className="chat-hname">Payroll Chatbot</div>
@@ -607,7 +610,7 @@ export default function LandingPage() {
             <div>
               <div className="logo">
                 <div className="logo-mark">
-                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
+                  <PayrollLogo/>
                 </div>
               </div>
               <p className="footer-brand-name">Payroll Chatbot</p>
