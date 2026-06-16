@@ -17,9 +17,9 @@ export default function LandingPage() {
         /* NAV */
         .nav{display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:var(--bone);border-bottom:1px solid var(--bone3);position:sticky;top:0;z-index:100}
         .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .logo-mark{width:34px;height:34px;background:var(--aubergine);border-radius:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 6px;gap:3px}
-        .bar{background:var(--lime);border-radius:3px;height:5px}
-        .bar-s{width:12px}.bar-l{width:20px}.bar-m{width:16px}
+        .logo-mark{width:34px;height:34px;background:var(--aubergine);border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 7px;gap:3px}
+        .bar{background:var(--lime);border-radius:4px;height:5px}
+        .bar-s{width:9px}.bar-l{width:15px}.bar-m{width:12px}
         .logo-name{font-size:15px;font-weight:600;color:var(--aubergine);letter-spacing:-0.01em}
         .logo-name span{font-weight:300;color:var(--mute)}
         .nav-links{display:flex;align-items:center;gap:28px}
@@ -63,13 +63,13 @@ export default function LandingPage() {
         .chat-av{
           width:38px;height:38px;
           background:var(--aubergine);
-          border-radius:10px;
+          border-radius:9px;
           display:flex;flex-direction:column;
-          align-items:center;justify-content:center;
-          padding:0 7px;gap:2px;flex-shrink:0;
+          align-items:flex-start;justify-content:center;
+          padding:0 8px;gap:3px;flex-shrink:0;
         }
-        .chat-av .bar{background:var(--lime);height:3px;border-radius:2px}
-        .chat-av .bar-s{width:9px}.chat-av .bar-l{width:17px}.chat-av .bar-m{width:13px}
+        .chat-av .bar{background:var(--lime);height:4px;border-radius:3px}
+        .chat-av .bar-s{width:8px}.chat-av .bar-l{width:14px}.chat-av .bar-m{width:11px}
         .chat-hinfo{flex:1}
         .chat-hname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2}
         .chat-hsub{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:5px;margin-top:1px}
@@ -194,7 +194,8 @@ export default function LandingPage() {
         .feat{padding:32px 28px;background:var(--bone);border:1px solid var(--bone3)}
         .feat:first-child{border-radius:16px 0 0 0}.feat:nth-child(2){border-radius:0 16px 0 0}
         .feat:nth-child(3){border-radius:0 0 0 16px}.feat:last-child{border-radius:0 0 16px 0}
-        .feat-ico{width:46px;height:46px;background:var(--lime);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px}
+        .feat-ico{width:46px;height:46px;background:var(--lime);border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+        .feat-ico svg{width:22px;height:22px;stroke:var(--aubergine)}
         .feat-h{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:7px}
         .feat-p{font-size:14px;color:var(--mute);line-height:1.55}
         .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px}
@@ -435,10 +436,26 @@ export default function LandingPage() {
           <p className="sec-p">Pergunte, entenda, compare. O Payroll Chatbot explica — a decisão é sempre sua.</p>
           <div className="feats">
             {[
-              {icon:"💬",title:"Tudo no chat",desc:"Tire dúvidas sobre finanças diretamente no WhatsApp, a qualquer hora, sem formulários nem espera."},
-              {icon:"🛡️",title:"Conceitos de renda fixa",desc:"Entenda como funcionam Tesouro Direto, CDB, LCI e LCA — taxas, prazos, liquidez e tributação explicados de forma clara."},
-              {icon:"📈",title:"Dados de mercado",desc:"Consulte cotações, índices fundamentalistas e indicadores econômicos em tempo real para embasar seu estudo."},
-              {icon:"🎯",title:"Perfil de investidor",desc:"Descubra se você é conservador, moderado ou arrojado com base no questionário oficial de suitability da CVM."},
+              {
+                icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
+                title:"Tudo no chat",
+                desc:"Tire dúvidas sobre finanças diretamente no WhatsApp, a qualquer hora, sem formulários nem espera."
+              },
+              {
+                icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 3 7v2a9 9 0 0 0 18 0V7z"/><path d="m9 12 2 2 4-4"/></svg>,
+                title:"Conceitos de renda fixa",
+                desc:"Entenda como funcionam Tesouro Direto, CDB, LCI e LCA — taxas, prazos, liquidez e tributação explicados de forma clara."
+              },
+              {
+                icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>,
+                title:"Dados de mercado",
+                desc:"Consulte cotações, índices fundamentalistas e indicadores econômicos em tempo real para embasar seu estudo."
+              },
+              {
+                icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>,
+                title:"Perfil de investidor",
+                desc:"Descubra se você é conservador, moderado ou arrojado com base no questionário oficial de suitability da CVM."
+              },
             ].map((f,i)=>(
               <div key={i} className="feat">
                 <div className="feat-ico">{f.icon}</div>
