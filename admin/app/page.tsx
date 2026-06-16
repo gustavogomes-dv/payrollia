@@ -13,11 +13,13 @@ export default function LandingPage() {
         }
         *{box-sizing:border-box;margin:0;padding:0}
         .lp{background:var(--bone);font-family:'Geist',sans-serif;color:var(--ink)}
+
+        /* NAV */
         .nav{display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:var(--bone);border-bottom:1px solid var(--bone3);position:sticky;top:0;z-index:100}
         .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .logo-mark{width:34px;height:34px;background:var(--aubergine);border-radius:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 6px;gap:1px}
-        .bar{background:var(--lime);border-radius:3px;height:6px}
-        .bar-s{width:13px}.bar-l{width:21px}.bar-m{width:17px}
+        .logo-mark{width:34px;height:34px;background:var(--aubergine);border-radius:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 6px;gap:3px}
+        .bar{background:var(--lime);border-radius:3px;height:5px}
+        .bar-s{width:12px}.bar-l{width:20px}.bar-m{width:16px}
         .logo-name{font-size:15px;font-weight:600;color:var(--aubergine);letter-spacing:-0.01em}
         .logo-name span{font-weight:300;color:var(--mute)}
         .nav-links{display:flex;align-items:center;gap:28px}
@@ -25,168 +27,160 @@ export default function LandingPage() {
         .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none}
 
         /* HERO */
-        .hero{background:var(--aubergine);padding:96px 48px 80px;display:grid;grid-template-columns:1fr 420px;gap:56px;align-items:center;max-width:1280px;margin:0 auto}
         .hero-outer{background:var(--aubergine)}
+        .hero{
+          max-width:1280px;margin:0 auto;
+          padding:88px 48px 80px;
+          display:grid;
+          grid-template-columns:1fr 440px;
+          gap:64px;
+          align-items:center;
+        }
         .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;opacity:.85}
-        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:70px;line-height:1.02;color:var(--bone);letter-spacing:-0.025em;margin-bottom:28px}
+        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:68px;line-height:1.02;color:var(--bone);letter-spacing:-0.025em;margin-bottom:28px}
         .hero-h em{font-style:normal;color:var(--lime)}
         .hero-p{font-size:17px;color:var(--bone3);line-height:1.65;max-width:430px;margin-bottom:40px}
-        .hero-btns{display:flex;gap:14px;align-items:center}
+        .hero-btns{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
         .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;display:inline-block}
-        .btn-outline{border:1px solid rgba(250,248,244,.2);color:var(--bone);padding:14px 28px;border-radius:100px;font-size:15px;text-decoration:none;display:inline-block}
-        .hero-note{margin-top:24px;font-family:'Geist Mono',monospace;font-size:11px;color:var(--bone4);letter-spacing:.05em}
+        .btn-outline{border:1px solid rgba(250,248,244,.25);color:var(--bone);padding:14px 28px;border-radius:100px;font-size:15px;text-decoration:none;display:inline-block}
+        .hero-note{margin-top:22px;font-family:'Geist Mono',monospace;font-size:11px;color:rgba(250,248,244,.4);letter-spacing:.05em}
 
-        /* ── CHAT MOCKUP REAL ── */
-        .chat-wrap{
-          width:100%;
+        /* CHAT CARD */
+        .chat-card{
+          background:#1A1F2E;
           border-radius:16px;
           overflow:hidden;
-          box-shadow:0 24px 60px rgba(0,0,0,.45);
-          border:1px solid rgba(255,255,255,.06);
+          box-shadow:0 32px 80px rgba(0,0,0,.5);
+          border:1px solid rgba(255,255,255,.07);
+          width:100%;
         }
 
-        /* Header WhatsApp */
+        /* Chat header */
         .chat-header{
-          background:#1F1B3A;
-          padding:10px 14px;
-          display:flex;
-          align-items:center;
-          gap:10px;
+          background:#1E2435;
+          padding:12px 16px;
+          display:flex;align-items:center;gap:12px;
+          border-bottom:1px solid rgba(255,255,255,.05);
         }
         .chat-av{
-          width:34px;height:34px;
-          background:var(--lime);
+          width:36px;height:36px;
+          background:var(--aubergine);
           border-radius:50%;
           display:flex;flex-direction:column;
           align-items:center;justify-content:center;
-          padding:0 7px;gap:2px;
-          flex-shrink:0;
+          padding:0 7px;gap:2px;flex-shrink:0;
+          border:2px solid var(--lime);
         }
-        .chat-av .bar{background:var(--aubergine);height:4px;border-radius:2px}
-        .chat-av .bar-s{width:9px}.chat-av .bar-l{width:17px}.chat-av .bar-m{width:13px}
+        .chat-av .bar{background:var(--lime);height:3px;border-radius:2px}
+        .chat-av .bar-s{width:8px}.chat-av .bar-l{width:16px}.chat-av .bar-m{width:12px}
         .chat-hinfo{flex:1}
         .chat-hname{font-size:13px;font-weight:600;color:#E8E8E8;line-height:1.2}
-        .chat-hsub{font-size:11px;color:#8696A0;display:flex;align-items:center;gap:4px}
-        .online-dot{width:5px;height:5px;background:#25D366;border-radius:50%}
-        .chat-icons{color:#8696A0;font-size:16px;display:flex;gap:14px}
+        .chat-hsub{font-size:11px;color:var(--aubergine-400);display:flex;align-items:center;gap:5px}
+        .online-dot{width:6px;height:6px;background:#25D366;border-radius:50%;flex-shrink:0}
+        .chat-actions{display:flex;gap:14px;color:rgba(255,255,255,.3);font-size:15px}
 
-        /* Corpo */
+        /* Chat body */
         .chat-body{
-          background:#0B141A;
-          padding:12px 10px;
-          display:flex;
-          flex-direction:column;
-          gap:5px;
+          padding:14px 12px;
+          display:flex;flex-direction:column;gap:6px;
+          background:#111827;
+          max-height:480px;
+          overflow:hidden;
         }
 
-        /* Data */
         .chat-date{
           align-self:center;
-          background:rgba(17,27,33,.85);
-          color:#8696A0;
-          font-size:10px;
-          font-family:'Geist Mono',monospace;
-          padding:3px 10px;
-          border-radius:6px;
-          margin:4px 0;
+          background:rgba(255,255,255,.06);
+          color:rgba(255,255,255,.3);
+          font-size:10px;font-family:'Geist Mono',monospace;
+          padding:3px 10px;border-radius:6px;margin:2px 0 4px;
         }
 
-        /* Separador de etapa */
-        .chat-step{
+        .chat-step-label{
           align-self:center;
-          background:rgba(200,242,96,.07);
-          border:1px solid rgba(200,242,96,.15);
-          color:rgba(200,242,96,.6);
-          font-size:9px;
-          font-family:'Geist Mono',monospace;
-          letter-spacing:.08em;
-          text-transform:uppercase;
-          padding:3px 10px;
-          border-radius:6px;
-          margin:6px 0 2px;
+          background:rgba(200,242,96,.06);
+          border:1px solid rgba(200,242,96,.12);
+          color:rgba(200,242,96,.5);
+          font-size:9px;font-family:'Geist Mono',monospace;
+          letter-spacing:.1em;text-transform:uppercase;
+          padding:2px 10px;border-radius:6px;margin:4px 0 2px;
         }
 
-        /* Mensagem bot */
-        .msg-bot{max-width:88%;align-self:flex-start;}
+        /* Bot message */
+        .msg-bot{max-width:86%;align-self:flex-start}
         .msg-bot-b{
-          background:#202C33;
-          color:#E8E8E8;
-          padding:8px 11px;
-          border-radius:0 8px 8px 8px;
-          font-size:12px;
-          line-height:1.55;
+          background:#1E2D3D;
+          color:#D8D8D8;
+          padding:9px 12px;
+          border-radius:2px 10px 10px 10px;
+          font-size:12.5px;line-height:1.6;
         }
-        .msg-bot-b strong{color:#C8F260;font-weight:600}
+        .msg-bot-b strong{color:var(--lime);font-weight:600}
         .msg-bot-b .warn{color:#FFD700}
-        .msg-meta{
-          font-size:10px;color:#8696A0;
-          text-align:right;margin-top:3px;
-          font-family:'Geist Mono',monospace;
-        }
+        .msg-time{font-size:10px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;font-family:'Geist Mono',monospace}
 
-        /* Mensagem usuário */
-        .msg-user{align-self:flex-end;max-width:72%;}
+        /* User message */
+        .msg-user{align-self:flex-end;max-width:70%}
         .msg-user-b{
-          background:#005C4B;
-          color:#E8E8E8;
-          padding:8px 11px;
-          border-radius:8px 0 8px 8px;
-          font-size:12px;
-          line-height:1.5;
-          display:flex;flex-direction:column;
+          background:#1B4F3A;
+          color:#E0E0E0;
+          padding:9px 12px;
+          border-radius:10px 2px 10px 10px;
+          font-size:12.5px;line-height:1.5;
         }
-        .msg-user-meta{
-          display:flex;align-items:center;
-          justify-content:flex-end;gap:3px;
-          margin-top:3px;
-        }
-        .check{font-size:10px;color:#53BDEB}
+        .msg-user-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px}
+        .msg-user-time{font-size:10px;color:rgba(255,255,255,.25);font-family:'Geist Mono',monospace}
+        .check{font-size:11px;color:#53BDEB}
 
-        /* Opções numeradas */
-        .opt-list{margin-top:5px;display:flex;flex-direction:column;gap:3px;}
-        .opt{display:flex;align-items:flex-start;gap:5px;font-size:11.5px;}
+        /* Options */
+        .opt-list{margin-top:7px;display:flex;flex-direction:column;gap:4px}
+        .opt{display:flex;align-items:flex-start;gap:6px;font-size:12px}
         .opt-n{
-          width:16px;height:16px;
-          background:#1E4A6E;border:1px solid #2D6FA3;
-          border-radius:3px;
-          display:flex;align-items:center;justify-content:center;
-          font-size:9px;font-weight:600;color:#6BB5F0;
-          flex-shrink:0;margin-top:1px;
+          width:17px;height:17px;min-width:17px;
+          background:rgba(45,35,86,.6);border:1px solid rgba(200,242,96,.2);
+          border-radius:4px;display:flex;align-items:center;justify-content:center;
+          font-size:9px;font-weight:600;color:var(--lime);margin-top:1px;
         }
 
-        /* Resultado perfil */
+        /* Perfil box */
         .perfil-box{
-          background:rgba(45,35,86,.3);
+          background:rgba(200,242,96,.05);
           border:1px solid rgba(200,242,96,.15);
-          border-radius:6px;
-          padding:8px 10px;
-          margin-top:5px;
+          border-radius:8px;padding:9px 11px;margin-top:7px;
         }
-        .perfil-title{
-          font-size:12px;font-weight:600;
-          color:#C8F260;margin-bottom:4px;
-        }
-        .perfil-body{font-size:11.5px;color:#D0D0D0;line-height:1.5;}
+        .perfil-title{font-size:12px;font-weight:600;color:var(--lime);margin-bottom:4px}
+        .perfil-body{font-size:11.5px;color:#C0C0C0;line-height:1.5}
+        .perfil-body strong{color:#E0E0E0}
 
-        /* Input fake */
+        /* Selic response */
+        .selic-box{
+          background:rgba(45,35,86,.4);
+          border:1px solid rgba(117,97,175,.2);
+          border-radius:8px;padding:9px 11px;margin-top:7px;
+        }
+        .selic-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+        .selic-row:last-child{border-bottom:none}
+        .selic-label{font-size:11px;color:rgba(255,255,255,.4);font-family:'Geist Mono',monospace}
+        .selic-val{font-size:12px;font-weight:500;color:var(--lime);font-family:'Geist Mono',monospace}
+
+        /* Chat input */
         .chat-input{
-          background:#1F2C34;
-          padding:8px 12px;
-          display:flex;align-items:center;gap:8px;
+          background:#1E2435;padding:10px 14px;
+          display:flex;align-items:center;gap:10px;
+          border-top:1px solid rgba(255,255,255,.05);
         }
         .chat-input-fake{
-          flex:1;background:#2A3942;
-          border-radius:18px;padding:7px 12px;
-          font-size:12px;color:#8696A0;
-          font-family:'Geist',sans-serif;
+          flex:1;background:#111827;border-radius:20px;
+          padding:8px 14px;font-size:12px;color:rgba(255,255,255,.2);
+          font-family:'Geist',sans-serif;border:1px solid rgba(255,255,255,.06);
         }
         .send-btn{
-          width:32px;height:32px;background:#00A884;
-          border-radius:50%;display:flex;align-items:center;
-          justify-content:center;font-size:14px;flex-shrink:0;
+          width:34px;height:34px;background:#00A884;border-radius:50%;
+          display:flex;align-items:center;justify-content:center;
+          font-size:14px;flex-shrink:0;
         }
 
-        /* restante da página igual ao original */
+        /* INTEGRATIONS */
         .integrations{background:var(--bone2);border-bottom:1px solid var(--bone3);padding:28px 48px}
         .int-label{text-align:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
         .pills-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:860px;margin:0 auto}
@@ -201,6 +195,8 @@ export default function LandingPage() {
         .p9{animation-delay:-.5s;animation-duration:6.8s}.p10{animation-delay:-3.5s;animation-duration:5.9s}
         .p11{animation-delay:-2.8s;animation-duration:6.1s}
         @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+        /* SECTIONS */
         .section{padding:88px 48px}
         .section-alt{background:var(--bone2)}
         .sec-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
@@ -273,18 +269,22 @@ export default function LandingPage() {
         .footer-cnpj{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);line-height:1.7}
         .footer-col-h{font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;color:var(--bone4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
         .footer-link{display:block;font-size:13px;color:var(--mute);text-decoration:none;margin-bottom:9px}
-        .footer-link:hover{color:var(--bone)}
-        .footer-social{display:flex;gap:10px;margin-top:16px}
-        .social-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);text-decoration:none;transition:all 0.15s}
-        .social-btn:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
+        .footer-social{display:flex;gap:10px;margin-top:16px;flex-direction:column}
+        .social-btn{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);text-decoration:none}
         .social-btn svg{width:14px;height:14px;flex-shrink:0}
         .social-btn span{font-size:12px;color:var(--mute);font-family:'Geist',sans-serif}
         .footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:32px}
         .footer-copy{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);white-space:nowrap}
         .footer-cvm{font-size:12px;color:var(--mute);max-width:520px;line-height:1.6;opacity:.55}
+
+        @media(max-width:1024px){
+          .hero{grid-template-columns:1fr;padding:64px 32px 56px}
+          .chat-card{display:none}
+        }
         @media(max-width:900px){
           .nav{padding:0 20px}.nav-links .nav-link{display:none}
-          .hero-outer > .hero{grid-template-columns:1fr;padding:56px 20px}.hero-h{font-size:48px}.chat-wrap{display:none}
+          .hero{padding:56px 20px}
+          .hero-h{font-size:48px}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
           .feat:first-child{border-radius:16px 16px 0 0}.feat:last-child{border-radius:0 0 16px 16px}
@@ -297,9 +297,9 @@ export default function LandingPage() {
           .legal-cols{grid-template-columns:1fr}
           .footer-top{grid-template-columns:1fr 1fr}.footer{padding:40px 20px 24px}
           .integrations{padding:20px 16px}.pills-grid{gap:8px}
-          .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}.pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
+          .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}
+          .pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
-          .footer-social{flex-direction:column}
         }
       `}</style>
 
@@ -307,7 +307,11 @@ export default function LandingPage() {
         {/* NAV */}
         <nav className="nav">
           <a href="#" className="logo">
-            <div className="logo-mark"><div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/></div>
+            <div className="logo-mark">
+              <div className="bar bar-s"/>
+              <div className="bar bar-l"/>
+              <div className="bar bar-m"/>
+            </div>
             <span className="logo-name">Payroll <span>Chatbot</span></span>
           </a>
           <div className="nav-links">
@@ -321,6 +325,7 @@ export default function LandingPage() {
         {/* HERO */}
         <div className="hero-outer">
           <div className="hero">
+            {/* Lado esquerdo — copy */}
             <div>
               <p className="hero-tag">Educação financeira · WhatsApp</p>
               <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
@@ -332,85 +337,82 @@ export default function LandingPage() {
               <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
             </div>
 
-            {/* ── CHAT MOCKUP REAL ── */}
-            <div className="chat-wrap">
-
+            {/* Lado direito — chat card */}
+            <div className="chat-card">
               {/* Header */}
               <div className="chat-header">
                 <div className="chat-av">
-                  <div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/>
+                  <div className="bar bar-s"/>
+                  <div className="bar bar-l"/>
+                  <div className="bar bar-m"/>
                 </div>
                 <div className="chat-hinfo">
-                  <div className="chat-hname">Payroll</div>
-                  <div className="chat-hsub"><div className="online-dot"/><span>online</span></div>
+                  <div className="chat-hname">Payroll Chatbot</div>
+                  <div className="chat-hsub">
+                    <div className="online-dot"/>
+                    <span>assistente educacional</span>
+                  </div>
                 </div>
-                <div className="chat-icons"><span>📹</span><span>📞</span></div>
+                <div className="chat-actions"><span>⋯</span></div>
               </div>
 
               {/* Body */}
               <div className="chat-body">
-
                 <div className="chat-date">ter., 12 de maio</div>
 
-                {/* ── ETAPA 1: Boas-vindas ── */}
-                <div className="chat-step">01 · boas-vindas</div>
+                {/* ETAPA 1 */}
+                <div className="chat-step-label">01 · boas-vindas</div>
 
-                {/* Usuário manda Oi */}
                 <div className="msg-user">
                   <div className="msg-user-b">
                     <span>Oi</span>
                     <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
+                      <span className="msg-user-time">12:03</span>
                       <span className="check">✓✓</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Bot: boas-vindas */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
                     👋 Olá! Bem-vindo ao <strong>Payrollia</strong>, seu assistente educacional de investimentos.<br/><br/>
                     Estou aqui para te ajudar a entender o mercado financeiro de forma simples, clara e segura.<br/><br/>
                     Para começar, qual é o seu nome?
-                    <div className="msg-meta">12:03</div>
+                    <div className="msg-time">12:03</div>
                   </div>
                 </div>
 
-                {/* Usuário responde nome */}
                 <div className="msg-user">
                   <div className="msg-user-b">
                     <span>Gustavo Gomes</span>
                     <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:03</span>
+                      <span className="msg-user-time">12:03</span>
                       <span className="check">✓✓</span>
                     </div>
                   </div>
                 </div>
 
-                {/* ── ETAPA 2: Suitability ── */}
-                <div className="chat-step">02 · suitability CVM</div>
+                {/* ETAPA 2 */}
+                <div className="chat-step-label">02 · suitability CVM</div>
 
-                {/* Bot: aviso + pergunta 1 */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
                     Prazer, <strong>Gustavo Gomes!</strong> 😊<br/><br/>
                     <span className="warn">⚠️</span> <strong>Aviso CVM</strong> — O Payrollia é um assistente <strong>educacional</strong>. As informações não constituem recomendação de investimento. Responda <strong>1</strong> para confirmar.
-                    <div className="msg-meta">12:04</div>
+                    <div className="msg-time">12:04</div>
                   </div>
                 </div>
 
-                {/* Usuário confirma */}
                 <div className="msg-user">
                   <div className="msg-user-b">
                     <span>1</span>
                     <div className="msg-user-meta">
-                      <span style={{fontSize:'10px',color:'#8696A0',fontFamily:'Geist Mono,monospace'}}>12:04</span>
+                      <span className="msg-user-time">12:04</span>
                       <span className="check">✓✓</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Bot: pergunta 1 */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
                     📌 <strong>Pergunta 1 de 8 — Objetivo</strong><br/><br/>
@@ -421,32 +423,63 @@ export default function LandingPage() {
                       <div className="opt"><span className="opt-n">3</span><span>Gerar renda passiva (dividendos, juros)</span></div>
                       <div className="opt"><span className="opt-n">4</span><span>Multiplicar capital, mesmo com mais risco</span></div>
                     </div>
-                    <div className="msg-meta">12:04</div>
+                    <div className="msg-time">12:04</div>
                   </div>
                 </div>
 
-                {/* ── ETAPA 3: Resultado ── */}
-                <div className="chat-step">03 · resultado do perfil</div>
+                {/* ETAPA 3 */}
+                <div className="chat-step-label">03 · resultado do perfil</div>
 
-                {/* Bot: resultado */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
                     ✅ <strong>Questionário concluído!</strong>
                     <div className="perfil-box">
                       <div className="perfil-title">🛡️ Perfil Conservador</div>
                       <div className="perfil-body">
-                        Você prioriza a segurança do seu patrimônio. Indicados para você: <strong>Tesouro Selic, CDBs, LCI/LCA</strong> e fundos de renda fixa.
+                        Você prioriza segurança. Indicados: <strong>Tesouro Selic, CDB, LCI/LCA</strong> e fundos de renda fixa.
                       </div>
                     </div>
                     <br/>
-                    Agora você pode me perguntar sobre investimentos! 💬 Experimente: <strong>O que é Tesouro Direto?</strong>
-                    <div className="msg-meta">12:04</div>
+                    Agora pergunte o que quiser! Experimente: <strong>Como está a Selic hoje?</strong>
+                    <div className="msg-time">12:05</div>
                   </div>
                 </div>
 
+                <div className="msg-user">
+                  <div className="msg-user-b">
+                    <span>Como está a Selic hoje?</span>
+                    <div className="msg-user-meta">
+                      <span className="msg-user-time">12:05</span>
+                      <span className="check">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="msg-bot">
+                  <div className="msg-bot-b">
+                    📊 <strong>Indicadores econômicos</strong> (dados BCB)
+                    <div className="selic-box">
+                      <div className="selic-row">
+                        <span className="selic-label">Selic</span>
+                        <span className="selic-val">10,50% a.a.</span>
+                      </div>
+                      <div className="selic-row">
+                        <span className="selic-label">CDI</span>
+                        <span className="selic-val">10,40% a.a.</span>
+                      </div>
+                      <div className="selic-row">
+                        <span className="selic-label">IPCA 12m</span>
+                        <span className="selic-val">4,83%</span>
+                      </div>
+                    </div>
+                    <br/>
+                    O retorno real (acima da inflação) é de ~<strong>5,4% ao ano</strong>. 📈
+                    <div className="msg-time">12:05</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Input fake */}
+              {/* Input */}
               <div className="chat-input">
                 <div className="chat-input-fake">Mensagem</div>
                 <div className="send-btn">➤</div>
@@ -480,13 +513,13 @@ export default function LandingPage() {
           <p className="sec-p">Pergunte, entenda, compare. O Payroll Chatbot explica — a decisão é sempre sua.</p>
           <div className="feats">
             {[
-              {icon:"ti-messages",title:"Tudo no chat",desc:"Tire dúvidas sobre finanças diretamente no WhatsApp, a qualquer hora, sem formulários nem espera."},
-              {icon:"ti-shield-check",title:"Conceitos de renda fixa",desc:"Entenda como funcionam Tesouro Direto, CDB, LCI e LCA — taxas, prazos, liquidez e tributação explicados de forma clara."},
-              {icon:"ti-chart-line",title:"Dados de mercado",desc:"Consulte cotações, índices fundamentalistas e indicadores econômicos em tempo real para embasar seu estudo."},
-              {icon:"ti-target",title:"Perfil de investidor",desc:"Descubra se você é conservador, moderado ou arrojado com base no questionário oficial de suitability da CVM."},
+              {icon:"💬",title:"Tudo no chat",desc:"Tire dúvidas sobre finanças diretamente no WhatsApp, a qualquer hora, sem formulários nem espera."},
+              {icon:"🛡️",title:"Conceitos de renda fixa",desc:"Entenda como funcionam Tesouro Direto, CDB, LCI e LCA — taxas, prazos, liquidez e tributação explicados de forma clara."},
+              {icon:"📈",title:"Dados de mercado",desc:"Consulte cotações, índices fundamentalistas e indicadores econômicos em tempo real para embasar seu estudo."},
+              {icon:"🎯",title:"Perfil de investidor",desc:"Descubra se você é conservador, moderado ou arrojado com base no questionário oficial de suitability da CVM."},
             ].map((f,i)=>(
               <div key={i} className="feat">
-                <div className="feat-ico"><i className={`ti ${f.icon}`} aria-hidden="true"/></div>
+                <div className="feat-ico">{f.icon}</div>
                 <div className="feat-h">{f.title}</div>
                 <div className="feat-p">{f.desc}</div>
               </div>
@@ -537,8 +570,11 @@ export default function LandingPage() {
               <div className="plan-price">R$ 0</div>
               <div className="plan-cycle">para sempre</div>
               <ul className="plan-items">
-                <li>3 perguntas por mês</li><li>Suitability CVM completo</li><li>Cotações em tempo real</li>
-                <li className="off">Perguntas ilimitadas</li><li className="off">Dados fundamentalistas</li>
+                <li>3 perguntas por mês</li>
+                <li>Suitability CVM completo</li>
+                <li>Cotações em tempo real</li>
+                <li className="off">Perguntas ilimitadas</li>
+                <li className="off">Dados fundamentalistas</li>
               </ul>
               <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-ghost" target="_blank" rel="noopener noreferrer">Começar grátis</a>
             </div>
@@ -548,8 +584,11 @@ export default function LandingPage() {
               <div className="plan-price">R$ 12,90</div>
               <div className="plan-cycle">/mês · via PIX</div>
               <ul className="plan-items">
-                <li>Perguntas ilimitadas</li><li>Suitability CVM completo</li><li>Cotações B3 em tempo real</li>
-                <li>Dados fundamentalistas</li><li>Selic · CDI · IPCA ao vivo</li>
+                <li>Perguntas ilimitadas</li>
+                <li>Suitability CVM completo</li>
+                <li>Cotações B3 em tempo real</li>
+                <li>Dados fundamentalistas</li>
+                <li>Selic · CDI · IPCA ao vivo</li>
               </ul>
               <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-solid" target="_blank" rel="noopener noreferrer">Assinar Pro →</a>
             </div>
@@ -558,7 +597,9 @@ export default function LandingPage() {
               <div className="plan-price">R$ 29,90</div>
               <div className="plan-cycle">/mês · via PIX</div>
               <ul className="plan-items">
-                <li>Tudo do plano Pro</li><li>Prioridade de resposta</li><li>Programa de indicação</li>
+                <li>Tudo do plano Pro</li>
+                <li>Prioridade de resposta</li>
+                <li>Programa de indicação</li>
                 <li>Suporte prioritário</li>
               </ul>
               <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-ghost" target="_blank" rel="noopener noreferrer">Assinar Business</a>
@@ -626,7 +667,11 @@ export default function LandingPage() {
           <div className="footer-top">
             <div>
               <div className="logo">
-                <div className="logo-mark"><div className="bar bar-s"/><div className="bar bar-l"/><div className="bar bar-m"/></div>
+                <div className="logo-mark">
+                  <div className="bar bar-s"/>
+                  <div className="bar bar-l"/>
+                  <div className="bar bar-m"/>
+                </div>
               </div>
               <p className="footer-brand-name">Payroll Chatbot</p>
               <p className="footer-brand-p">Educação financeira no WhatsApp.</p>
