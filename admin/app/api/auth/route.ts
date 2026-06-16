@@ -1,60 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// URL do backend (server-side, NUNCA exposta ao navegador)
-const API_URL = process.env.API_URL || 'https://payrollia-production.up.railway.app';
-
-async function handler(
-  request: NextRequest,
-  ctx: { params: Promise<{ path: string[] }> }
-) {
-  // Lê o token do cookie httpOnly — só o servidor consegue
-  const token = request.cookies.get('payroll_admin_token')?.value;
-  if (!token) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-  }
-
-  // Monta a URL de destino: /api/proxy/admin/clientes → {API_URL}/admin/clientes
-  const { path } = await ctx.params;
-  const targetPath = (path || []).join('/');
-  const search = request.nextUrl.search || '';
-  const url = `${API_URL}/${targetPath}${search}`;
-
-  // Encaminha o token pro backend
-  const headers: Record<string, string> = { 'x-admin-token': token };
-
-  const method = request.method;
-  let body: string | undefined;
-  if (method !== 'GET' && method !== 'HEAD') {
-    const text = await request.text();
-    if (text) {
-      body = text;
-      headers['Content-Type'] = request.headers.get('content-type') || 'application/json';
-    }
-  }
+export async function POST(request: NextRequest) {
+  const { email, password } = await request.json();
 
   try {
-    const res = await fetch(url, { method, headers, body, cache: 'no-store' });
-    const contentType = res.headers.get('content-type') || '';
+    const res = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (contentType.includes('application/json')) {
-      const data = await res.json();
-      return NextResponse.json(data, { status: res.status });
+    if (!res.ok) {
+      const err = await res.json();
+      return NextResponse.json({ error: err.error || 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const text = await res.text();
-    return new NextResponse(text, {
-      status: res.status,
-      headers: { 'Content-Type': contentType || 'text/plain' },
+    const data = await res.json();
+
+    const response = NextResponse.json({ ok: true, name: data.name });
+    response.cookies.set('payroll_admin_token', data.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
     });
+
+    return response;
   } catch {
-    return NextResponse.json({ error: 'Erro ao conectar com o servidor' }, { status: 502 });
+    return NextResponse.json({ error: 'Erro ao conectar com o servidor' }, { status: 500 });
   }
 }
 
-export {
-  handler as GET,
-  handler as POST,
-  handler as PUT,
-  handler as DELETE,
-  handler as PATCH,
-};
+export async function DELETE(request: NextRequest) {
+  const token = request.cookies.get('payroll_admin_token')?.value;
+
+  if (token) {
+    await fetch(`${process.env.API_URL || 'http://localhost:3000'}/admin/logout`, {
+      method: 'POST',
+      headers: { 'x-admin-token': token },
+    }).catch(() => {});
+  }
+
+  const response = NextResponse.json({ ok: true });
+  response.cookies.delete('payroll_admin_token');
+  return response;
+}
