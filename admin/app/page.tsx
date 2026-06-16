@@ -29,11 +29,11 @@ export default function LandingPage() {
         /* HERO */
         .hero-outer{background:var(--aubergine)}
         .hero{
-          max-width:1280px;margin:0 auto;
-          padding:96px 64px 88px;
+          max-width:1400px;margin:0 auto;
+          padding:96px 48px 88px;
           display:grid;
-          grid-template-columns:1fr 460px;
-          gap:72px;
+          grid-template-columns:1fr 500px;
+          gap:48px;
           align-items:center;
         }
         .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:24px;opacity:.8}
@@ -302,7 +302,7 @@ export default function LandingPage() {
           <div className="nav-links">
             <a href="#como-funciona" className="nav-link">Como funciona</a>
             <a href="#planos" className="nav-link">Planos</a>
-            <a href="#privacidade" className="nav-link">Legal</a>
+            <a href="#privacidade" className="nav-link">Política e Privacidade</a>
             <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
           </div>
         </nav>
