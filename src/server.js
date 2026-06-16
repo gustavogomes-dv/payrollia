@@ -1,22 +1,84 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 
 const app = express();
-app.use(express.json());
 
-const cors = require('cors');
+// ─── Trust proxy ─────────────────────────────────────────────────────────────
+// OBRIGATÓRIO no Railway: sem isto o rate-limit lê o IP do proxy (não o do
+// usuário) e ou bloqueia todo mundo junto, ou solta erro de validação.
+app.set('trust proxy', 1);
+
+// ─── Helmet — headers HTTP de segurança ──────────────────────────────────────
+app.use(helmet());
+
+// ─── CORS restrito ───────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'https://payrollia.com.br',
+  'https://www.payrollia.com.br',
+  'https://payrollia.vercel.app',
+];
+// Em desenvolvimento, libera localhost
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:3000', 'http://localhost:3001');
+}
 app.use(cors({
-  origin: ['https://payrollia.vercel.app', 'https://payrollia.com.br', 'http://localhost:3001'],
+  origin: (origin, callback) => {
+    // Requests sem origin (webhooks server-to-server, curl, health checks) passam
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origem não permitida pelo CORS'));
+  },
   credentials: true,
 }));
 
-// Bypass ngrok browser warning
-app.use((req, res, next) => {
-  res.setHeader('ngrok-skip-browser-warning', 'true');
-  next();
+app.use(express.json());
+
+// ─── Rate limiting ───────────────────────────────────────────────────────────
+// Geral: protege endpoints públicos. Pula /webhook e /admin (têm os seus).
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Muitas requisições. Aguarde alguns minutos.' },
+  skip: (req) => req.path.startsWith('/webhook') || req.path.startsWith('/admin'),
 });
 
-// Rotas de webhook - WhatsApp e AbacatePay
+// Webhook: permissivo — Meta e AbacatePay podem disparar rajadas legítimas.
+const webhookLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Admin: moderado — protege o painel sem atrapalhar o dashboard.
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Muitas requisições. Aguarde alguns minutos.' },
+});
+
+// Login: guarda inicial contra brute force (lockout completo vem na Fase 4).
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Muitas tentativas de login. Aguarde 15 minutos.' },
+});
+
+app.use(generalLimiter);
+app.use('/webhook', webhookLimiter);
+app.use('/admin', adminLimiter);
+app.use('/admin/login', loginLimiter);
+
+// ─── Rotas de webhook — WhatsApp e AbacatePay ────────────────────────────────
 app.use('/webhook', require('./webhook/whatsapp'));
 app.use('/webhook/abacatepay', require('./webhook/abacatepay'));
 
@@ -341,6 +403,7 @@ app.delete('/admin/cupons/:id', async (req, res) => {
 
 // ── POST /admin/clientes — criar usuário manualmente
 app.post('/admin/clientes', async (req, res) => {
+  const { pool } = require('./db/index');
   const { name, phone, perfil, plano = 'free' } = req.body;
   if (!phone) return res.status(400).json({ erro: 'Telefone é obrigatório.' });
 
@@ -366,6 +429,7 @@ app.post('/admin/clientes', async (req, res) => {
 
 // ── PUT /admin/clientes/:id — editar usuário
 app.put('/admin/clientes/:id', async (req, res) => {
+  const { pool, redis } = require('./db/index');
   const { id } = req.params;
   const { name, phone, perfil, plano, plano_status, onboarding_complete } = req.body;
 
@@ -404,6 +468,7 @@ app.put('/admin/clientes/:id', async (req, res) => {
 
 // ── DELETE /admin/clientes/:id — excluir usuário
 app.delete('/admin/clientes/:id', async (req, res) => {
+  const { pool, redis } = require('./db/index');
   const { id } = req.params;
   try {
     // Busca o usuário antes de deletar (para invalidar cache)
@@ -426,6 +491,7 @@ app.delete('/admin/clientes/:id', async (req, res) => {
 
 // ── PATCH /admin/clientes/:id/reset-perguntas — zera contador de perguntas
 app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
+  const { pool, redis } = require('./db/index');
   const { id } = req.params;
   try {
     const result = await pool.query(
@@ -445,6 +511,7 @@ app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
 
 // ── PATCH /admin/clientes/:id/plano — altera plano manualmente
 app.patch('/admin/clientes/:id/plano', async (req, res) => {
+  const { pool, redis } = require('./db/index');
   const { id } = req.params;
   const { plano } = req.body;
   if (!['free', 'pro', 'business'].includes(plano)) return res.status(400).json({ erro: 'Plano inválido.' });
