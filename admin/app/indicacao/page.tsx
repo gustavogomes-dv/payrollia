@@ -90,7 +90,7 @@ export default function ProgramaIndicacao() {
       `}</style>
 
       <nav className="nav">
-        <a href="/" className="logo">
+        <link href="/" className="logo">
           <div className="logo-mark">
             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Payroll Chatbot">
               <rect width="64" height="64" rx="14" fill="#2D2356" />
@@ -100,8 +100,8 @@ export default function ProgramaIndicacao() {
             </svg>
           </div>
           <span className="logo-name">Payroll Chatbot</span>
-        </a>
-        <a href="/" className="back-link">← Voltar ao início</a>
+        </link>
+        <link href="/" className="back-link">← Voltar ao início</link>
       </nav>
 
       {/* HERO */}
@@ -190,8 +190,8 @@ export default function ProgramaIndicacao() {
 
         <p className="see-also">
           Veja também:{' '}
-          <a href="/">Início →</a>{'  ·  '}
-          <a href="/termos">Termos de uso →</a>
+          <link href="/">Início →</link>{'  ·  '}
+          <link href="/termos">Termos de uso →</link>
         </p>
 
         <p className="disclaimer">
