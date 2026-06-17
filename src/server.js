@@ -454,7 +454,7 @@ app.post('/admin/clientes', async (req, res) => {
 
 // ── PUT /admin/clientes/:id — editar usuário
 app.put('/admin/clientes/:id', async (req, res) => {
-  const { pool, redis } = require('./db/index');
+  const { pool, redisClient } = require('./db/index');
   const { id } = req.params;
   const { name, phone, perfil, plano, plano_status, onboarding_complete } = req.body;
 
@@ -493,8 +493,8 @@ app.put('/admin/clientes/:id', async (req, res) => {
     }
 
     // Invalida cache Redis
-    const cacheKey = `user:${userRow.phone}:${process.env.TENANT_ID_DEFAULT}`;
-    if (redis) await redis.del(cacheKey);
+    const cacheKey = `user:${process.env.TENANT_ID_DEFAULT}:${userRow.phone}`;
+    if (redisClient) await redisClient.del(cacheKey);
 
     res.json({ ...userRow, perfil: perfil !== undefined ? perfil : undefined });
   } catch (err) {
@@ -505,7 +505,7 @@ app.put('/admin/clientes/:id', async (req, res) => {
 
 // ── DELETE /admin/clientes/:id — excluir usuário
 app.delete('/admin/clientes/:id', async (req, res) => {
-  const { pool, redis } = require('./db/index');
+  const { pool, redisClient } = require('./db/index');
   const { id } = req.params;
   try {
     // Busca o usuário antes de deletar (para invalidar cache)
@@ -516,8 +516,8 @@ app.delete('/admin/clientes/:id', async (req, res) => {
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
 
     // Invalida cache Redis
-    const cacheKey = `user:${user.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
-    if (redis) await redis.del(cacheKey);
+    const cacheKey = `user:${process.env.TENANT_ID_DEFAULT}:${user.rows[0].phone}`;
+    if (redisClient) await redisClient.del(cacheKey);
 
     res.json({ ok: true, mensagem: 'Usuário removido com sucesso.' });
   } catch (err) {
@@ -528,7 +528,7 @@ app.delete('/admin/clientes/:id', async (req, res) => {
 
 // ── PATCH /admin/clientes/:id/reset-perguntas — zera contador de perguntas
 app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
-  const { pool, redis } = require('./db/index');
+  const { pool, redisClient } = require('./db/index');
   const { id } = req.params;
   try {
     const result = await pool.query(
@@ -537,8 +537,8 @@ app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
     );
     if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
 
-    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
-    if (redis) await redis.del(cacheKey);
+    const cacheKey = `user:${process.env.TENANT_ID_DEFAULT}:${result.rows[0].phone}`;
+    if (redisClient) await redisClient.del(cacheKey);
 
     res.json({ ok: true });
   } catch (err) {
@@ -548,7 +548,7 @@ app.patch('/admin/clientes/:id/reset-perguntas', async (req, res) => {
 
 // ── PATCH /admin/clientes/:id/plano — altera plano manualmente
 app.patch('/admin/clientes/:id/plano', async (req, res) => {
-  const { pool, redis } = require('./db/index');
+  const { pool, redisClient } = require('./db/index');
   const { id } = req.params;
   const { plano } = req.body;
   if (!['free', 'pro', 'business'].includes(plano)) return res.status(400).json({ erro: 'Plano inválido.' });
@@ -560,8 +560,8 @@ app.patch('/admin/clientes/:id/plano', async (req, res) => {
     );
     if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
 
-    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
-    if (redis) await redis.del(cacheKey);
+    const cacheKey = `user:${process.env.TENANT_ID_DEFAULT}:${result.rows[0].phone}`;
+    if (redisClient) await redisClient.del(cacheKey);
 
     res.json(result.rows[0]);
   } catch (err) {
