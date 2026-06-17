@@ -342,7 +342,6 @@ export default function LandingPage() {
               <div className="chat-body">
 
                 {/* Boas-vindas */}
-                <div className="step-pill">01 · boas-vindas</div>
 
                 <div className="msg-bot">
                   <div className="msg-bot-b">
@@ -362,7 +361,6 @@ export default function LandingPage() {
                 </div>
 
                 {/* Suitability */}
-                <div className="step-pill">02 · suitability CVM</div>
 
                 <div className="msg-bot">
                   <div className="msg-bot-b">
