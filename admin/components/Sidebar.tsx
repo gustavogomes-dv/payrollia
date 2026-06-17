@@ -42,23 +42,8 @@ function IconPerfil(p: { size?: number; stroke?: number; color?: string }) {
     </IconBase>
   );
 }
-function IconIA(p: { size?: number; stroke?: number; color?: string }) {
-  return (
-    <IconBase {...p} label="bot ia">
-      <path d="M12 3 L13.5 9.5 L20 11 L13.5 12.5 L12 19 L10.5 12.5 L4 11 L10.5 9.5 Z" />
-      <path d="M19 3 L19.6 5 L21.5 5.5 L19.6 6 L19 8 L18.4 6 L16.5 5.5 L18.4 5 Z" />
-    </IconBase>
-  );
-}
-function IconBilling(p: { size?: number; stroke?: number; color?: string }) {
-  return (
-    <IconBase {...p} label="billing">
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <path d="M2 10 H22" />
-      <path d="M6 15 H10" />
-    </IconBase>
-  );
-}
+
+
 function IconConfiguracoes(p: { size?: number; stroke?: number; color?: string }) {
   return (
     <IconBase {...p} label="config">
@@ -95,8 +80,6 @@ const links = [
   { href: '/home',      label: 'Home',     Icon: IconHome },
   { href: '/dashboard', label: 'Overview', Icon: IconGrafico },
   { href: '/clientes',  label: 'Clientes', Icon: IconPerfil },
-  { href: '/bot',       label: 'Bot & IA', Icon: IconIA },
-  { href: '/billing',   label: 'Billing',  Icon: IconBilling },
   { href: '/config',    label: 'Config',   Icon: IconConfiguracoes },
 ];
 
