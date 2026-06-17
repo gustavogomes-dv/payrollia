@@ -401,6 +401,23 @@ app.delete('/admin/cupons/:id', async (req, res) => {
 
 // ─── Rotas administrativas de CRUD de clientes ───────────────────────────────
 
+// ── Helper: grava/atualiza o perfil na tabela investor_profiles ──────────────
+async function upsertPerfil(pool, userId, perfil) {
+  if (!perfil) return;
+  const existing = await pool.query('SELECT id FROM investor_profiles WHERE user_id = $1', [userId]);
+  if (existing.rows.length > 0) {
+    await pool.query(
+      'UPDATE investor_profiles SET perfil = $1 WHERE user_id = $2',
+      [perfil, userId]
+    );
+  } else {
+    await pool.query(
+      'INSERT INTO investor_profiles (user_id, perfil, created_at) VALUES ($1, $2, NOW())',
+      [userId, perfil]
+    );
+  }
+}
+
 // ── POST /admin/clientes — criar usuário manualmente
 app.post('/admin/clientes', async (req, res) => {
   const { pool } = require('./db/index');
@@ -414,13 +431,21 @@ app.post('/admin/clientes', async (req, res) => {
     const existing = await pool.query('SELECT id FROM users WHERE phone = $1 AND tenant_id = $2', [phoneClean, process.env.TENANT_ID_DEFAULT]);
     if (existing.rows.length > 0) return res.status(409).json({ erro: 'Usuário com esse telefone já existe.' });
 
+    // Cria o usuário (SEM perfil — perfil mora em investor_profiles)
     const result = await pool.query(
-      `INSERT INTO users (phone, name, perfil, plano, plano_status, onboarding_complete, tenant_id, created_at)
-       VALUES ($1, $2, $3, $4, 'active', $5, $6, NOW())
+      `INSERT INTO users (phone, name, plano, plano_status, onboarding_complete, tenant_id, created_at)
+       VALUES ($1, $2, $3, 'active', $4, $5, NOW())
        RETURNING *`,
-      [phoneClean, name || null, perfil || null, plano, !!perfil, process.env.TENANT_ID_DEFAULT]
+      [phoneClean, name || null, plano, !!perfil, process.env.TENANT_ID_DEFAULT]
     );
-    res.json(result.rows[0]);
+
+    const novoUser = result.rows[0];
+
+    // Se veio um perfil, grava em investor_profiles
+    await upsertPerfil(pool, novoUser.id, perfil);
+
+    // Devolve já com o perfil junto (mesmo formato da listagem)
+    res.json({ ...novoUser, perfil: perfil || null });
   } catch (err) {
     console.error('Erro ao criar cliente:', err);
     res.status(500).json({ erro: 'Erro interno ao criar cliente.' });
@@ -438,28 +463,40 @@ app.put('/admin/clientes/:id', async (req, res) => {
     const values = [];
     let idx = 1;
 
+    // Apenas colunas que existem em users (perfil NÃO entra aqui)
     if (name !== undefined)               { fields.push(`name = $${idx++}`);               values.push(name); }
     if (phone !== undefined)              { fields.push(`phone = $${idx++}`);              values.push(phone.replace(/\D/g, '')); }
-    if (perfil !== undefined)             { fields.push(`perfil = $${idx++}`);             values.push(perfil || null); }
     if (plano !== undefined)              { fields.push(`plano = $${idx++}`);              values.push(plano); }
     if (plano_status !== undefined)       { fields.push(`plano_status = $${idx++}`);       values.push(plano_status); }
     if (onboarding_complete !== undefined){ fields.push(`onboarding_complete = $${idx++}`); values.push(!!onboarding_complete); }
 
-    if (fields.length === 0) return res.status(400).json({ erro: 'Nenhum campo para atualizar.' });
+    let userRow;
 
-    values.push(id);
-    const result = await pool.query(
-      `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
-      values
-    );
+    if (fields.length > 0) {
+      values.push(id);
+      const result = await pool.query(
+        `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
+        values
+      );
+      if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      userRow = result.rows[0];
+    } else {
+      // Nenhum campo de users mudou — busca o usuário atual
+      const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+      if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      userRow = result.rows[0];
+    }
 
-    if (result.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    // Atualiza o perfil em investor_profiles, se informado
+    if (perfil !== undefined) {
+      await upsertPerfil(pool, id, perfil || null);
+    }
 
     // Invalida cache Redis
-    const cacheKey = `user:${result.rows[0].phone}:${process.env.TENANT_ID_DEFAULT}`;
+    const cacheKey = `user:${userRow.phone}:${process.env.TENANT_ID_DEFAULT}`;
     if (redis) await redis.del(cacheKey);
 
-    res.json(result.rows[0]);
+    res.json({ ...userRow, perfil: perfil !== undefined ? perfil : undefined });
   } catch (err) {
     console.error('Erro ao editar cliente:', err);
     res.status(500).json({ erro: 'Erro interno ao editar cliente.' });
@@ -475,7 +512,7 @@ app.delete('/admin/clientes/:id', async (req, res) => {
     const user = await pool.query('SELECT phone FROM users WHERE id = $1', [id]);
     if (user.rows.length === 0) return res.status(404).json({ erro: 'Usuário não encontrado.' });
 
-    // Deleta em cascata (sessions, investor_profiles via CASCADE no schema)
+    // Deleta em cascata (sessions, investor_profiles, messages, referrals via CASCADE no schema)
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
 
     // Invalida cache Redis
