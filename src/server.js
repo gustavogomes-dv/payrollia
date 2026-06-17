@@ -78,6 +78,40 @@ app.use('/webhook', webhookLimiter);
 app.use('/admin', adminLimiter);
 app.use('/admin/login', loginLimiter);
 
+// ─── Autenticação admin ──────────────────────────────────────────────────────
+// Exige x-admin-token válido em TODAS as rotas /admin, menos o login.
+// Quem chamar o backend direto, sem token, leva 401.
+function requireAdmin(req, res, next) {
+  // Libera o login (precisa ficar aberto) e qualquer rota fora de /admin
+  if (!req.path.startsWith('/admin') || req.path === '/admin/login') {
+    return next();
+  }
+
+  const token = req.headers['x-admin-token'];
+  if (!token) {
+    return res.status(401).json({ error: 'Não autorizado — token ausente.' });
+  }
+
+  const { pool } = require('./db/index');
+  pool.query(
+    `SELECT id, name, email, role FROM admin_users
+     WHERE session_token = $1 AND token_expires_at > NOW() AND active = true`,
+    [token]
+  )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return res.status(401).json({ error: 'Token inválido ou expirado.' });
+      }
+      req.admin = rows[0]; // disponível nas rotas, se precisar
+      next();
+    })
+    .catch((err) => {
+      console.error('[requireAdmin]', err.message);
+      res.status(500).json({ error: 'Erro de autenticação.' });
+    });
+}
+app.use(requireAdmin);
+
 // ─── Rotas de webhook — WhatsApp e AbacatePay ────────────────────────────────
 app.use('/webhook', require('./webhook/whatsapp'));
 app.use('/webhook/abacatepay', require('./webhook/abacatepay'));
