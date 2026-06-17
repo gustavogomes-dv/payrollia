@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar';
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isPublic = pathname === '/' || pathname === '/privacidade' || pathname === '/termos';
+  const isPublic = pathname === '/' || pathname === '/privacidade' || pathname === '/termos' || pathname === '/indicacao';
 
   if (isPublic) {
     return (
