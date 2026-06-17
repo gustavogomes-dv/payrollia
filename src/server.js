@@ -34,7 +34,12 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+// express.json com captura do corpo bruto (necessário pro HMAC dos webhooks)
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  },
+}));
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
 // Geral: protege endpoints públicos. Pula /webhook e /admin (têm os seus).

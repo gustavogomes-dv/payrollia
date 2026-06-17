@@ -1,5 +1,6 @@
 // src/webhook/abacatepay.js
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const { pool, redisClient } = require('../db/index');
 const { getReferralByCode, incrementReferralUse } = require('../db/referrals');
@@ -8,10 +9,16 @@ const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'payroll_abacate
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 
-// ─── Validar assinatura do webhook ────────────────────────────────────────────
+// ─── Validar assinatura do webhook (timing-safe) ─────────────────────────────
 function validarAssinatura(req) {
   const secret = req.headers['x-webhook-secret'];
-  return secret === WEBHOOK_SECRET;
+  if (!secret || typeof secret !== 'string') return false;
+
+  const a = Buffer.from(secret);
+  const b = Buffer.from(WEBHOOK_SECRET);
+  // timingSafeEqual exige mesmo tamanho — diferença de tamanho já invalida
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 // ─── Enviar mensagem via WhatsApp ─────────────────────────────────────────────
