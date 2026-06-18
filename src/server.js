@@ -3,6 +3,7 @@ const express = require('express');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -159,7 +160,27 @@ app.post('/admin/login', async (req, res) => {
 
     const admin = rows[0];
 
-    if (admin.password_hash !== password) {
+    // Verifica a senha. Suporta migração automática de texto puro -> bcrypt.
+    const stored = admin.password_hash || '';
+    let senhaOk = false;
+
+    if (stored.startsWith('$2')) {
+      // Já é hash bcrypt
+      senhaOk = await bcrypt.compare(password, stored);
+    } else {
+      // Senha legada em texto puro — compara direto e, se bater, migra pra bcrypt
+      senhaOk = stored === password;
+      if (senhaOk) {
+        const novoHash = await bcrypt.hash(password, 12);
+        await pool.query(
+          `UPDATE admin_users SET password_hash = $1 WHERE id = $2`,
+          [novoHash, admin.id]
+        );
+        console.log(`[admin] Senha de ${admin.email} migrada para bcrypt`);
+      }
+    }
+
+    if (!senhaOk) {
       return res.status(401).json({ error: 'Senha incorreta' });
     }
 
@@ -239,9 +260,11 @@ app.post('/admin/admins', async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    const senhaHash = await bcrypt.hash(password, 12);
+
     const { rows } = await pool.query(
       `INSERT INTO admin_users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role`,
-      [name, email, password, role || 'admin']
+      [name, email, senhaHash, role || 'admin']
     );
 
     res.json({ ok: true, admin: rows[0] });

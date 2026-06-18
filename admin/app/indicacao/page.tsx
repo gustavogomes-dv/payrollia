@@ -1,4 +1,3 @@
-import Link from 'next/link';
 
 export const metadata = {
   title: 'Programa de Indicação — Payroll Chatbot',
