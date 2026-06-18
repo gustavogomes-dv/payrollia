@@ -90,7 +90,7 @@ export default function ProgramaIndicacao() {
       `}</style>
 
       <nav className="nav">
-        <link href="/" className="logo">
+        <a href="/" className="logo">
           <div className="logo-mark">
             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Payroll Chatbot">
               <rect width="64" height="64" rx="14" fill="#2D2356" />
@@ -100,8 +100,8 @@ export default function ProgramaIndicacao() {
             </svg>
           </div>
           <span className="logo-name">Payroll Chatbot</span>
-        </link>
-        <link href="/" className="back-link">← Voltar ao início</link>
+        </a>
+        <a href="/" className="back-link">← Voltar ao início</a>
       </nav>
 
       {/* HERO */}
@@ -113,9 +113,9 @@ export default function ProgramaIndicacao() {
             Compartilhe o Payroll Chatbot com quem você gosta. Seu amigo entra com desconto,
             e você ganha um cupom toda vez que alguém assina com o seu código.
           </p>
-          <link href="https://wa.me/5535910148222?text=INDICAR" className="hero-cta" target="_blank" rel="noopener noreferrer">
+          <a href="https://wa.me/5535910148222?text=INDICAR" className="hero-cta" target="_blank" rel="noopener noreferrer">
             Gerar meu código →
-          </link>
+          </a>
         </div>
       </section>
 
@@ -183,15 +183,15 @@ export default function ProgramaIndicacao() {
         <div className="cta-box">
           <p className="cta-title">Pronto para começar?</p>
           <p className="cta-sub">Mande INDICAR no WhatsApp e gere o seu código agora.</p>
-          <link href="https://wa.me/5535910148222?text=INDICAR" className="cta-btn" target="_blank" rel="noopener noreferrer">
+          <a href="https://wa.me/5535910148222?text=INDICAR" className="cta-btn" target="_blank" rel="noopener noreferrer">
             Gerar meu código →
-          </link>
+          </a>
         </div>
 
         <p className="see-also">
           Veja também:{' '}
-          <link href="/">Início →</link>{'  ·  '}
-          <link href="/termos">Termos de uso →</link>
+          <a href="/">Início →</a>{'  ·  '}
+          <a href="/termos">Termos de uso →</a>
         </p>
 
         <p className="disclaimer">
