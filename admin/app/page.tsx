@@ -286,12 +286,19 @@ export default function LandingPage() {
           .plans{grid-template-columns:1fr}
           .cta-section{grid-template-columns:1fr;padding:56px 20px}.cta-h{font-size:36px}
           .legal-cols{grid-template-columns:1fr}
-          .footer-top{grid-template-columns:1fr 1fr}.footer{padding:40px 20px 24px}
+          .footer-top{grid-template-columns:1fr 1fr}.footer{padding:40px 20px 28px}
+          .footer-bottom{flex-direction:column;gap:14px}
+          .footer-copy{white-space:normal}
+          .footer-cvm{max-width:100%}
+          .footer-link{padding:3px 0}
           .integrations{padding:20px 16px}.pills-grid{gap:8px}
           .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}
           .pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
         }
+          @media(max-width:560px){
+          .footer-top{grid-template-columns:1fr;gap:30px;margin-bottom:36px}
+}
       `}</style>
 
       <div className="lp">
