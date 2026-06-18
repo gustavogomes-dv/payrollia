@@ -113,9 +113,9 @@ export default function ProgramaIndicacao() {
             Compartilhe o Payroll Chatbot com quem você gosta. Seu amigo entra com desconto,
             e você ganha um cupom toda vez que alguém assina com o seu código.
           </p>
-          <a href="https://wa.me/5535910148222?text=INDICAR" className="hero-cta" target="_blank" rel="noopener noreferrer">
+          <link href="https://wa.me/5535910148222?text=INDICAR" className="hero-cta" target="_blank" rel="noopener noreferrer">
             Gerar meu código →
-          </a>
+          </link>
         </div>
       </section>
 
@@ -183,9 +183,9 @@ export default function ProgramaIndicacao() {
         <div className="cta-box">
           <p className="cta-title">Pronto para começar?</p>
           <p className="cta-sub">Mande INDICAR no WhatsApp e gere o seu código agora.</p>
-          <a href="https://wa.me/5535910148222?text=INDICAR" className="cta-btn" target="_blank" rel="noopener noreferrer">
+          <link href="https://wa.me/5535910148222?text=INDICAR" className="cta-btn" target="_blank" rel="noopener noreferrer">
             Gerar meu código →
-          </a>
+          </link>
         </div>
 
         <p className="see-also">
