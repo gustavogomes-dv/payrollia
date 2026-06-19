@@ -4,9 +4,7 @@ const BRAPI_TOKEN = process.env.BRAPI_TOKEN;
 const BRAPI_BASE = 'https://brapi.dev/api';
 const BCB_BASE = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs';
 
-// ─── Dicionário nome da empresa → ticker (FAST PATH) ──────────────────────────
-// Mantido como atalho pros nomes mais comuns: evita um roundtrip de API.
-// Quando o nome NÃO está aqui, a busca dinâmica na Brapi resolve (ver abaixo).
+// ─── Dicionário nome da empresa → ticker ──────────────────────────────────────
 // Chaves sem acento e em minúsculo (a busca normaliza o texto do usuário).
 const NOME_PARA_TICKER = {
   // Bancos
@@ -36,27 +34,6 @@ const NOME_PARA_TICKER = {
   'hglg': 'HGLG11', 'xp log': 'XPLG11', 'visc': 'VISC11', 'mall': 'MALL11',
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function normaliza(s) {
-  return (s || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ''); // remove acentos
-}
-
-// Palavras que não ajudam a identificar a empresa (verbos, artigos, ruído).
-const STOPWORDS = new Set([
-  'cotacao', 'cotacoes', 'preco', 'precos', 'valor', 'valores', 'quanto',
-  'esta', 'custa', 'quero', 'saber', 'sobre', 'da', 'do', 'de', 'das', 'dos',
-  'a', 'o', 'as', 'os', 'e', 'em', 'no', 'na', 'um', 'uma', 'qual', 'quais',
-  'me', 'fala', 'diz', 'acao', 'acoes', 'papel', 'papeis', 'ativo', 'ativos',
-  'hoje', 'agora', 'ver', 'mostra', 'mostrar', 'informacoes', 'informacao',
-  'dados', 'mercado', 'bolsa', 'ta', 'tah', 'pra', 'para', 'com', 'qto',
-  'fii', 'fundo', 'imobiliario', 'rende', 'rendimento', 'dividendos',
-  'cotar', 'consultar', 'consulta', 'tem', 'tah', 'la', 'comprar', 'vender',
-]);
-
 // ─── Detectores de intenção ───────────────────────────────────────────────────
 
 function extractTicker(text) {
@@ -64,8 +41,11 @@ function extractTicker(text) {
   const match = text.toUpperCase().match(/\b[A-Z]{4}\d{1,2}\b/);
   if (match) return match[0];
 
-  // 2) Tenta achar pelo nome da empresa (FAST PATH no dicionário)
-  const normalizado = normaliza(text);
+  // 2) Tenta achar pelo nome da empresa (ex.: "Petrobras", "Banco do Brasil")
+  const normalizado = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // remove acentos
 
   // Ordena as chaves da mais longa pra mais curta — evita "bb" casar antes de "banco do brasil"
   const nomes = Object.keys(NOME_PARA_TICKER).sort((a, b) => b.length - a.length);
@@ -74,72 +54,6 @@ function extractTicker(text) {
     if (re.test(normalizado)) return NOME_PARA_TICKER[nome];
   }
 
-  return null;
-}
-
-// Só vale a pena disparar a busca dinâmica quando a mensagem PARECE pedir um ativo.
-// Evita bater na Brapi (e gerar falso-positivo) em qualquer frase aleatória.
-function pedeCotacao(text) {
-  return /cota[cç][aã]o|pre[cç]o|quanto (custa|vale|est[aá]|t[aá])|a[cç][aã]o d[oae]|papel d[oae]|ticker|fundo imobili|dividend|rende|rendimento|vale a pena|invest|comprar|vender|a[cç][õo]es d[oae]/i.test(text);
-}
-
-// Cache em memória das resoluções nome→ticker (sobrevive entre requisições no mesmo processo).
-const tickerCache = new Map();
-
-// Busca dinâmica na Brapi: resolve QUALQUER ativo listado na B3, não só os do dicionário.
-async function buscarTickerPorNome(text) {
-  const limpo = normaliza(text);
-
-  if (tickerCache.has(limpo)) {
-    const cached = tickerCache.get(limpo);
-    console.log(`[Market] cache hit: "${limpo}" → ${cached}`);
-    return cached;
-  }
-
-  // Extrai tokens significativos (sem stopwords, com 3+ letras)
-  const tokens = limpo
-    .split(/[^a-z0-9]+/)
-    .filter(t => t && t.length >= 3 && !STOPWORDS.has(t));
-
-  if (!tokens.length) {
-    console.log('[Market] busca dinâmica: nenhum token útil na mensagem');
-    return null;
-  }
-
-  // Tenta a frase inteira primeiro; depois cada token (maior → menor)
-  const tentativas = [tokens.join(' '), ...tokens.sort((a, b) => b.length - a.length)];
-
-  for (const termo of tentativas) {
-    try {
-      const { data } = await axios.get(`${BRAPI_BASE}/quote/list`, {
-        params: {
-          search: termo,
-          token: BRAPI_TOKEN,
-          limit: 10,
-          sortBy: 'volume',
-          sortOrder: 'desc',
-        },
-      });
-
-      const lista = data.stocks || [];
-      if (!lista.length) continue;
-
-      // Prioriza o resultado cujo NOME contenha o termo buscado;
-      // se nenhum bater, fica com o de maior volume (primeiro da lista).
-      const exato = lista.find(s => normaliza(s.name).includes(termo));
-      const escolhido = exato || lista[0];
-      const ticker = escolhido.stock;
-
-      console.log(`[Market] busca dinâmica: "${termo}" → ${ticker} (${escolhido.name || 's/ nome'})`);
-      tickerCache.set(limpo, ticker);
-      return ticker;
-    } catch (err) {
-      console.error(`[Market] erro na busca dinâmica de "${termo}":`, err.message);
-    }
-  }
-
-  console.log(`[Market] busca dinâmica: nada encontrado para "${limpo}"`);
-  tickerCache.set(limpo, null); // memoriza o "não achou" pra não repetir
   return null;
 }
 
@@ -168,10 +82,7 @@ async function getCotacao(ticker) {
     );
 
     const stock = data.results?.[0];
-    if (!stock) {
-      console.warn(`[Market] Brapi não retornou resultados para ${ticker}`);
-      return null;
-    }
+    if (!stock) return null;
 
     const linhas = [
       `📊 *${stock.symbol} — ${stock.longName || stock.shortName || ''}*`,
@@ -219,10 +130,7 @@ async function getFIIData(ticker) {
     );
 
     const stock = data.results?.[0];
-    if (!stock) {
-      console.warn(`[Market] Brapi não retornou resultados para FII ${ticker}`);
-      return null;
-    }
+    if (!stock) return null;
 
     const linhas = [
       `🏢 *${stock.symbol} — ${stock.longName || stock.shortName || 'FII'}*`,
@@ -331,16 +239,7 @@ async function getIPCA() {
 // ─── Função principal ─────────────────────────────────────────────────────────
 
 async function getMarketData(userMessage) {
-  // 1) ticker direto ou nome no dicionário (rápido, sem rede)
-  let ticker = extractTicker(userMessage);
-
-  // 2) se não achou E a mensagem parece pedir um ativo → busca dinâmica na Brapi
-  if (!ticker && pedeCotacao(userMessage)) {
-    ticker = await buscarTickerPorNome(userMessage);
-  }
-
-  console.log(`[Market] mensagem="${userMessage}" → ticker resolvido=${ticker || 'nenhum'}`);
-
+  const ticker = extractTicker(userMessage);
   const blocos = [];
   const promises = [];
 
@@ -374,10 +273,7 @@ async function getMarketData(userMessage) {
 
   await Promise.all(promises);
 
-  if (blocos.length === 0) {
-    console.log('[Market] nenhum bloco de dados gerado para esta mensagem');
-    return '';
-  }
+  if (blocos.length === 0) return '';
 
   return `\n📡 *Dados de mercado em tempo real:*\n\n${blocos.join('\n\n')}`;
 }
