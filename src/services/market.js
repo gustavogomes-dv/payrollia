@@ -4,11 +4,57 @@ const BRAPI_TOKEN = process.env.BRAPI_TOKEN;
 const BRAPI_BASE = 'https://brapi.dev/api';
 const BCB_BASE = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs';
 
+// ─── Dicionário nome da empresa → ticker ──────────────────────────────────────
+// Chaves sem acento e em minúsculo (a busca normaliza o texto do usuário).
+const NOME_PARA_TICKER = {
+  // Bancos
+  'banco do brasil': 'BBAS3', 'bb': 'BBAS3',
+  'itau': 'ITUB4', 'itau unibanco': 'ITUB4', 'itausa': 'ITSA4',
+  'bradesco': 'BBDC4', 'santander': 'SANB11', 'nubank': 'ROXO34', 'nu': 'ROXO34',
+  'banco inter': 'INBR32', 'inter': 'INBR32', 'btg': 'BPAC11', 'btg pactual': 'BPAC11',
+  // Petróleo / energia
+  'petrobras': 'PETR4', 'petrobras on': 'PETR3', 'petro': 'PETR4',
+  'vale': 'VALE3', 'eletrobras': 'ELET3', 'petrorio': 'PRIO3', 'prio': 'PRIO3',
+  'ultrapar': 'UGPA3', 'cosan': 'CSAN3', 'raizen': 'RAIZ4',
+  // Varejo / consumo
+  'magazine luiza': 'MGLU3', 'magalu': 'MGLU3', 'americanas': 'AMER3',
+  'via varejo': 'VIIA3', 'via': 'VIIA3', 'lojas renner': 'LREN3', 'renner': 'LREN3',
+  'ambev': 'ABEV3', 'natura': 'NTCO3', 'assai': 'ASAI3', 'carrefour': 'CRFB3',
+  'mercado livre': 'MELI34', 'mercadolivre': 'MELI34',
+  // Indústria / outros
+  'weg': 'WEGE3', 'embraer': 'EMBR3', 'suzano': 'SUZB3', 'klabin': 'KLBN11',
+  'gerdau': 'GGBR4', 'csn': 'CSNA3', 'jbs': 'JBSS3', 'marfrig': 'MRFG3',
+  'b3': 'B3SA3', 'bovespa': 'B3SA3', 'localiza': 'RENT3', 'rumo': 'RAIL3',
+  // Telecom / tech
+  'vivo': 'VIVT3', 'telefonica': 'VIVT3', 'tim': 'TIMS3', 'totvs': 'TOTS3',
+  // Energia elétrica
+  'engie': 'EGIE3', 'cemig': 'CMIG4', 'copel': 'CPLE6', 'taesa': 'TAEE11', 'sabesp': 'SBSP3',
+  // FIIs populares
+  'maxi renda': 'MXRF11', 'maxirenda': 'MXRF11', 'kinea': 'KNRI11',
+  'hglg': 'HGLG11', 'xp log': 'XPLG11', 'visc': 'VISC11', 'mall': 'MALL11',
+};
+
 // ─── Detectores de intenção ───────────────────────────────────────────────────
 
 function extractTicker(text) {
+  // 1) Tenta achar o código direto (ex.: PETR4, MXRF11)
   const match = text.toUpperCase().match(/\b[A-Z]{4}\d{1,2}\b/);
-  return match ? match[0] : null;
+  if (match) return match[0];
+
+  // 2) Tenta achar pelo nome da empresa (ex.: "Petrobras", "Banco do Brasil")
+  const normalizado = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // remove acentos
+
+  // Ordena as chaves da mais longa pra mais curta — evita "bb" casar antes de "banco do brasil"
+  const nomes = Object.keys(NOME_PARA_TICKER).sort((a, b) => b.length - a.length);
+  for (const nome of nomes) {
+    const re = new RegExp(`\\b${nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+    if (re.test(normalizado)) return NOME_PARA_TICKER[nome];
+  }
+
+  return null;
 }
 
 function isFII(ticker) {
