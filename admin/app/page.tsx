@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 // Logo oficial Payroll — SVG fiel ao design system (viewBox 64, barras curta·longa·média, ordem FIXA)
 function PayrollLogo() {
   return (
@@ -13,6 +15,8 @@ function PayrollLogo() {
 }
 
 export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <>
       <style>{`
@@ -36,6 +40,20 @@ export default function LandingPage() {
         .nav-links{display:flex;align-items:center;gap:28px}
         .nav-link{font-size:14px;color:var(--mute);text-decoration:none}
         .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none}
+
+        /* HAMBÚRGUER (só aparece no mobile) */
+        .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;background:none;border:none;cursor:pointer;padding:11px;border-radius:10px;-webkit-tap-highlight-color:transparent}
+        .nav-toggle span{display:block;width:100%;height:2px;background:var(--aubergine);border-radius:2px;transition:transform .26s ease, opacity .2s ease}
+        .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+        .nav-toggle.open span:nth-child(2){opacity:0}
+        .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+        /* MENU MOBILE (dropdown) */
+        .mobile-menu{display:none;flex-direction:column;background:var(--bone);border-bottom:1px solid var(--bone3);padding:6px 20px 22px;position:sticky;top:64px;z-index:99;box-shadow:0 18px 30px rgba(20,16,42,.06)}
+        .mobile-menu.open{display:flex}
+        .mobile-menu a{font-size:16px;color:var(--ink);text-decoration:none;padding:15px 4px;border-bottom:1px solid var(--bone3)}
+        .mobile-menu a:last-of-type{border-bottom:none}
+        .mobile-menu .mm-cta{margin-top:16px;background:var(--aubergine);color:var(--lime);text-align:center;border-radius:100px;font-weight:600;padding:16px;font-size:15px}
 
         /* HERO */
         .hero-outer{background:var(--aubergine)}
@@ -274,7 +292,9 @@ export default function LandingPage() {
           .chat-card{display:none}
         }
         @media(max-width:900px){
-          .nav{padding:0 20px}.nav-links .nav-link{display:none}
+          .nav{padding:0 20px}
+          .nav-links{display:none}
+          .nav-toggle{display:flex}
           .hero{padding:56px 20px}.hero-h{font-size:48px}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
@@ -296,9 +316,26 @@ export default function LandingPage() {
           .pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
         }
-          @media(max-width:560px){
+        @media(max-width:560px){
           .footer-top{grid-template-columns:1fr;gap:30px;margin-bottom:36px}
-}
+        }
+        @media(max-width:480px){
+          .hero{padding:44px 20px 40px}
+          .hero-tag{margin-bottom:18px}
+          .hero-h{font-size:40px;margin-bottom:20px}
+          .hero-p{font-size:15px;margin-bottom:32px}
+          .hero-btns{flex-direction:column;align-items:stretch;gap:10px}
+          .btn-lime,.btn-outline{text-align:center;padding:15px 24px}
+          .sec-h{font-size:30px}
+          .sec-p{font-size:15px}
+          .stats{grid-template-columns:1fr 1fr;gap:0}
+          .stat{padding:18px 12px}.stat-n{font-size:28px}
+          .quote-text{font-size:26px}
+          .cta-h{font-size:32px}
+          .plan{padding:26px 22px}.plan-price{font-size:34px}
+          .legal{padding:56px 20px}
+          .legal-h1{font-size:22px}
+        }
       `}</style>
 
       <div className="lp">
@@ -317,7 +354,24 @@ export default function LandingPage() {
             <a href="/indicacao" className="nav-link">Programa de indicação</a>
             <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
           </div>
+          <button
+            className={`nav-toggle ${menuOpen ? 'open' : ''}`}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Abrir menu"
+            aria-expanded={menuOpen}
+          >
+            <span/><span/><span/>
+          </button>
         </nav>
+
+        {/* MENU MOBILE */}
+        <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
+          <a href="#como-funciona" onClick={() => setMenuOpen(false)}>Como funciona</a>
+          <a href="#planos" onClick={() => setMenuOpen(false)}>Planos</a>
+          <a href="#privacidade" onClick={() => setMenuOpen(false)}>Política e Privacidade</a>
+          <a href="/indicacao" onClick={() => setMenuOpen(false)}>Programa de indicação</a>
+          <a href="https://wa.me/5535910148222" className="mm-cta" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Começar grátis →</a>
+        </div>
 
         {/* HERO */}
         <div className="hero-outer">
