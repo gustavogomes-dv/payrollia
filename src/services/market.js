@@ -161,97 +161,89 @@ function mencionaSelic(text) {
 
 // ─── Brapi: Cotação + Indicadores fundamentalistas ───────────────────────────
 
-async function getCotacao(ticker) {
+// Busca a cotação na Brapi. Usa o módulo `fundamental=true` (liberado no plano free),
+// mas NÃO usa `dividends=true` (esse módulo dá 403 no plano free → era o que deixava o bot mudo).
+// Se mesmo assim vier um 403 (ex.: plano mudou, fundamental restrito), cai pra cotação básica.
+async function fetchBrapiQuote(ticker) {
+  const comFundamental = `${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}&fundamental=true`;
   try {
-    const { data } = await axios.get(
-      `${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}&fundamental=true&dividends=true`
-    );
-
-    const stock = data.results?.[0];
-    if (!stock) {
-      console.warn(`[Market] Brapi não retornou resultados para ${ticker}`);
-      return null;
-    }
-
-    const linhas = [
-      `📊 *${stock.symbol} — ${stock.longName || stock.shortName || ''}*`,
-      `Preço atual: R$ ${stock.regularMarketPrice?.toFixed(2)}`,
-      `Variação hoje: ${stock.regularMarketChangePercent?.toFixed(2)}%`,
-      `Abertura: R$ ${stock.regularMarketOpen?.toFixed(2)}`,
-      `Máxima do dia: R$ ${stock.regularMarketDayHigh?.toFixed(2)}`,
-      `Mínima do dia: R$ ${stock.regularMarketDayLow?.toFixed(2)}`,
-      `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
-    ];
-
-    if (stock.priceEarnings) linhas.push(`P/L: ${stock.priceEarnings?.toFixed(2)}`);
-    if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
-    if (stock.returnOnEquity) linhas.push(`ROE: ${(stock.returnOnEquity * 100)?.toFixed(2)}%`);
-    if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
-    if (stock.earningsPerShare) linhas.push(`LPA: R$ ${stock.earningsPerShare?.toFixed(2)}`);
-    if (stock.enterpriseValueEbitda) linhas.push(`EV/EBITDA: ${stock.enterpriseValueEbitda?.toFixed(2)}`);
-
-    if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
-      linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
-      linhas.push(`Máxima 52 sem: R$ ${stock.fiftyTwoWeekHigh?.toFixed(2)}`);
-    }
-
-    const dividendos = stock.dividendsData?.cashDividends?.slice(0, 2);
-    if (dividendos?.length > 0) {
-      linhas.push(`\n💰 Dividendos recentes:`);
-      dividendos.forEach(d => {
-        linhas.push(`  ${d.paymentDate?.slice(0, 10)}: R$ ${d.rate?.toFixed(4)}`);
-      });
-    }
-
-    return linhas.join('\n');
+    const { data } = await axios.get(comFundamental);
+    return data.results?.[0] || null;
   } catch (err) {
-    console.error(`[Market] Erro ao buscar cotação de ${ticker}:`, err.message);
+    if (err.response?.status === 403) {
+      console.warn(`[Market] 403 com fundamental em ${ticker} → tentando cotação básica`);
+      try {
+        const { data } = await axios.get(`${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}`);
+        return data.results?.[0] || null;
+      } catch (e2) {
+        console.error(`[Market] erro na cotação básica de ${ticker}:`, e2.message);
+        return null;
+      }
+    }
+    console.error(`[Market] Erro ao buscar ${ticker}:`, err.message);
     return null;
   }
+}
+
+async function getCotacao(ticker) {
+  const stock = await fetchBrapiQuote(ticker);
+  if (!stock) {
+    console.warn(`[Market] sem dados para ${ticker}`);
+    return null;
+  }
+
+  const linhas = [
+    `📊 *${stock.symbol} — ${stock.longName || stock.shortName || ''}*`,
+    `Preço atual: R$ ${stock.regularMarketPrice?.toFixed(2)}`,
+    `Variação hoje: ${stock.regularMarketChangePercent?.toFixed(2)}%`,
+    `Abertura: R$ ${stock.regularMarketOpen?.toFixed(2)}`,
+    `Máxima do dia: R$ ${stock.regularMarketDayHigh?.toFixed(2)}`,
+    `Mínima do dia: R$ ${stock.regularMarketDayLow?.toFixed(2)}`,
+    `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
+  ];
+
+  // Indicadores fundamentalistas (vêm de fundamental=true, liberado no free)
+  if (stock.priceEarnings) linhas.push(`P/L: ${stock.priceEarnings?.toFixed(2)}`);
+  if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
+  if (stock.returnOnEquity) linhas.push(`ROE: ${(stock.returnOnEquity * 100)?.toFixed(2)}%`);
+  if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
+  if (stock.earningsPerShare) linhas.push(`LPA: R$ ${stock.earningsPerShare?.toFixed(2)}`);
+  if (stock.enterpriseValueEbitda) linhas.push(`EV/EBITDA: ${stock.enterpriseValueEbitda?.toFixed(2)}`);
+
+  if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
+    linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
+    linhas.push(`Máxima 52 sem: R$ ${stock.fiftyTwoWeekHigh?.toFixed(2)}`);
+  }
+
+  return linhas.join('\n');
 }
 
 // ─── Brapi: Dados de FII ──────────────────────────────────────────────────────
 
 async function getFIIData(ticker) {
-  try {
-    const { data } = await axios.get(
-      `${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}&fundamental=true&dividends=true`
-    );
-
-    const stock = data.results?.[0];
-    if (!stock) {
-      console.warn(`[Market] Brapi não retornou resultados para FII ${ticker}`);
-      return null;
-    }
-
-    const linhas = [
-      `🏢 *${stock.symbol} — ${stock.longName || stock.shortName || 'FII'}*`,
-      `Preço atual: R$ ${stock.regularMarketPrice?.toFixed(2)}`,
-      `Variação hoje: ${stock.regularMarketChangePercent?.toFixed(2)}%`,
-      `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
-    ];
-
-    if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
-    if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
-
-    if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
-      linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
-      linhas.push(`Máxima 52 sem: R$ ${stock.fiftyTwoWeekHigh?.toFixed(2)}`);
-    }
-
-    const dividendos = stock.dividendsData?.cashDividends?.slice(0, 3);
-    if (dividendos?.length > 0) {
-      linhas.push(`\n💰 Últimos rendimentos:`);
-      dividendos.forEach(d => {
-        linhas.push(`  ${d.paymentDate?.slice(0, 10)}: R$ ${d.rate?.toFixed(4)}`);
-      });
-    }
-
-    return linhas.join('\n');
-  } catch (err) {
-    console.error(`[Market] Erro ao buscar FII ${ticker}:`, err.message);
+  const stock = await fetchBrapiQuote(ticker);
+  if (!stock) {
+    console.warn(`[Market] sem dados para FII ${ticker}`);
     return null;
   }
+
+  const linhas = [
+    `🏢 *${stock.symbol} — ${stock.longName || stock.shortName || 'FII'}*`,
+    `Preço atual: R$ ${stock.regularMarketPrice?.toFixed(2)}`,
+    `Variação hoje: ${stock.regularMarketChangePercent?.toFixed(2)}%`,
+    `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
+  ];
+
+  // Dividend Yield vem de fundamental=true (liberado no free) — é a métrica-chave do FII
+  if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
+  if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
+
+  if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
+    linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
+    linhas.push(`Máxima 52 sem: R$ ${stock.fiftyTwoWeekHigh?.toFixed(2)}`);
+  }
+
+  return linhas.join('\n');
 }
 
 // ─── Brapi: Câmbio (dólar, euro) ─────────────────────────────────────────────
