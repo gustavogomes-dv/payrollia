@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const C = {
   aubergine: '#2D2356', aubergineL: '#4A3B82', lime: '#C8F260',
@@ -98,49 +100,125 @@ export default function ConfigPage() {
   const [msgLimite, setMsgLimite]   = useState<Feedback>(null);
   const [loadingLimite, setLoadingLimite] = useState(false);
 
-  // Danger zone — confirmações
+  // Danger zone — confirmações + loading
   const [confirmCache, setConfirmCache]   = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [loadingCache, setLoadingCache]   = useState(false);
+  const [loadingLogout, setLoadingLogout] = useState(false);
   const [msgDanger, setMsgDanger]         = useState<Feedback>(null);
 
-  // ── Handlers (simulados — backend liga depois) ──────────────────────────────
-  function trocarSenha() {
+  // ── Carrega o limite atual do backend ao montar ─────────────────────────────
+  async function carregarSettings() {
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.free_question_limit !== undefined) {
+        setLimite(String(data.free_question_limit));
+      }
+    } catch {
+      /* mantém o valor padrão se falhar */
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { carregarSettings(); }, []);
+
+  // ── Trocar senha ────────────────────────────────────────────────────────────
+  async function trocarSenha() {
     setMsgSenha(null);
     if (senhaNova.length < 8) { setMsgSenha({ type: 'err', text: 'A nova senha precisa ter ao menos 8 caracteres.' }); return; }
     if (senhaNova !== senhaConf) { setMsgSenha({ type: 'err', text: 'A confirmação não bate com a nova senha.' }); return; }
     setLoadingSenha(true);
-    // TODO backend: POST ${API_URL}/admin/change-password  { senhaAtual, senhaNova }
-    setTimeout(() => {
-      setLoadingSenha(false);
-      setMsgSenha({ type: 'ok', text: 'Senha atualizada. (visual — falta ligar no backend)' });
+    try {
+      const res = await fetch(`${API_URL}/admin/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senhaAtual, senhaNova }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsgSenha({ type: 'err', text: data.error || 'Erro ao trocar a senha.' });
+        return;
+      }
       setSenhaAtual(''); setSenhaNova(''); setSenhaConf('');
-    }, 700);
+      setMsgSenha({ type: 'ok', text: 'Senha atualizada! Você será redirecionado para o login...' });
+      // A troca de senha encerra a sessão atual no backend → relogin
+      setTimeout(() => { window.location.href = '/login'; }, 1800);
+    } catch {
+      setMsgSenha({ type: 'err', text: 'Erro de conexão.' });
+    } finally {
+      setLoadingSenha(false);
+    }
   }
 
-  function salvarLimite() {
+  // ── Salvar limite do plano free ─────────────────────────────────────────────
+  async function salvarLimite() {
     setMsgLimite(null);
     const n = parseInt(limite);
     if (isNaN(n) || n < 0) { setMsgLimite({ type: 'err', text: 'Informe um número válido.' }); return; }
     setLoadingLimite(true);
-    // TODO backend: PUT ${API_URL}/admin/settings  { free_question_limit: n }
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ free_question_limit: n }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsgLimite({ type: 'err', text: data.error || 'Erro ao salvar.' });
+        return;
+      }
+      setMsgLimite({ type: 'ok', text: `Limite salvo: ${data.free_question_limit ?? n} perguntas/mês.` });
+    } catch {
+      setMsgLimite({ type: 'err', text: 'Erro de conexão.' });
+    } finally {
       setLoadingLimite(false);
-      setMsgLimite({ type: 'ok', text: `Limite salvo: ${n} perguntas/mês. (visual — falta ligar no backend)` });
-    }, 700);
+    }
   }
 
-  function limparCache() {
+  // ── Limpar cache (FLUSHALL) ─────────────────────────────────────────────────
+  async function limparCache() {
     if (!confirmCache) { setConfirmCache(true); return; }
     setConfirmCache(false);
-    // TODO backend: POST ${API_URL}/admin/cache/flush
-    setMsgDanger({ type: 'ok', text: 'Cache limpo (FLUSHALL). (visual — falta ligar no backend)' });
+    setMsgDanger(null);
+    setLoadingCache(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/cache/flush`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsgDanger({ type: 'err', text: data.error || 'Erro ao limpar o cache.' });
+        return;
+      }
+      setMsgDanger({ type: 'ok', text: 'Cache limpo (FLUSHALL). O bot recarrega tudo do banco.' });
+    } catch {
+      setMsgDanger({ type: 'err', text: 'Erro de conexão.' });
+    } finally {
+      setLoadingCache(false);
+    }
   }
 
-  function logoutSessoes() {
+  // ── Encerrar todas as sessões ───────────────────────────────────────────────
+  async function logoutSessoes() {
     if (!confirmLogout) { setConfirmLogout(true); return; }
     setConfirmLogout(false);
-    // TODO backend: POST ${API_URL}/admin/sessions/revoke-all
-    setMsgDanger({ type: 'ok', text: 'Todas as sessões encerradas. (visual — falta ligar no backend)' });
+    setMsgDanger(null);
+    setLoadingLogout(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/sessions/revoke-all`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsgDanger({ type: 'err', text: data.error || 'Erro ao encerrar sessões.' });
+        return;
+      }
+      setMsgDanger({ type: 'ok', text: 'Todas as sessões encerradas. Redirecionando para o login...' });
+      // Você também foi deslogado → manda pro login
+      setTimeout(() => { window.location.href = '/login'; }, 1800);
+    } catch {
+      setMsgDanger({ type: 'err', text: 'Erro de conexão.' });
+    } finally {
+      setLoadingLogout(false);
+    }
   }
 
   const olho = (
@@ -196,7 +274,7 @@ export default function ConfigPage() {
             <p style={{ fontSize: 13, color: C.ink, fontWeight: 500 }}>Limpar cache (Redis)</p>
             <p style={{ fontSize: 12, color: C.mute }}>Executa FLUSHALL. O bot recarrega tudo do banco.</p>
           </div>
-          <Botao onClick={limparCache} variant="danger">{confirmCache ? 'Confirmar?' : 'Limpar'}</Botao>
+          <Botao onClick={limparCache} variant="danger" disabled={loadingCache}>{loadingCache ? 'Limpando...' : confirmCache ? 'Confirmar?' : 'Limpar'}</Botao>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: `1px solid ${C.bone3}` }}>
@@ -204,7 +282,7 @@ export default function ConfigPage() {
             <p style={{ fontSize: 13, color: C.ink, fontWeight: 500 }}>Encerrar todas as sessões</p>
             <p style={{ fontSize: 12, color: C.mute }}>Faz logout de todos os admins (você incluso).</p>
           </div>
-          <Botao onClick={logoutSessoes} variant="danger">{confirmLogout ? 'Confirmar?' : 'Encerrar'}</Botao>
+          <Botao onClick={logoutSessoes} variant="danger" disabled={loadingLogout}>{loadingLogout ? 'Encerrando...' : confirmLogout ? 'Confirmar?' : 'Encerrar'}</Botao>
         </div>
 
         <Msg msg={msgDanger} />
