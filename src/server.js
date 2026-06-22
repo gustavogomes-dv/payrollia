@@ -70,7 +70,8 @@ const adminLimiter = rateLimit({
   message: { erro: 'Muitas requisições. Aguarde alguns minutos.' },
 });
 
-// Login: guarda inicial contra brute force (lockout completo vem na Fase 4).
+// Login: guarda inicial por IP contra brute force. O lockout por CONTA
+// (failed_attempts/locked_until) é a segunda camada, dentro do handler de login.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -143,11 +144,19 @@ app.get('/', (req, res) => {
   res.json({ status: 'Payroll rodando!' });
 });
 
-// ─── ADMIN: Login ───────────────────────────────────────────────────────────
+// ─── ADMIN: Login (com brute force lockout por conta) ────────────────────────
 app.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const { pool } = require('./db/index');
+
+    // Política de lockout
+    const MAX_ATTEMPTS = 5;   // tentativas antes de travar
+    const LOCK_MINUTES = 15;  // duração do bloqueio
+
+    // Mensagem genérica — não revela se o e-mail existe (anti-enumeração)
+    const credenciaisInvalidas = () =>
+      res.status(401).json({ error: 'Credenciais inválidas' });
 
     const { rows } = await pool.query(
       `SELECT * FROM admin_users WHERE email = $1 AND active = true`,
@@ -155,12 +164,24 @@ app.post('/admin/login', async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
+      return credenciaisInvalidas();
     }
 
     const admin = rows[0];
 
-    // Verifica a senha. Suporta migração automática de texto puro -> bcrypt.
+    // 1) Conta travada? Recusa SEM nem checar a senha.
+    if (admin.locked_until && new Date(admin.locked_until) > new Date()) {
+      const restanteMin = Math.max(
+        1,
+        Math.ceil((new Date(admin.locked_until) - new Date()) / 60000)
+      );
+      console.warn(`[admin] Login bloqueado para ${admin.email} — ${restanteMin} min restantes`);
+      return res.status(429).json({
+        error: `Muitas tentativas de login. Tente novamente em ${restanteMin} minuto(s).`,
+      });
+    }
+
+    // 2) Verifica a senha. Suporta migração automática de texto puro -> bcrypt.
     const stored = admin.password_hash || '';
     let senhaOk = false;
 
@@ -180,15 +201,43 @@ app.post('/admin/login', async (req, res) => {
       }
     }
 
+    // 3) Senha errada -> incrementa o contador e trava ao atingir o limite
     if (!senhaOk) {
-      return res.status(401).json({ error: 'Senha incorreta' });
+      const novasTentativas = (admin.failed_attempts || 0) + 1;
+
+      if (novasTentativas >= MAX_ATTEMPTS) {
+        await pool.query(
+          `UPDATE admin_users
+           SET failed_attempts = 0,
+               locked_until = NOW() + ($1 * INTERVAL '1 minute')
+           WHERE id = $2`,
+          [LOCK_MINUTES, admin.id]
+        );
+        console.warn(`[admin] Conta ${admin.email} TRAVADA por ${LOCK_MINUTES} min (atingiu ${MAX_ATTEMPTS} tentativas)`);
+        return res.status(429).json({
+          error: `Muitas tentativas de login. Tente novamente em ${LOCK_MINUTES} minutos.`,
+        });
+      }
+
+      await pool.query(
+        `UPDATE admin_users SET failed_attempts = $1 WHERE id = $2`,
+        [novasTentativas, admin.id]
+      );
+      console.warn(`[admin] Tentativa ${novasTentativas}/${MAX_ATTEMPTS} falhou para ${admin.email}`);
+      return credenciaisInvalidas();
     }
 
+    // 4) Sucesso -> zera contador, limpa lock e cria a sessão
     const crypto = require('crypto');
     const token = crypto.randomUUID();
 
     await pool.query(
-      `UPDATE admin_users SET session_token = $1, token_expires_at = NOW() + INTERVAL '7 days' WHERE id = $2`,
+      `UPDATE admin_users
+       SET session_token = $1,
+           token_expires_at = NOW() + INTERVAL '7 days',
+           failed_attempts = 0,
+           locked_until = NULL
+       WHERE id = $2`,
       [token, admin.id]
     );
 
