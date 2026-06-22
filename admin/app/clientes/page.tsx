@@ -183,6 +183,7 @@ export default function ClientesPage() {
     finally { setLoading(false); }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { carregar(); }, []);
 
   function mostrarFeedback(msg: string) {
