@@ -159,6 +159,33 @@ function mencionaSelic(text) {
   return /selic|juros|taxa b[aá]sica|cdi|renda fixa/i.test(text);
 }
 
+// Menção direta ao índice da bolsa (Ibovespa)
+function mencionaBolsa(text) {
+  return /ibovespa|\bibov\b|bovespa|[ií]ndice da bolsa|[ií]ndice bovespa/i.test(text);
+}
+
+// Pergunta AMPLA sobre o cenário (mercado/economia em geral) → dispara o panorama macro.
+// Cobre muitas formas de perguntar a mesma coisa. Se alguma frase escapar, é só adicionar aqui.
+function pedePanorama(text) {
+  return new RegExp(
+    [
+      'panorama',
+      'conjuntura',
+      'cen[aá]rio (econ[oô]mic|atual|do mercado|da economia|da bolsa|macro)',
+      'vis[aã]o (geral|macro|do mercado|da economia)',
+      'macroeconom',
+      'resumo (do |da )?(mercado|economia|bolsa)',
+      'overview do mercado',
+      'situa[cç][aã]o (econ[oô]mica|do mercado|da economia|atual)',
+      'como (est[aá]|anda|t[aá]|vai|estao|est[aã]o|andam) (o |a |os |as )?(mercado|economia|bolsa|ibovespa|cen[aá]rio|brasil|juros|indicadores|mercados)',
+      'como (vai|est[aá]|anda) (a economia|o mercado|a bolsa|o brasil)',
+      'o que (esta|está) acontecendo (no |com o )?(mercado|economia)',
+      'como (anda|esta|está) (tudo )?(na |a )?economia',
+    ].join('|'),
+    'i'
+  ).test(text);
+}
+
 // ─── Brapi: Cotação + Indicadores fundamentalistas ───────────────────────────
 
 // Busca a cotação na Brapi. Usa o módulo `fundamental=true` (liberado no plano free),
@@ -320,6 +347,129 @@ async function getIPCA() {
   }
 }
 
+// ─── BCB Focus: projeções do mercado (Boletim Focus) ─────────────────────────
+// API Olinda do Banco Central — expectativas anuais (projeção de fim de ano).
+const BCB_FOCUS = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais';
+
+// Cache de 6h (o Focus é atualizado uma vez ao dia, então não precisa bater toda hora)
+const _focusCache = {};
+
+// Busca a projeção mediana do indicador para o ano atual e o próximo.
+// indicador: 'Selic' ou 'IPCA'. Retorna [{ ano, mediana }, ...] ou null.
+async function getFocusProjecao(indicador) {
+  const agora = Date.now();
+  const cache = _focusCache[indicador];
+  if (cache && agora - cache.ts < 6 * 60 * 60 * 1000) {
+    return cache.value;
+  }
+
+  try {
+    const anoAtual = new Date().getFullYear();
+    const anos = [String(anoAtual), String(anoAtual + 1)];
+
+    // top=200 + ordenado por Data desc → pega sempre a leitura mais recente do Focus
+    const url = `${BCB_FOCUS}?%24top=200&%24filter=Indicador%20eq%20'${indicador}'&%24orderby=Data%20desc&%24format=json`;
+    const { data } = await axios.get(url);
+    const linhas = data?.value || [];
+    if (!linhas.length) return null;
+
+    // Para cada ano-alvo, pega o registro mais recente (a lista já vem ordenada por Data desc)
+    const projecao = [];
+    for (const ano of anos) {
+      const item = linhas.find(l => l.DataReferencia === ano && typeof l.Mediana === 'number');
+      if (item) projecao.push({ ano, mediana: item.Mediana });
+    }
+
+    if (!projecao.length) return null;
+    _focusCache[indicador] = { value: projecao, ts: agora };
+    console.log(`[Market] Focus ${indicador}: ${projecao.map(p => `${p.ano}=${p.mediana}`).join(', ')}`);
+    return projecao;
+  } catch (err) {
+    console.error(`[Market] Erro ao buscar Focus ${indicador}:`, err.message);
+    return null;
+  }
+}
+
+// Texto da projeção da Selic (Boletim Focus)
+async function getFocusSelic() {
+  const proj = await getFocusProjecao('Selic');
+  if (!proj) return null;
+  const partes = proj.map(p => `${p.ano}: ${p.mediana.toFixed(2).replace('.', ',')}%`);
+  return `🔮 *Projeção da Selic (Boletim Focus — mediana do mercado):*\n${partes.join(' · ')}`;
+}
+
+// Texto da projeção do IPCA (Boletim Focus)
+async function getFocusIPCA() {
+  const proj = await getFocusProjecao('IPCA');
+  if (!proj) return null;
+  const partes = proj.map(p => `${p.ano}: ${p.mediana.toFixed(2).replace('.', ',')}%`);
+  return `🔮 *Projeção do IPCA (Boletim Focus — mediana do mercado):*\n${partes.join(' · ')}`;
+}
+
+// ─── Brapi: Ibovespa (índice ^BVSP) ──────────────────────────────────────────
+
+async function getIbovespa() {
+  try {
+    // %5EBVSP = ^BVSP (símbolo do Ibovespa). Usa a cotação básica (sem fundamental).
+    const { data } = await axios.get(
+      `${BRAPI_BASE}/quote/%5EBVSP?token=${BRAPI_TOKEN}`
+    );
+    const idx = data.results?.[0];
+    if (!idx) return null;
+
+    const linhas = [
+      `📈 *Ibovespa (IBOV)*`,
+      `Pontos: ${idx.regularMarketPrice?.toLocaleString('pt-BR')}`,
+      `Variação hoje: ${idx.regularMarketChangePercent?.toFixed(2)}%`,
+    ];
+    if (idx.regularMarketDayHigh && idx.regularMarketDayLow) {
+      linhas.push(`Máxima do dia: ${idx.regularMarketDayHigh?.toLocaleString('pt-BR')}`);
+      linhas.push(`Mínima do dia: ${idx.regularMarketDayLow?.toLocaleString('pt-BR')}`);
+    }
+    return linhas.join('\n');
+  } catch (err) {
+    console.error('[Market] Erro ao buscar Ibovespa:', err.message);
+    return null;
+  }
+}
+
+// ─── Panorama macro: combo Ibovespa + dólar + Selic + CDI + IPCA ──────────────
+// Indicadores macro mudam devagar, então cacheia o bloco por 10 min — fica rápido
+// e não martela as APIs quando vários usuários perguntam sobre o mercado.
+let _panoramaCache = { value: null, ts: 0 };
+
+async function montarPanorama() {
+  const agora = Date.now();
+  if (_panoramaCache.value && agora - _panoramaCache.ts < 10 * 60 * 1000) {
+    console.log('[Market] panorama: cache hit');
+    return _panoramaCache.value;
+  }
+
+  const [ibov, cambio, selic, cdi, ipca, focusSelic, focusIpca] = await Promise.all([
+    getIbovespa(), getCambio(), getSelic(), getCDI(), getIPCA(),
+    getFocusSelic(), getFocusIPCA(),
+  ]);
+
+  const partes = [];
+  if (ibov) partes.push(ibov);
+  const taxas = [selic, cdi].filter(Boolean);
+  if (taxas.length) partes.push(taxas.join('\n'));
+  if (focusSelic) partes.push(focusSelic);
+  if (ipca) partes.push(ipca);
+  if (focusIpca) partes.push(focusIpca);
+  if (cambio) partes.push(cambio);
+
+  if (!partes.length) {
+    console.warn('[Market] panorama: nenhuma fonte respondeu');
+    return null;
+  }
+
+  const resultado = partes.join('\n\n');
+  _panoramaCache = { value: resultado, ts: agora };
+  console.log('[Market] panorama montado (Ibovespa + câmbio + Selic/CDI + IPCA + projeções Focus)');
+  return resultado;
+}
+
 // ─── Função principal ─────────────────────────────────────────────────────────
 
 async function getMarketData(userMessage) {
@@ -331,12 +481,13 @@ async function getMarketData(userMessage) {
     ticker = await buscarTickerPorNome(userMessage);
   }
 
-  console.log(`[Market] mensagem="${userMessage}" → ticker resolvido=${ticker || 'nenhum'}`);
+  const panorama = pedePanorama(userMessage);
+  console.log(`[Market] mensagem="${userMessage}" → ticker=${ticker || 'nenhum'} | panorama=${panorama}`);
 
   const blocos = [];
   const promises = [];
 
-  // ── Ativo (ação ou FII) ───────────────────────────────────────────────────
+  // ── Ativo (ação ou FII) — sempre que um ticker for resolvido ──────────────
   if (ticker) {
     promises.push(
       (isFII(ticker) ? getFIIData(ticker) : getCotacao(ticker))
@@ -344,24 +495,42 @@ async function getMarketData(userMessage) {
     );
   }
 
-  // ── Câmbio — só quando o usuário mencionar ────────────────────────────────
-  if (mentionaDolar(userMessage)) {
-    promises.push(getCambio().then(d => d && blocos.push(d)));
-  }
+  if (panorama) {
+    // ── Pergunta AMPLA → combo macro completo de uma vez ───────────────────
+    promises.push(montarPanorama().then(d => d && blocos.push(d)));
+  } else {
+    // ── Perguntas específicas → busca só o que foi mencionado ──────────────
 
-  // ── Selic + CDI — só quando o usuário mencionar ───────────────────────────
-  if (mencionaSelic(userMessage)) {
-    promises.push(
-      Promise.all([getSelic(), getCDI()]).then(([selic, cdi]) => {
-        const taxas = [selic, cdi].filter(Boolean);
-        if (taxas.length > 0) blocos.push(taxas.join('\n'));
-      })
-    );
-  }
+    // Ibovespa (índice) mencionado diretamente
+    if (mencionaBolsa(userMessage)) {
+      promises.push(getIbovespa().then(d => d && blocos.push(d)));
+    }
 
-  // ── IPCA — só quando o usuário mencionar ──────────────────────────────────
-  if (mencionaInflacao(userMessage)) {
-    promises.push(getIPCA().then(d => d && blocos.push(d)));
+    // Câmbio (dólar)
+    if (mentionaDolar(userMessage)) {
+      promises.push(getCambio().then(d => d && blocos.push(d)));
+    }
+
+    // Selic + CDI (+ projeção Focus)
+    if (mencionaSelic(userMessage)) {
+      promises.push(
+        Promise.all([getSelic(), getCDI(), getFocusSelic()]).then(([selic, cdi, focusSelic]) => {
+          const taxas = [selic, cdi].filter(Boolean);
+          if (taxas.length > 0) blocos.push(taxas.join('\n'));
+          if (focusSelic) blocos.push(focusSelic);
+        })
+      );
+    }
+
+    // IPCA (inflação) (+ projeção Focus)
+    if (mencionaInflacao(userMessage)) {
+      promises.push(
+        Promise.all([getIPCA(), getFocusIPCA()]).then(([ipca, focusIpca]) => {
+          if (ipca) blocos.push(ipca);
+          if (focusIpca) blocos.push(focusIpca);
+        })
+      );
+    }
   }
 
   await Promise.all(promises);
