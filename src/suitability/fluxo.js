@@ -38,7 +38,7 @@ async function gerarLinkPagamento(user, plano, cupom = null) {
 
     const body = {
       items: [{ id: config.id, quantity: config.quantity }],
-      methods: ['PIX'],
+      methods: ['PIX', 'CARD'],
       returnUrl: 'https://payrollia.com.br',
       completionUrl: 'https://payrollia.com.br',
       metadata: {
@@ -285,7 +285,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
 
       await updateSession(user.id, 'aguardando_pagamento', { plano });
       const nomeExibicao = plano === 'pro' ? 'Pro — R$ 12,90/mês' : 'Business — R$ 29,90/mês';
-      return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
+      return `Perfeito! Acesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nVocê pode pagar via *Pix* ou *cartão de crédito*. Assim que o pagamento for confirmado, seu acesso será liberado automaticamente. ✅`;
     }
 
     return `Por favor, responda *SIM* ou *NÃO*.`;
@@ -312,13 +312,13 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
         const link = await gerarLinkPagamento(user, plano);
         await updateSession(user.id, 'aguardando_pagamento', { plano, referral_code: cupom });
         const nomeExibicao = plano === 'pro' ? 'Pro — R$ 12,90/mês' : 'Business — R$ 29,90/mês';
-        return `Código de indicação reconhecido! Porém tive um problema ao aplicar o desconto. Acesse o link para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento for confirmado, seu acesso será liberado. ✅`;
+        return `Código de indicação reconhecido! Porém tive um problema ao aplicar o desconto. Acesse o link para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nVocê pode pagar via *Pix* ou *cartão de crédito*. Assim que o pagamento for confirmado, seu acesso será liberado. ✅`;
       }
 
       const link = await gerarLinkPagamento(user, plano, cupomIndicacao);
       await updateSession(user.id, 'aguardando_pagamento', { plano, referral_code: cupom });
       const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
-      return `🎉 Código de indicação *${cupom}* aplicado!\n\nVocê ganhou *${referral.discount_pct}% de desconto* na assinatura!\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
+      return `🎉 Código de indicação *${cupom}* aplicado!\n\nVocê ganhou *${referral.discount_pct}% de desconto* na assinatura!\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}*:\n\n🔗 ${link}\n\nVocê pode pagar via *Pix* ou *cartão de crédito*. Assim que o pagamento for confirmado, seu acesso será liberado automaticamente. ✅`;
     }
 
     // Tenta como cupom normal da AbacatePay
@@ -338,7 +338,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
 
     await updateSession(user.id, 'aguardando_pagamento', { plano, cupom });
     const nomeExibicao = plano === 'pro' ? 'Pro' : 'Business';
-    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nAssim que o pagamento via Pix for confirmado, seu acesso será liberado automaticamente. ✅`;
+    return `Cupom *${cupom}* aplicado com sucesso! 🎉\n\nAcesse o link abaixo para assinar o plano *${nomeExibicao}* com desconto:\n\n🔗 ${link}\n\nVocê pode pagar via *Pix* ou *cartão de crédito*. Assim que o pagamento for confirmado, seu acesso será liberado automaticamente. ✅`;
   }
 
   // ── Upgrade: aguardando pagamento ─────────────────────────────────────────────
@@ -354,7 +354,7 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
       return `Aqui está o seu novo link de pagamento:\n\n🔗 ${link}`;
     }
 
-    return `Seu link de pagamento já foi enviado! 😊\n\nAssim que o Pix for confirmado, seu acesso ao plano será liberado automaticamente.\n\nCaso precise de um novo link, responda *NOVO LINK*.`;
+    return `Seu link de pagamento já foi enviado! 😊\n\nVocê pode pagar via *Pix* ou *cartão de crédito*. Assim que o pagamento for confirmado, seu acesso ao plano será liberado automaticamente.\n\nCaso precise de um novo link, responda *NOVO LINK*.`;
   }
 
   // ── Fallback ──────────────────────────────────────────────────────────────────
