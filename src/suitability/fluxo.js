@@ -13,7 +13,28 @@ const {
 } = require('../db/users');
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
-const LIMITE_FREE = 3;
+const LIMITE_FREE_PADRAO = 3; // fallback se a tabela settings não responder
+
+// Lê o limite do plano free da tabela `settings`, com cache em memória (60s)
+// para não consultar o banco a cada mensagem.
+let _limiteCache = { value: LIMITE_FREE_PADRAO, ts: 0 };
+async function getLimiteFree() {
+  const agora = Date.now();
+  if (agora - _limiteCache.ts < 60000) return _limiteCache.value;
+
+  try {
+    const { pool } = require('../db/index');
+    const { rows } = await pool.query(
+      `SELECT value FROM settings WHERE key = 'free_question_limit' LIMIT 1`
+    );
+    const v = rows[0] ? parseInt(rows[0].value) : LIMITE_FREE_PADRAO;
+    _limiteCache = { value: Number.isNaN(v) ? LIMITE_FREE_PADRAO : v, ts: agora };
+  } catch (err) {
+    console.warn('[Fluxo] Erro ao ler limite free das settings, usando padrão:', err.message);
+    _limiteCache = { value: LIMITE_FREE_PADRAO, ts: agora };
+  }
+  return _limiteCache.value;
+}
 
 const DISCLAIMER = `⚠️ *Aviso Importante — CVM*
 
@@ -91,9 +112,9 @@ async function validarCupom(cupom) {
 }
 
 // ─── Verificar se usuário atingiu limite do plano Free ────────────────────────
-function atingiuLimite(user) {
+function atingiuLimite(user, limite) {
   if ((user.plano || 'free') !== 'free') return false;
-  return (user.perguntas_usadas || 0) >= LIMITE_FREE;
+  return (user.perguntas_usadas || 0) >= limite;
 }
 
 // ─── Incrementar contador de perguntas usadas ─────────────────────────────────
@@ -113,9 +134,9 @@ async function incrementarPerguntas(userId) {
 }
 
 // ─── Mensagem de limite atingido ───────────────────────────────────────────────
-function mensagemLimite(userName) {
+function mensagemLimite(userName, limite) {
   const nome = userName ? `, ${userName}` : '';
-  return `Você atingiu o limite de *${LIMITE_FREE} perguntas* do plano gratuito${nome}. 😕
+  return `Você atingiu o limite de *${limite} perguntas* do plano gratuito${nome}. 😕
 
 Para continuar aprendendo sobre investimentos sem restrições, escolha um dos planos abaixo:
 
@@ -230,9 +251,10 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
       return `Olá novamente! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`;
     }
 
-    if (atingiuLimite(user)) {
+    const limiteFree = await getLimiteFree();
+    if (atingiuLimite(user, limiteFree)) {
       await updateSession(user.id, 'aguardando_escolha_plano', {});
-      return mensagemLimite(user.name);
+      return mensagemLimite(user.name, limiteFree);
     }
 
     try {

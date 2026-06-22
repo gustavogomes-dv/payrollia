@@ -680,6 +680,122 @@ app.patch('/admin/clientes/:id/plano', async (req, res) => {
   }
 });
 
+// ─── ADMIN: Config — Trocar senha do admin logado ────────────────────────────
+app.post('/admin/change-password', async (req, res) => {
+  try {
+    const { senhaAtual, senhaNova } = req.body || {};
+    const { pool } = require('./db/index');
+
+    if (!senhaAtual || !senhaNova) {
+      return res.status(400).json({ error: 'Informe a senha atual e a nova senha.' });
+    }
+    if (senhaNova.length < 8) {
+      return res.status(400).json({ error: 'A nova senha precisa ter ao menos 8 caracteres.' });
+    }
+
+    // req.admin é preenchido pelo middleware requireAdmin (admin logado pelo token)
+    const { rows } = await pool.query(
+      `SELECT id, email, password_hash FROM admin_users WHERE id = $1 AND active = true`,
+      [req.admin.id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Admin não encontrado.' });
+    }
+    const admin = rows[0];
+
+    // Confere a senha atual (suporta senha legada em texto puro)
+    const stored = admin.password_hash || '';
+    const atualOk = stored.startsWith('$2')
+      ? await bcrypt.compare(senhaAtual, stored)
+      : stored === senhaAtual;
+
+    if (!atualOk) {
+      return res.status(401).json({ error: 'Senha atual incorreta.' });
+    }
+
+    // Salva a nova senha hasheada e ENCERRA todas as sessões deste admin (força relogin)
+    const novoHash = await bcrypt.hash(senhaNova, 12);
+    await pool.query(
+      `UPDATE admin_users
+       SET password_hash = $1, session_token = NULL, token_expires_at = NULL
+       WHERE id = $2`,
+      [novoHash, admin.id]
+    );
+
+    console.log(`[admin] Senha de ${admin.email} alterada — relogin necessário`);
+    res.json({ ok: true, relogin: true });
+  } catch (error) {
+    console.error('[admin/change-password]', error.message);
+    res.status(500).json({ error: 'Erro ao trocar a senha.' });
+  }
+});
+
+// ─── ADMIN: Config — Ler configurações ───────────────────────────────────────
+app.get('/admin/settings', async (req, res) => {
+  try {
+    const { pool } = require('./db/index');
+    const { rows } = await pool.query(`SELECT key, value FROM settings`);
+    const map = {};
+    rows.forEach(r => { map[r.key] = r.value; });
+    res.json({ free_question_limit: parseInt(map.free_question_limit ?? '3') });
+  } catch (error) {
+    console.error('[admin/settings GET]', error.message);
+    res.status(500).json({ error: 'Erro ao ler configurações.' });
+  }
+});
+
+// ─── ADMIN: Config — Salvar limite do plano free ─────────────────────────────
+app.put('/admin/settings', async (req, res) => {
+  try {
+    const { free_question_limit } = req.body || {};
+    const { pool } = require('./db/index');
+
+    const n = parseInt(free_question_limit);
+    if (isNaN(n) || n < 0) {
+      return res.status(400).json({ error: 'Limite inválido. Informe um número inteiro maior ou igual a 0.' });
+    }
+
+    await pool.query(
+      `INSERT INTO settings (key, value, updated_at)
+       VALUES ('free_question_limit', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [String(n)]
+    );
+
+    console.log(`[admin] Limite do plano free atualizado para ${n}`);
+    res.json({ ok: true, free_question_limit: n });
+  } catch (error) {
+    console.error('[admin/settings PUT]', error.message);
+    res.status(500).json({ error: 'Erro ao salvar configuração.' });
+  }
+});
+
+// ─── ADMIN: Config — Flush do cache Redis (FLUSHALL) ──────────────────────────
+app.post('/admin/cache/flush', async (req, res) => {
+  try {
+    const { redisClient } = require('./db/index');
+    await redisClient.flushAll(); // redis v5 → camelCase
+    console.log(`[admin] Cache Redis limpo (FLUSHALL) por ${req.admin?.email || 'admin'}`);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[admin/cache/flush]', error.message);
+    res.status(500).json({ error: 'Erro ao limpar o cache.' });
+  }
+});
+
+// ─── ADMIN: Config — Encerrar todas as sessões admin ─────────────────────────
+app.post('/admin/sessions/revoke-all', async (req, res) => {
+  try {
+    const { pool } = require('./db/index');
+    await pool.query(`UPDATE admin_users SET session_token = NULL, token_expires_at = NULL`);
+    console.log(`[admin] Todas as sessões admin encerradas por ${req.admin?.email || 'admin'}`);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[admin/sessions/revoke-all]', error.message);
+    res.status(500).json({ error: 'Erro ao encerrar sessões.' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor na porta ${PORT}`);
