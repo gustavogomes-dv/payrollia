@@ -149,14 +149,20 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    // ── checkout.completed ───────────────────────────────────────────────────
+    // ── checkout.completed (PIX ou CARTÃO — mesmo evento) ────────────────────
     if (event === 'checkout.completed') {
-      const phone = data?.checkout?.metadata?.phone;
-      const plano = data?.checkout?.metadata?.plano;
-      const referralCode = data?.checkout?.metadata?.cupom_indicacao;
+      // Fallback de metadata: cobre tanto data.checkout.metadata quanto data.metadata,
+      // pois o payload pode aninhar de formas diferentes (ex.: pagamento via cartão).
+      const phone = data?.checkout?.metadata?.phone || data?.metadata?.phone;
+      const plano = data?.checkout?.metadata?.plano || data?.metadata?.plano;
+      const referralCode = data?.checkout?.metadata?.cupom_indicacao || data?.metadata?.cupom_indicacao;
+
+      // Log do método de pagamento, quando disponível, pra confirmar o fluxo de cartão
+      const metodo = data?.checkout?.paymentMethod || data?.paymentMethod || data?.method || 'desconhecido';
+      console.log(`[AbacatePay] checkout.completed | phone=${phone || 'AUSENTE'} | método=${metodo}`);
 
       if (!phone) {
-        console.warn('[AbacatePay] Telefone não encontrado no metadata:', data);
+        console.warn('[AbacatePay] Telefone não encontrado no metadata:', JSON.stringify(data)?.slice(0, 500));
         return;
       }
 
