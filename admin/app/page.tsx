@@ -550,7 +550,7 @@ export default function LandingPage() {
 
         {/* STATS */}
         <div className="stats">
-          {[{n:"24/7",l:"sempre disponível"},{n:"8",l:"perguntas de perfil CVM"},{n:"B3+BCB",l:"dados em tempo real"},{n:"PIX",l:"ativação instantânea"}].map((s,i)=>(
+          {[{n:"24/7",l:"sempre disponível"},{n:"8",l:"perguntas de perfil CVM"},{n:"B3+BCB",l:"dados em tempo real"},{n:"PIX & Cartão",l:"ativação instantânea"}].map((s,i)=>(
             <div key={i} className="stat"><span className="stat-n">{s.n}</span><span className="stat-l">{s.l}</span></div>
           ))}
         </div>
@@ -584,7 +584,7 @@ export default function LandingPage() {
               <div className="plan-tag">MAIS POPULAR</div>
               <div className="plan-name">Pro</div>
               <div className="plan-price">R$ 12,90</div>
-              <div className="plan-cycle">/mês · via PIX</div>
+              <div className="plan-cycle">/mês · PIX ou cartão</div>
               <ul className="plan-items">
                 <li>Perguntas ilimitadas</li>
                 <li>Suitability CVM completo</li>
@@ -597,7 +597,7 @@ export default function LandingPage() {
             <div className="plan">
               <div className="plan-name">Business</div>
               <div className="plan-price">R$ 29,90</div>
-              <div className="plan-cycle">/mês · via PIX</div>
+              <div className="plan-cycle">/mês · PIX ou cartão</div>
               <ul className="plan-items">
                 <li>Tudo do plano Pro</li>
                 <li>Prioridade de resposta</li>
@@ -638,7 +638,7 @@ export default function LandingPage() {
               <h3 className="legal-h2">3. Armazenamento e segurança</h3>
               <p className="legal-p">Dados armazenados em servidores em nuvem com criptografia em trânsito (TLS 1.3). Em caso de incidente de segurança, notificaremos os usuários afetados conforme exige a LGPD.</p>
               <h3 className="legal-h2">4. Pagamentos</h3>
-              <p className="legal-p">Transações processadas pela <strong>AbacatePay</strong> via PIX. O Payroll Chatbot não armazena dados bancários ou chaves PIX dos usuários.</p>
+              <p className="legal-p">Transações processadas pela <strong>AbacatePay</strong> via PIX ou cartão de crédito. O Payroll Chatbot não armazena dados de cartão, dados bancários ou chaves PIX dos usuários.</p>
               <h3 className="legal-h2">5. Seus direitos (LGPD)</h3>
               <p className="legal-p">Você pode acessar, corrigir ou solicitar a exclusão dos seus dados enviando <strong>PRIVACIDADE</strong> para o bot ou escrevendo para <strong>gustavo.godlive@gmail.com</strong>.</p>
               <h3 className="legal-h2">6. Cookies</h3>
@@ -653,7 +653,7 @@ export default function LandingPage() {
               <h3 className="legal-h2">2. Elegibilidade</h3>
               <p className="legal-p">Destinado a pessoas físicas maiores de 18 anos residentes no Brasil com acesso ao WhatsApp.</p>
               <h3 className="legal-h2">3. Planos e pagamentos</h3>
-              <p className="legal-p">Os planos Pro (R$ 12,90/mês) e Business (R$ 29,90/mês) são cobrados mensalmente via PIX. Acesso liberado automaticamente após confirmação de pagamento. Não há reembolso de mensalidades já pagas, exceto por falha técnica comprovada.</p>
+              <p className="legal-p">Os planos Pro (R$ 12,90/mês) e Business (R$ 29,90/mês) são cobrados mensalmente via PIX ou cartão de crédito. Acesso liberado automaticamente após confirmação de pagamento. Não há reembolso de mensalidades já pagas, exceto por falha técnica comprovada.</p>
               <h3 className="legal-h2">4. Programa de indicação</h3>
               <p className="legal-p">Códigos de indicação são pessoais e intransferíveis. Digite <strong>INDICAR</strong> no chat para gerar o seu.</p>
               <h3 className="legal-h2">5. Limitação de responsabilidade</h3>
