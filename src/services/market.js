@@ -4,9 +4,14 @@ const BRAPI_TOKEN = process.env.BRAPI_TOKEN;
 const BRAPI_BASE = 'https://brapi.dev/api';
 const BCB_BASE = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs';
 
-// ─── Dicionário nome da empresa → ticker (FAST PATH) ──────────────────────────
-// Mantido como atalho pros nomes mais comuns: evita um roundtrip de API.
-// Quando o nome NÃO está aqui, a busca dinâmica na Brapi resolve (ver abaixo).
+// Quantos ativos no máximo o bot resolve numa única mensagem (anti-spam).
+const MAX_TICKERS = 3;
+
+// ─── Dicionário nome da empresa → ticker (FAST PATH / rede de segurança) ──────
+// Serve pra dois fins: (1) atalho de performance (evita roundtrip de API) e
+// (2) rede de segurança pros nomes que a busca dinâmica resolve mal — ex.:
+// "porto seguro", que casa errado com QUALICORP (...DE SEGUROS S.A.) na Brapi.
+// A cobertura "qualquer ativo" continua vindo da busca dinâmica (buscarTickerPorNome).
 // Chaves sem acento e em minúsculo (a busca normaliza o texto do usuário).
 const NOME_PARA_TICKER = {
   // Bancos
@@ -31,6 +36,10 @@ const NOME_PARA_TICKER = {
   'vivo': 'VIVT3', 'telefonica': 'VIVT3', 'tim': 'TIMS3', 'totvs': 'TOTS3',
   // Energia elétrica
   'engie': 'EGIE3', 'cemig': 'CMIG4', 'copel': 'CPLE6', 'taesa': 'TAEE11', 'sabesp': 'SBSP3',
+  // Seguros (nomes ambíguos que a busca dinâmica erra — rede de segurança)
+  'porto seguro': 'PSSA3', 'porto': 'PSSA3', 'pssa': 'PSSA3',
+  'bb seguridade': 'BBSE3', 'bbseguridade': 'BBSE3',
+  'caixa seguridade': 'CXSE3',
   // FIIs populares
   'maxi renda': 'MXRF11', 'maxirenda': 'MXRF11', 'kinea': 'KNRI11',
   'hglg': 'HGLG11', 'xp log': 'XPLG11', 'visc': 'VISC11', 'mall': 'MALL11',
@@ -55,26 +64,47 @@ const STOPWORDS = new Set([
   'dados', 'mercado', 'bolsa', 'ta', 'tah', 'pra', 'para', 'com', 'qto',
   'fii', 'fundo', 'imobiliario', 'rende', 'rendimento', 'dividendos',
   'cotar', 'consultar', 'consulta', 'tem', 'tah', 'la', 'comprar', 'vender',
+  'tambem', 'tb', 'tbm', 'mais',
 ]);
 
 // ─── Detectores de intenção ───────────────────────────────────────────────────
 
-function extractTicker(text) {
-  // 1) Tenta achar o código direto (ex.: PETR4, MXRF11)
-  const match = text.toUpperCase().match(/\b[A-Z]{4}\d{1,2}\b/);
-  if (match) return match[0];
+// Extrai TODOS os tickers (códigos diretos) da mensagem — até MAX_TICKERS,
+// deduplicados e na ordem em que aparecem. Ex.: "cpts11 e vgir11" → [CPTS11, VGIR11].
+function extractTickersDiretos(text) {
+  const matches = text.toUpperCase().match(/\b[A-Z]{4}\d{1,2}\b/g) || [];
+  const vistos = new Set();
+  const out = [];
+  for (const m of matches) {
+    if (!vistos.has(m)) {
+      vistos.add(m);
+      out.push(m);
+    }
+    if (out.length >= MAX_TICKERS) break;
+  }
+  return out;
+}
 
-  // 2) Tenta achar pelo nome da empresa (FAST PATH no dicionário)
+// Procura nomes do dicionário na mensagem (FAST PATH). Retorna todos os tickers
+// encontrados (dedup), até MAX_TICKERS.
+function extractTickersDicionario(text) {
   const normalizado = normaliza(text);
-
   // Ordena as chaves da mais longa pra mais curta — evita "bb" casar antes de "banco do brasil"
   const nomes = Object.keys(NOME_PARA_TICKER).sort((a, b) => b.length - a.length);
+  const vistos = new Set();
+  const out = [];
   for (const nome of nomes) {
     const re = new RegExp(`\\b${nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
-    if (re.test(normalizado)) return NOME_PARA_TICKER[nome];
+    if (re.test(normalizado)) {
+      const tk = NOME_PARA_TICKER[nome];
+      if (!vistos.has(tk)) {
+        vistos.add(tk);
+        out.push(tk);
+      }
+      if (out.length >= MAX_TICKERS) break;
+    }
   }
-
-  return null;
+  return out;
 }
 
 // Só vale a pena disparar a busca dinâmica quando a mensagem PARECE pedir um ativo.
@@ -86,7 +116,49 @@ function pedeCotacao(text) {
 // Cache em memória das resoluções nome→ticker (sobrevive entre requisições no mesmo processo).
 const tickerCache = new Map();
 
+// ── Score de relevância: quão bem o NOME do ativo corresponde ao que o usuário digitou ──
+// Em vez do antigo includes() cego (que fazia "seguro" casar com QUALICORP...DE SEGUROS),
+// pontua a sobreposição de palavras entre o termo buscado e o nome do ativo.
+// Quanto MAIOR o score, melhor o match. Score baixo/zero = descarta.
+function scoreMatch(termoNorm, nomeAtivo) {
+  const nome = normaliza(nomeAtivo || '');
+  if (!nome) return 0;
+
+  const tokensTermo = termoNorm.split(/\s+/).filter(Boolean);
+  const tokensNome = nome.split(/\s+/).filter(Boolean);
+  if (!tokensTermo.length || !tokensNome.length) return 0;
+
+  let score = 0;
+
+  // (1) Cobertura: quantas palavras do termo aparecem no nome do ativo.
+  //     "porto seguro" → PSSA3 (PORTO SEGURO) cobre 2; QUAL3 (...SEGUROS) cobre 1.
+  let cobertas = 0;
+  for (const t of tokensTermo) {
+    if (tokensNome.some(n => n === t || n.startsWith(t) || t.startsWith(n))) cobertas++;
+  }
+  if (cobertas === 0) return 0; // nenhuma palavra bateu → não é match
+  score += cobertas * 10;
+
+  // (2) Proporção: prefere nomes que NÃO sejam dominados por palavras irrelevantes.
+  //     Cobrir 2 de 2 palavras do nome é melhor que 2 de 8.
+  score += (cobertas / tokensNome.length) * 5;
+
+  // (3) Bônus forte se o nome COMEÇA com a primeira palavra do termo.
+  //     "PORTO SEGURO S.A." começa com "porto" → bônus; "QUALICORP..." não.
+  if (tokensNome[0] && (tokensNome[0] === tokensTermo[0] || tokensNome[0].startsWith(tokensTermo[0]))) {
+    score += 8;
+  }
+
+  // (4) Bônus se o nome inteiro começa com o termo completo (match quase exato).
+  if (nome.startsWith(termoNorm)) score += 6;
+
+  return score;
+}
+
 // Busca dinâmica na Brapi: resolve QUALQUER ativo listado na B3, não só os do dicionário.
+// Estratégia: coleta candidatos de várias tentativas (frase inteira + tokens), junta tudo
+// num pool deduplicado e escolhe o de MAIOR score de relevância de nome. Só cai no
+// "mais negociado" (volume) se NENHUM candidato tiver match de nome decente.
 async function buscarTickerPorNome(text) {
   const limpo = normaliza(text);
 
@@ -106,8 +178,14 @@ async function buscarTickerPorNome(text) {
     return null;
   }
 
-  // Tenta a frase inteira primeiro; depois cada token (maior → menor)
-  const tentativas = [tokens.join(' '), ...tokens.sort((a, b) => b.length - a.length)];
+  // O termo "principal" pra pontuar é a frase de tokens significativos (ex.: "porto seguro").
+  const termoPrincipal = tokens.join(' ');
+
+  // Tentativas de SEARCH na Brapi: frase inteira primeiro, depois cada token (maior → menor).
+  // Cada uma pode trazer candidatos diferentes — juntamos todos num pool.
+  const tentativas = [termoPrincipal, ...[...tokens].sort((a, b) => b.length - a.length)];
+
+  const pool = new Map(); // stock(ticker) → { ticker, name }
 
   for (const termo of tentativas) {
     try {
@@ -115,32 +193,88 @@ async function buscarTickerPorNome(text) {
         params: {
           search: termo,
           token: BRAPI_TOKEN,
-          limit: 10,
+          limit: 15,
           sortBy: 'volume',
           sortOrder: 'desc',
         },
       });
 
       const lista = data.stocks || [];
-      if (!lista.length) continue;
-
-      // Prioriza o resultado cujo NOME contenha o termo buscado;
-      // se nenhum bater, fica com o de maior volume (primeiro da lista).
-      const exato = lista.find(s => normaliza(s.name).includes(termo));
-      const escolhido = exato || lista[0];
-      const ticker = escolhido.stock;
-
-      console.log(`[Market] busca dinâmica: "${termo}" → ${ticker} (${escolhido.name || 's/ nome'})`);
-      tickerCache.set(limpo, ticker);
-      return ticker;
+      for (const s of lista) {
+        if (s.stock && !pool.has(s.stock)) {
+          pool.set(s.stock, { ticker: s.stock, name: s.name || '' });
+        }
+      }
+      // Se a frase inteira já trouxe resultado, não precisa varrer todos os tokens —
+      // mas seguimos coletando 1-2 termos a mais pra enriquecer o pool sem exagerar.
+      if (termo === termoPrincipal && lista.length) {
+        // continua só mais uma rodada (primeiro token) e para
+      }
     } catch (err) {
       console.error(`[Market] erro na busca dinâmica de "${termo}":`, err.message);
     }
   }
 
-  console.log(`[Market] busca dinâmica: nada encontrado para "${limpo}"`);
-  tickerCache.set(limpo, null); // memoriza o "não achou" pra não repetir
-  return null;
+  if (!pool.size) {
+    console.log(`[Market] busca dinâmica: nada encontrado para "${limpo}"`);
+    tickerCache.set(limpo, null);
+    return null;
+  }
+
+  // Escolhe o candidato de MAIOR score de relevância de nome.
+  let melhor = null;
+  let melhorScore = -1;
+  for (const cand of pool.values()) {
+    const sc = scoreMatch(termoPrincipal, cand.name);
+    if (sc > melhorScore) {
+      melhorScore = sc;
+      melhor = cand;
+    }
+  }
+
+  // Se ninguém teve match de nome decente (score 0), o "search" provavelmente
+  // bateu por ticker/setor e não por nome — aí confiamos no 1º (maior volume).
+  if (!melhor || melhorScore <= 0) {
+    const fallback = pool.values().next().value;
+    console.log(`[Market] busca dinâmica (fallback volume): "${termoPrincipal}" → ${fallback.ticker} (${fallback.name || 's/ nome'})`);
+    tickerCache.set(limpo, fallback.ticker);
+    return fallback.ticker;
+  }
+
+  console.log(`[Market] busca dinâmica: "${termoPrincipal}" → ${melhor.ticker} (${melhor.name}) [score ${melhorScore.toFixed(1)}]`);
+  tickerCache.set(limpo, melhor.ticker);
+  return melhor.ticker;
+}
+
+// Resolve a lista final de tickers a buscar (até MAX_TICKERS):
+//   1) códigos diretos (regex)  2) nomes do dicionário  3) busca dinâmica (1 nome)
+// Mantém ordem e remove duplicados.
+async function resolverTickers(text) {
+  const resultado = [];
+  const vistos = new Set();
+
+  const push = (tk) => {
+    if (tk && !vistos.has(tk) && resultado.length < MAX_TICKERS) {
+      vistos.add(tk);
+      resultado.push(tk);
+    }
+  };
+
+  // 1) códigos diretos na mensagem (ex.: CPTS11, VGIR11)
+  extractTickersDiretos(text).forEach(push);
+
+  // 2) nomes conhecidos no dicionário (fast path / rede de segurança)
+  if (resultado.length < MAX_TICKERS) {
+    extractTickersDicionario(text).forEach(push);
+  }
+
+  // 3) busca dinâmica por nome — só se ainda não achou nada e a msg pede cotação
+  if (resultado.length === 0 && pedeCotacao(text)) {
+    const dyn = await buscarTickerPorNome(text);
+    push(dyn);
+  }
+
+  return resultado;
 }
 
 function isFII(ticker) {
@@ -473,27 +607,21 @@ async function montarPanorama() {
 // ─── Função principal ─────────────────────────────────────────────────────────
 
 async function getMarketData(userMessage) {
-  // 1) ticker direto ou nome no dicionário (rápido, sem rede)
-  let ticker = extractTicker(userMessage);
-
-  // 2) se não achou E a mensagem parece pedir um ativo → busca dinâmica na Brapi
-  if (!ticker && pedeCotacao(userMessage)) {
-    ticker = await buscarTickerPorNome(userMessage);
-  }
+  // Resolve TODOS os tickers da mensagem (até MAX_TICKERS): código direto, dicionário ou busca dinâmica.
+  const tickers = await resolverTickers(userMessage);
 
   const panorama = pedePanorama(userMessage);
-  console.log(`[Market] mensagem="${userMessage}" → ticker=${ticker || 'nenhum'} | panorama=${panorama}`);
+  console.log(`[Market] mensagem="${userMessage}" → tickers=[${tickers.join(', ') || 'nenhum'}] | panorama=${panorama}`);
 
   const blocos = [];
   const promises = [];
 
-  // ── Ativo (ação ou FII) — sempre que um ticker for resolvido ──────────────
-  if (ticker) {
-    promises.push(
-      (isFII(ticker) ? getFIIData(ticker) : getCotacao(ticker))
-        .then(d => d && blocos.push(d))
-    );
-  }
+  // ── Ativos (ações e/ou FIIs) — um bloco por ticker, na ORDEM da mensagem ──
+  // Busca em paralelo, mas guarda cada resultado no seu slot pra preservar a ordem
+  // (CPTS11 antes de VGIR11, etc.) independente de quem a rede responder primeiro.
+  const ativosPromise = Promise.all(
+    tickers.map(ticker => (isFII(ticker) ? getFIIData(ticker) : getCotacao(ticker)))
+  );
 
   if (panorama) {
     // ── Pergunta AMPLA → combo macro completo de uma vez ───────────────────
@@ -534,6 +662,10 @@ async function getMarketData(userMessage) {
   }
 
   await Promise.all(promises);
+
+  // Insere os blocos de ativos NO INÍCIO, preservando a ordem dos tickers.
+  const ativos = (await ativosPromise).filter(Boolean);
+  blocos.unshift(...ativos);
 
   if (blocos.length === 0) {
     console.log('[Market] nenhum bloco de dados gerado para esta mensagem');
