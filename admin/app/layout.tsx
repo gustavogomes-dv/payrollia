@@ -3,6 +3,7 @@ import LayoutClient from "@/components/LayoutClient";
 import "./globals.css";
 
 const SITE_URL = "https://payrollia.com.br";
+const OG_IMAGE = `${SITE_URL}/og-image.png`; // URL absoluta — scrapers (LinkedIn/WhatsApp) não resolvem caminho relativo
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s | Payroll",
   },
   description:
-    "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês. Descubra seu perfil de investidor. Grátis para começar.",
+    "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês.",
   keywords: [
     "educação financeira",
     "IA financeira no WhatsApp",
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://payrollia.com.br/og-image.png",
+        url: OG_IMAGE,
         width: 1200,
         height: 630,
         alt: "Payroll — Educação financeira no WhatsApp",
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
     title: "Educação financeira no WhatsApp | Payroll",
     description:
       "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês.",
-    images: ["https://payrollia.com.br/og-image.png"],
+    images: [OG_IMAGE],
   },
   robots: {
     index: true,
