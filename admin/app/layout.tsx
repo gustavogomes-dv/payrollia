@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png", // criar imagem 1200x630 e colocar em /public/og-image.png
+        url: "https://payrollia.com.br/og-image.png",
         width: 1200,
         height: 630,
         alt: "Payroll — Educação financeira no WhatsApp",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     title: "Educação financeira no WhatsApp | Payroll",
     description:
       "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês.",
-    images: ["/og-image.png"],
+    images: ["https://payrollia.com.br/og-image.png"],
   },
   robots: {
     index: true,
