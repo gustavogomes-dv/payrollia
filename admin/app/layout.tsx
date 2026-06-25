@@ -1,34 +1,93 @@
 import type { Metadata } from "next";
 import LayoutClient from "@/components/LayoutClient";
 import "./globals.css";
-// admin/app/layout.tsx — dentro do <head> ou via next/font
-// + Instrument Serif via Google Fonts link no layout
+
+const SITE_URL = "https://payrollia.com.br";
 
 export const metadata: Metadata = {
-  title: "Payroll Chatbot — Educação financeira no WhatsApp",
-  description: "Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado pelo WhatsApp. Grátis para começar.",
-  keywords: ["educação financeira", "investimentos", "WhatsApp", "suitability", "CVM", "renda fixa", "ações", "tesouro direto"],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Educação financeira no WhatsApp | Payroll",
+    template: "%s | Payroll",
+  },
+  description:
+    "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês. Descubra seu perfil de investidor. Grátis para começar.",
+  keywords: [
+    "educação financeira",
+    "IA financeira no WhatsApp",
+    "assistente financeiro WhatsApp",
+    "investimentos para iniciantes",
+    "perfil de investidor",
+    "suitability",
+    "renda fixa",
+    "ações",
+    "tesouro direto",
+    "Selic CDI IPCA",
+    "como começar a investir",
+  ],
+  authors: [{ name: "Payroll" }],
+  creator: "Payroll",
+  publisher: "Payroll",
+  alternates: {
+    canonical: SITE_URL,
+  },
   verification: {
     other: {
       "facebook-domain-verification": ["tl3jkr6nelimqrf6btht18yyu00d0f"],
     },
   },
   openGraph: {
-    title: "Payroll Chatbot — Educação financeira no WhatsApp",
-    description: "Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado pelo WhatsApp.",
-    url: "https://payrollia.com.br",
-    siteName: "Payroll Chatbot",
+    title: "Educação financeira no WhatsApp | Payroll",
+    description:
+      "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês.",
+    url: SITE_URL,
+    siteName: "Payroll",
     locale: "pt_BR",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png", // criar imagem 1200x630 e colocar em /public/og-image.png
+        width: 1200,
+        height: 630,
+        alt: "Payroll — Educação financeira no WhatsApp",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Payroll Chatbot — Educação financeira no WhatsApp",
-    description: "Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado pelo WhatsApp.",
+    title: "Educação financeira no WhatsApp | Payroll",
+    description:
+      "Tire suas dúvidas sobre dinheiro e investimentos direto no WhatsApp, com dados reais do mercado e sem juridiquês.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "finance",
+};
+
+// Dados estruturados (JSON-LD): ajuda o Google a entender o que é o Payroll.
+// Enquadramento de educação financeira — não promete retorno nem recomenda ativo.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Payroll",
+  url: SITE_URL,
+  description:
+    "Assistente de educação financeira no WhatsApp: tire dúvidas sobre dinheiro e investimentos com dados reais do mercado, sem juridiquês.",
+  inLanguage: "pt-BR",
+  publisher: {
+    "@type": "Organization",
+    name: "Payroll",
+    url: SITE_URL,
   },
 };
 
@@ -42,7 +101,12 @@ export default function RootLayout({
       <head>
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body>
         <LayoutClient>{children}</LayoutClient>
