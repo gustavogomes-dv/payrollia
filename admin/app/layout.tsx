@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
+  other: {
+    "fb:app_id": "1641374667155681",
+  },
   verification: {
     other: {
       "facebook-domain-verification": ["tl3jkr6nelimqrf6btht18yyu00d0f"],
