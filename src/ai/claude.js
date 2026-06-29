@@ -22,14 +22,39 @@ const PERFIS = {
   },
 };
 
-function buildSystemPrompt(perfil) {
+// Sanitiza o nome pra entrar no prompt sem quebrar nada nem permitir injeção de instrução.
+// Pega só o primeiro nome (mais natural no chat), limita tamanho e remove caracteres estranhos.
+function nomeParaPrompt(nome) {
+  if (!nome || typeof nome !== 'string') return null;
+  const limpo = nome
+    .trim()
+    .split(/\s+/)[0]                       // primeiro nome só
+    .replace(/[^\p{L}\p{N}'-]/gu, '')      // só letras/números/hífen/apóstrofo
+    .slice(0, 40);                         // teto de tamanho
+  return limpo.length >= 2 ? limpo : null;
+}
+
+function buildSystemPrompt(perfil, nomeUsuario = null) {
   const p = PERFIS[perfil] || PERFIS['moderado'];
+  const nome = nomeParaPrompt(nomeUsuario);
+
+  // Bloco de personalização (Camada 1 — "companheiro financeiro").
+  // O nome serve APENAS para deixar o tom acolhedor e pessoal. Não muda nada de
+  // recomendação: a linha vermelha CVM continua valendo igual para todos.
+  const blocoUsuario = nome
+    ? `USUÁRIO COM QUEM VOCÊ ESTÁ FALANDO:
+- Nome: ${nome}
+- Use o primeiro nome com naturalidade e moderação para deixar a conversa acolhedora (ex.: uma saudação ou ao reforçar um ponto importante). NÃO repita o nome em todo parágrafo — soa robótico.
+- Personalizar o tom NÃO autoriza recomendar ativos nem prever mercado: as regras abaixo valem igual, com nome ou sem nome.
+
+`
+    : '';
 
 return `Você é um assistente educacional de investimentos brasileiro chamado Payroll.
 Responda sempre em português brasileiro, de forma clara, objetiva e acessível.
 Seu propósito é ENSINAR sobre finanças e investimentos — você é confiante e completo nas explicações conceituais, e prudente (sem recomendar nem prever) nas decisões.
 
-PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
+${blocoUsuario}PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
 - Foco principal: ${p.foco}
 - Tom de comunicação: ${p.tom}
 - Atenção: ${p.evitar}
@@ -112,12 +137,12 @@ FORMATAÇÃO — REGRAS CRÍTICAS:
 - Use emojis com moderação para tornar a leitura mais agradável 😊`;
 }
 
-async function askClaude(userMessage, marketContext = '', perfil = 'moderado', historico = []) {
+async function askClaude(userMessage, marketContext = '', perfil = 'moderado', historico = [], nomeUsuario = null) {
   const contextBlock = marketContext
     ? `\n\nDados de mercado atuais:\n${marketContext}`
     : '';
 
-  const systemPrompt = buildSystemPrompt(perfil);
+  const systemPrompt = buildSystemPrompt(perfil, nomeUsuario);
 
   // Monta o array de mensagens com histórico + mensagem atual
   const messages = [

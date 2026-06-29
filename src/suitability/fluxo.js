@@ -248,7 +248,8 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
     const saudacoes = ['oi', 'ola', 'hey', 'hi', 'bom dia', 'boa tarde', 'boa noite'];
     if (saudacoes.includes(normalizar(texto))) {
       const perfil = user.perfil || (await getInvestorProfile(user.id))?.perfil || 'moderado';
-      return `Olá novamente! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`;
+      const nome = user.name ? `, ${user.name.split(' ')[0]}` : '';
+      return `Olá novamente${nome}! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`;
     }
 
     const limiteFree = await getLimiteFree();
@@ -263,7 +264,9 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
       const historico = await getRecentMessages(user.id, 10);
 
       await saveMessage(user.id, 'user', texto);
-      const resposta = await askClaude(texto, marketContext, perfil, historico);
+      // Camada 1 — "companheiro financeiro": passa o nome do usuário para o Claude
+      // personalizar o tom. O perfil (suitability) já era injetado; agora o nome também.
+      const resposta = await askClaude(texto, marketContext, perfil, historico, user.name);
       await saveMessage(user.id, 'assistant', resposta);
 
       if ((user.plano || 'free') === 'free') {
