@@ -205,11 +205,6 @@ async function buscarTickerPorNome(text) {
           pool.set(s.stock, { ticker: s.stock, name: s.name || '' });
         }
       }
-      // Se a frase inteira já trouxe resultado, não precisa varrer todos os tokens —
-      // mas seguimos coletando 1-2 termos a mais pra enriquecer o pool sem exagerar.
-      if (termo === termoPrincipal && lista.length) {
-        // continua só mais uma rodada (primeiro token) e para
-      }
     } catch (err) {
       console.error(`[Market] erro na busca dinâmica de "${termo}":`, err.message);
     }
@@ -299,7 +294,6 @@ function mencionaBolsa(text) {
 }
 
 // Pergunta AMPLA sobre o cenário (mercado/economia em geral) → dispara o panorama macro.
-// Cobre muitas formas de perguntar a mesma coisa. Se alguma frase escapar, é só adicionar aqui.
 function pedePanorama(text) {
   return new RegExp(
     [
@@ -320,11 +314,14 @@ function pedePanorama(text) {
   ).test(text);
 }
 
-// ─── Brapi: Cotação + Indicadores fundamentalistas ───────────────────────────
+// ─── Brapi: Cotação ───────────────────────────────────────────────────────────
 
-// Busca a cotação na Brapi. Usa o módulo `fundamental=true` (liberado no plano free),
-// mas NÃO usa `dividends=true` (esse módulo dá 403 no plano free → era o que deixava o bot mudo).
-// Se mesmo assim vier um 403 (ex.: plano mudou, fundamental restrito), cai pra cotação básica.
+// Busca a cotação na Brapi com fundamental=true.
+// NOTA: No plano free atual (jun/2026), a Brapi retorna apenas priceEarnings e
+// earningsPerShare como indicadores fundamentalistas. Os campos priceToBook,
+// returnOnEquity, dividendYield e enterpriseValueEbitda não são mais entregues
+// no free tier. O código já trata isso com if(campo) — só exibe o que vier.
+// Se a Brapi ampliar o free tier no futuro, os campos aparecem automaticamente.
 async function fetchBrapiQuote(ticker) {
   const comFundamental = `${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}&fundamental=true`;
   try {
@@ -363,12 +360,14 @@ async function getCotacao(ticker) {
     `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
   ];
 
-  // Indicadores fundamentalistas (vêm de fundamental=true, liberado no free)
+  // Indicadores fundamentalistas — exibe apenas os campos que a Brapi efetivamente retornar.
+  // No free tier atual: priceEarnings e earningsPerShare. Os demais (priceToBook, ROE,
+  // dividendYield, enterpriseValueEbitda) só aparecem se a Brapi passar a entregá-los.
   if (stock.priceEarnings) linhas.push(`P/L: ${stock.priceEarnings?.toFixed(2)}`);
+  if (stock.earningsPerShare) linhas.push(`LPA: R$ ${stock.earningsPerShare?.toFixed(2)}`);
   if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
   if (stock.returnOnEquity) linhas.push(`ROE: ${(stock.returnOnEquity * 100)?.toFixed(2)}%`);
   if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
-  if (stock.earningsPerShare) linhas.push(`LPA: R$ ${stock.earningsPerShare?.toFixed(2)}`);
   if (stock.enterpriseValueEbitda) linhas.push(`EV/EBITDA: ${stock.enterpriseValueEbitda?.toFixed(2)}`);
 
   if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
@@ -395,7 +394,9 @@ async function getFIIData(ticker) {
     `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
   ];
 
-  // Dividend Yield vem de fundamental=true (liberado no free) — é a métrica-chave do FII
+  // Dividend Yield e P/VP são as métricas-chave do FII — exibe se a Brapi retornar.
+  // No free tier atual (jun/2026) esses campos não estão sendo entregues,
+  // mas o código exibe automaticamente caso voltem a aparecer.
   if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
   if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
 
@@ -568,8 +569,7 @@ async function getIbovespa() {
 }
 
 // ─── Panorama macro: combo Ibovespa + dólar + Selic + CDI + IPCA ──────────────
-// Indicadores macro mudam devagar, então cacheia o bloco por 10 min — fica rápido
-// e não martela as APIs quando vários usuários perguntam sobre o mercado.
+// Cacheia o bloco por 10 min — fica rápido e não martela as APIs.
 let _panoramaCache = { value: null, ts: 0 };
 
 async function montarPanorama() {
@@ -617,29 +617,21 @@ async function getMarketData(userMessage) {
   const promises = [];
 
   // ── Ativos (ações e/ou FIIs) — um bloco por ticker, na ORDEM da mensagem ──
-  // Busca em paralelo, mas guarda cada resultado no seu slot pra preservar a ordem
-  // (CPTS11 antes de VGIR11, etc.) independente de quem a rede responder primeiro.
   const ativosPromise = Promise.all(
     tickers.map(ticker => (isFII(ticker) ? getFIIData(ticker) : getCotacao(ticker)))
   );
 
   if (panorama) {
-    // ── Pergunta AMPLA → combo macro completo de uma vez ───────────────────
     promises.push(montarPanorama().then(d => d && blocos.push(d)));
   } else {
-    // ── Perguntas específicas → busca só o que foi mencionado ──────────────
-
-    // Ibovespa (índice) mencionado diretamente
     if (mencionaBolsa(userMessage)) {
       promises.push(getIbovespa().then(d => d && blocos.push(d)));
     }
 
-    // Câmbio (dólar)
     if (mentionaDolar(userMessage)) {
       promises.push(getCambio().then(d => d && blocos.push(d)));
     }
 
-    // Selic + CDI (+ projeção Focus)
     if (mencionaSelic(userMessage)) {
       promises.push(
         Promise.all([getSelic(), getCDI(), getFocusSelic()]).then(([selic, cdi, focusSelic]) => {
@@ -650,7 +642,6 @@ async function getMarketData(userMessage) {
       );
     }
 
-    // IPCA (inflação) (+ projeção Focus)
     if (mencionaInflacao(userMessage)) {
       promises.push(
         Promise.all([getIPCA(), getFocusIPCA()]).then(([ipca, focusIpca]) => {
@@ -663,7 +654,6 @@ async function getMarketData(userMessage) {
 
   await Promise.all(promises);
 
-  // Insere os blocos de ativos NO INÍCIO, preservando a ordem dos tickers.
   const ativos = (await ativosPromise).filter(Boolean);
   blocos.unshift(...ativos);
 
