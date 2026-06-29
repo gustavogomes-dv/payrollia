@@ -293,6 +293,11 @@ function mencionaBolsa(text) {
   return /ibovespa|\bibov\b|bovespa|[ií]ndice da bolsa|[ií]ndice bovespa/i.test(text);
 }
 
+// Pedido de notícias / novidades de mercado.
+function mencionaNoticias(text) {
+  return /not[ií]cia|manchete|novidade|o que (t[aá]|est[aá]|anda) (rolando|acontecendo)|fato relevante|aconteceu (no |de )?(mercado|economia|hoje)|jornal|infomoney/i.test(text);
+}
+
 // Pergunta AMPLA sobre o cenário (mercado/economia em geral) → dispara o panorama macro.
 function pedePanorama(text) {
   return new RegExp(
@@ -613,6 +618,93 @@ async function getIbovespa() {
   }
 }
 
+// ─── InfoMoney: notícias de economia (RSS) ───────────────────────────────────
+// Feed validado: /tudo-sobre/economia/feed/ (já filtrado pela seção de economia).
+// REGRA DE OURO: os links exibidos vêm SEMPRE do feed real — o bot NUNCA inventa URL.
+// Só exibimos título + link oficial do InfoMoney; conteúdo é de terceiros (citamos a fonte).
+const INFOMONEY_FEED = 'https://www.infomoney.com.br/tudo-sobre/economia/feed/';
+
+// Cache de 15 min — o feed atualiza algumas vezes por dia, não precisa bater a cada msg.
+let _noticiasCache = { value: null, ts: 0 };
+
+// Decodifica entidades HTML comuns que aparecem em títulos de RSS.
+function decodeEntities(s) {
+  return (s || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#8211;/g, '–')
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8220;|&#8221;/g, '"')
+    .replace(/&nbsp;/g, ' ');
+}
+
+// Faz o parse do XML do RSS e devolve até `max` notícias {titulo, link}.
+// Valida que o link é do próprio InfoMoney (anti-lixo / anti-link forjado).
+function parseRSS(xml, max = 3) {
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+  const noticias = [];
+  for (const m of items) {
+    const bloco = m[1];
+    const tMatch = bloco.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
+    const lMatch = bloco.match(/<link>([\s\S]*?)<\/link>/);
+    if (!tMatch || !lMatch) continue;
+
+    const titulo = decodeEntities(tMatch[1].trim());
+    const link = lMatch[1].trim();
+
+    // Só aceita links do domínio oficial — nunca exibe URL de origem duvidosa.
+    if (!/^https?:\/\/(www\.)?infomoney\.com\.br\//.test(link)) continue;
+    if (!titulo) continue;
+
+    noticias.push({ titulo, link });
+    if (noticias.length >= max) break;
+  }
+  return noticias;
+}
+
+async function getNoticias() {
+  const agora = Date.now();
+  if (_noticiasCache.value && agora - _noticiasCache.ts < 15 * 60 * 1000) {
+    console.log('[Market] notícias: cache hit');
+    return _noticiasCache.value;
+  }
+
+  try {
+    const { data } = await axios.get(INFOMONEY_FEED, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PayrollBot/1.0)' },
+      responseType: 'text',
+      timeout: 8000,
+    });
+
+    const noticias = parseRSS(data, 3);
+    if (!noticias.length) {
+      console.warn('[Market] notícias: feed sem itens válidos');
+      return null;
+    }
+
+    const linhas = ['📰 *Últimas de economia (via InfoMoney):*', ''];
+    noticias.forEach((n, i) => {
+      linhas.push(`${i + 1}. ${n.titulo}`);
+      linhas.push(`🔗 ${n.link}`);
+      if (i < noticias.length - 1) linhas.push('');
+    });
+    linhas.push('');
+    linhas.push('_Notícias de terceiros (InfoMoney), apenas para informação. Não constituem recomendação._');
+
+    const resultado = linhas.join('\n');
+    _noticiasCache = { value: resultado, ts: agora };
+    console.log(`[Market] notícias: ${noticias.length} manchetes do InfoMoney`);
+    return resultado;
+  } catch (err) {
+    console.error('[Market] Erro ao buscar notícias:', err.message);
+    return null;
+  }
+}
+
 // ─── Panorama macro: combo Ibovespa + dólar + Selic + CDI + IPCA ──────────────
 // Cacheia o bloco por 10 min — fica rápido e não martela as APIs.
 let _panoramaCache = { value: null, ts: 0 };
@@ -694,6 +786,11 @@ async function getMarketData(userMessage) {
           if (focusIpca) blocos.push(focusIpca);
         })
       );
+    }
+
+    // Notícias de economia (InfoMoney) — só quando o usuário pede explicitamente.
+    if (mencionaNoticias(userMessage)) {
+      promises.push(getNoticias().then(d => d && blocos.push(d)));
     }
   }
 
