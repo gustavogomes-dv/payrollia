@@ -2,6 +2,7 @@ const PERGUNTAS = require('./perguntas');
 const calcularPerfil = require('./calcularPerfil');
 const { askClaude } = require('../ai/claude');
 const { getMarketData } = require('../services/market');
+const jurosCompostos = require('../services/jurosCompostos');
 const { getOrCreateReferralCode, getReferralByCode } = require('../db/referrals');
 const {
   updateSession,
@@ -252,6 +253,32 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
       return `Olá novamente${nome}! 👋 Seu perfil de investidor é *${perfil}*.\n\nComo posso te ajudar hoje? Fique à vontade para perguntar sobre investimentos, mercado financeiro ou qualquer dúvida relacionada! 😊\n\n💡 Digite *INDICAR* para ganhar descontos indicando amigos!`;
     }
 
+    // ── Calculadora de juros compostos (detecção automática + fluxo guiado) ──
+    // Se a mensagem tem intenção de simular juros, tenta extrair os parâmetros.
+    // Completo → calcula na hora. Incompleto → entra no fluxo guiado (step 'calculadora').
+    // Cálculo é 100% determinístico (jurosCompostos.js) — o Claude NUNCA calcula isto.
+    if (jurosCompostos.pedeCalculadora(texto)) {
+      const params = jurosCompostos.parseFraseJuros(texto);
+      const validacao = jurosCompostos.validarParametros(params);
+
+      if (validacao.ok) {
+        // Tudo presente já na primeira frase → calcula direto
+        const resposta = jurosCompostos.simular(validacao.params);
+        if ((user.plano || 'free') === 'free') await incrementarPerguntas(user.id);
+        return resposta;
+      }
+
+      if (validacao.erro) {
+        // Número absurdo (taxa/prazo fora da faixa) — orienta sem entrar no fluxo
+        return `Hmm, encontrei um valor que não parece certo para a simulação 🤔\n\nPode tentar de novo? Exemplo: _"simular 10 mil a 12% ao ano por 5 anos"_.`;
+      }
+
+      // Faltam dados → entra no fluxo guiado, guardando o que já temos
+      await updateSession(user.id, 'calculadora', { calcParams: params });
+      const prox = jurosCompostos.proximaPergunta(validacao.faltando);
+      return `Vamos simular juros compostos! 🧮\n\n${prox.pergunta}\n\n_(Digite *cancelar* a qualquer momento para sair.)_`;
+    }
+
     const limiteFree = await getLimiteFree();
     if (atingiuLimite(user, limiteFree)) {
       await updateSession(user.id, 'aguardando_escolha_plano', {});
@@ -278,6 +305,38 @@ Agora você pode me perguntar sobre investimentos! Estou aqui para te *orientar 
       console.error('[Fluxo] Erro ao chamar Claude:', error);
       return `Desculpe, ocorreu um problema ao processar sua pergunta. Por favor, tente novamente em instantes. 🙏`;
     }
+  }
+
+  // ── Calculadora de juros: fluxo guiado (pergunta o que faltou) ────────────────
+  if (step === 'calculadora') {
+    // Escape: usuário pode cancelar a qualquer momento
+    if (['cancelar', 'sair', 'cancela', 'para', 'parar'].includes(normalizar(texto))) {
+      await updateSession(user.id, 'concluido', {});
+      return `Tudo bem, simulação cancelada! 😊\n\nQuando quiser, é só me pedir de novo ou perguntar qualquer outra coisa sobre investimentos.`;
+    }
+
+    // Mescla a nova resposta com o que já tínhamos
+    const acumulado = jurosCompostos.mesclarParams(context.calcParams || {}, texto);
+    const validacao = jurosCompostos.validarParametros(acumulado);
+
+    if (validacao.ok) {
+      // Completou! Calcula e volta pro chat normal
+      await updateSession(user.id, 'concluido', {});
+      const resposta = jurosCompostos.simular(validacao.params);
+      if ((user.plano || 'free') === 'free') await incrementarPerguntas(user.id);
+      return resposta;
+    }
+
+    if (validacao.erro) {
+      // Valor absurdo numa das respostas — pede de novo o mesmo campo, sem avançar
+      await updateSession(user.id, 'calculadora', { calcParams: context.calcParams || {} });
+      return `Esse valor não parece certo 🤔 Pode tentar de novo?\n\n_(Ou digite *cancelar* para sair.)_`;
+    }
+
+    // Ainda falta algo → pergunta o próximo, guardando o progresso
+    await updateSession(user.id, 'calculadora', { calcParams: acumulado });
+    const prox = jurosCompostos.proximaPergunta(validacao.faltando);
+    return `${prox.pergunta}\n\n_(Digite *cancelar* para sair.)_`;
   }
 
   // ── Upgrade: escolha do plano ─────────────────────────────────────────────────
