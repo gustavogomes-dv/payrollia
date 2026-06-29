@@ -3,7 +3,7 @@ import LayoutClient from "@/components/LayoutClient";
 import "./globals.css";
 
 const SITE_URL = "https://payrollia.com.br";
-const OG_IMAGE = `${SITE_URL}/og-image.png`; // URL absoluta — scrapers (LinkedIn/WhatsApp) não resolvem caminho relativo
+const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -31,9 +31,6 @@ export const metadata: Metadata = {
   publisher: "Payroll",
   alternates: {
     canonical: SITE_URL,
-  },
-  other: {
-    "fb:app_id": "1641374667155681",
   },
   verification: {
     other: {
@@ -78,8 +75,6 @@ export const metadata: Metadata = {
   category: "finance",
 };
 
-// Dados estruturados (JSON-LD): ajuda o Google a entender o que é o Payroll.
-// Enquadramento de educação financeira — não promete retorno nem recomenda ativo.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -103,6 +98,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        {/* fb:app_id precisa ser property="", não name="" — o Next.js metadata.other usa name */}
+        <meta property="fb:app_id" content="1641374667155681" />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
