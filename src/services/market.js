@@ -316,12 +316,10 @@ function pedePanorama(text) {
 
 // ─── Brapi: Cotação ───────────────────────────────────────────────────────────
 
-// Busca a cotação na Brapi com fundamental=true.
-// NOTA: No plano free atual (jun/2026), a Brapi retorna apenas priceEarnings e
-// earningsPerShare como indicadores fundamentalistas. Os campos priceToBook,
-// returnOnEquity, dividendYield e enterpriseValueEbitda não são mais entregues
-// no free tier. O código já trata isso com if(campo) — só exibe o que vier.
-// Se a Brapi ampliar o free tier no futuro, os campos aparecem automaticamente.
+// Busca a cotação básica na Brapi (preço, variação, volume, máx/mín).
+// Desde jun/2026 o módulo fundamental=true do /quote só devolve priceEarnings e
+// earningsPerShare no free tier. Os demais indicadores migraram para o endpoint
+// /v2/stocks/statistics (ver fetchBrapiStatistics abaixo).
 async function fetchBrapiQuote(ticker) {
   const comFundamental = `${BRAPI_BASE}/quote/${ticker}?token=${BRAPI_TOKEN}&fundamental=true`;
   try {
@@ -343,8 +341,35 @@ async function fetchBrapiQuote(ticker) {
   }
 }
 
+// Busca os indicadores fundamentalistas no endpoint /v2/stocks/statistics.
+// IMPORTANTE: o free tier permite só 1 ativo por requisição (QUOTES_PER_REQUEST_EXCEEDED
+// se enviar mais). Os nomes dos campos seguem o padrão Yahoo Finance (em inglês):
+//   trailingPE → P/L | priceToBook → P/VP | dividendYield → DY (fração: 0.06 = 6%)
+//   enterpriseToEbitda → EV/EBITDA | earningsPerShare → LPA | bookValue → VPA
+//   beta → volatilidade vs. mercado | profitMargins → margem líquida (fração)
+// Alguns tickers retornam campos undefined (cobertura incompleta) — tratado com if().
+// Retorna o objeto `data` (indicadores) ou null se falhar/não houver acesso.
+async function fetchBrapiStatistics(ticker) {
+  const url = `${BRAPI_BASE}/v2/stocks/statistics?symbols=${ticker}&token=${BRAPI_TOKEN}`;
+  try {
+    const { data } = await axios.get(url);
+    return data.results?.[0]?.data || null;
+  } catch (err) {
+    // 400/401/403 aqui não é crítico — só significa que não teremos os indicadores extras.
+    // A cotação básica continua funcionando normalmente.
+    const status = err.response?.status;
+    console.warn(`[Market] statistics indisponível para ${ticker} (HTTP ${status || '?'}) — segue sem indicadores extras`);
+    return null;
+  }
+}
+
 async function getCotacao(ticker) {
-  const stock = await fetchBrapiQuote(ticker);
+  // Busca cotação e indicadores EM PARALELO (cada um é 1 requisição independente).
+  const [stock, stats] = await Promise.all([
+    fetchBrapiQuote(ticker),
+    fetchBrapiStatistics(ticker),
+  ]);
+
   if (!stock) {
     console.warn(`[Market] sem dados para ${ticker}`);
     return null;
@@ -360,15 +385,30 @@ async function getCotacao(ticker) {
     `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
   ];
 
-  // Indicadores fundamentalistas — exibe apenas os campos que a Brapi efetivamente retornar.
-  // No free tier atual: priceEarnings e earningsPerShare. Os demais (priceToBook, ROE,
-  // dividendYield, enterpriseValueEbitda) só aparecem se a Brapi passar a entregá-los.
-  if (stock.priceEarnings) linhas.push(`P/L: ${stock.priceEarnings?.toFixed(2)}`);
-  if (stock.earningsPerShare) linhas.push(`LPA: R$ ${stock.earningsPerShare?.toFixed(2)}`);
-  if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
-  if (stock.returnOnEquity) linhas.push(`ROE: ${(stock.returnOnEquity * 100)?.toFixed(2)}%`);
-  if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
-  if (stock.enterpriseValueEbitda) linhas.push(`EV/EBITDA: ${stock.enterpriseValueEbitda?.toFixed(2)}`);
+  // ── Indicadores fundamentalistas ──────────────────────────────────────────
+  // Preferimos os valores do endpoint statistics (mais completo); caímos no que
+  // veio do /quote (priceEarnings, earningsPerShare) quando o statistics não trouxe.
+  // Tudo exibido apenas se existir — campos undefined simplesmente não aparecem.
+  const s = stats || {};
+
+  const pl = s.trailingPE ?? stock.priceEarnings;
+  if (pl != null) linhas.push(`P/L: ${pl.toFixed(2)}`);
+
+  const lpa = s.earningsPerShare ?? stock.earningsPerShare;
+  if (lpa != null) linhas.push(`LPA: R$ ${lpa.toFixed(2)}`);
+
+  if (s.priceToBook != null) linhas.push(`P/VP: ${s.priceToBook.toFixed(2)}`);
+  if (s.bookValue != null) linhas.push(`VPA: R$ ${s.bookValue.toFixed(2)}`);
+
+  // dividendYield vem como fração (0.06 = 6%) → ×100
+  if (s.dividendYield != null) linhas.push(`Dividend Yield: ${(s.dividendYield * 100).toFixed(2)}%`);
+
+  if (s.enterpriseToEbitda != null) linhas.push(`EV/EBITDA: ${s.enterpriseToEbitda.toFixed(2)}`);
+
+  // profitMargins vem como fração (0.216 = 21,6%) → ×100
+  if (s.profitMargins != null) linhas.push(`Margem líquida: ${(s.profitMargins * 100).toFixed(2)}%`);
+
+  if (s.beta != null) linhas.push(`Beta: ${s.beta.toFixed(2)}`);
 
   if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
     linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
@@ -381,7 +421,12 @@ async function getCotacao(ticker) {
 // ─── Brapi: Dados de FII ──────────────────────────────────────────────────────
 
 async function getFIIData(ticker) {
-  const stock = await fetchBrapiQuote(ticker);
+  // FII também busca indicadores em paralelo — DY e P/VP são as métricas-chave.
+  const [stock, stats] = await Promise.all([
+    fetchBrapiQuote(ticker),
+    fetchBrapiStatistics(ticker),
+  ]);
+
   if (!stock) {
     console.warn(`[Market] sem dados para FII ${ticker}`);
     return null;
@@ -394,11 +439,11 @@ async function getFIIData(ticker) {
     `Volume: ${stock.regularMarketVolume?.toLocaleString('pt-BR')}`,
   ];
 
-  // Dividend Yield e P/VP são as métricas-chave do FII — exibe se a Brapi retornar.
-  // No free tier atual (jun/2026) esses campos não estão sendo entregues,
-  // mas o código exibe automaticamente caso voltem a aparecer.
-  if (stock.dividendYield) linhas.push(`Dividend Yield: ${stock.dividendYield?.toFixed(2)}%`);
-  if (stock.priceToBook) linhas.push(`P/VP: ${stock.priceToBook?.toFixed(2)}`);
+  const s = stats || {};
+
+  // dividendYield vem como fração (0.06 = 6%) → ×100. É a métrica-chave do FII.
+  if (s.dividendYield != null) linhas.push(`Dividend Yield: ${(s.dividendYield * 100).toFixed(2)}%`);
+  if (s.priceToBook != null) linhas.push(`P/VP: ${s.priceToBook.toFixed(2)}`);
 
   if (stock.fiftyTwoWeekLow && stock.fiftyTwoWeekHigh) {
     linhas.push(`Mínima 52 sem: R$ ${stock.fiftyTwoWeekLow?.toFixed(2)}`);
