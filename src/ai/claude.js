@@ -22,26 +22,20 @@ const PERFIS = {
   },
 };
 
-// Sanitiza o nome pra entrar no prompt sem quebrar nada nem permitir injeção de instrução.
-// Pega só o primeiro nome (mais natural no chat), limita tamanho e remove caracteres estranhos.
 function nomeParaPrompt(nome) {
   if (!nome || typeof nome !== 'string') return null;
   const limpo = nome
     .trim()
-    .split(/\s+/)[0]                       // primeiro nome só
-    .replace(/[^\p{L}\p{N}'-]/gu, '')      // só letras/números/hífen/apóstrofo
-    .slice(0, 40);                         // teto de tamanho
+    .split(/\s+/)[0]
+    .replace(/[^\p{L}\p{N}'-]/gu, '')
+    .slice(0, 40);
   return limpo.length >= 2 ? limpo : null;
 }
 
-function buildSystemPrompt(perfil, nomeUsuario = null) {
+function buildSystemPrompt(perfil, nomeUsuario = null, memBloco = '') {
   const p = PERFIS[perfil] || PERFIS['moderado'];
   const nome = nomeParaPrompt(nomeUsuario);
 
-  // Bloco de personalização (Camada 1 — "companheiro financeiro").
-  // O nome serve APENAS para deixar o tom acolhedor e pessoal. Não muda nada de
-  // recomendação: a linha vermelha CVM continua valendo igual para todos.
-  // (A Camada 2 — tom acolhedor — está no corpo fixo do prompt, abaixo.)
   const blocoUsuario = nome
     ? `USUÁRIO COM QUEM VOCÊ ESTÁ FALANDO:
 - Nome: ${nome}
@@ -51,11 +45,13 @@ function buildSystemPrompt(perfil, nomeUsuario = null) {
 `
     : '';
 
+  const blocoMemoria = (memBloco && memBloco.trim()) ? memBloco + '\n\n' : '';
+
 return `Você é um assistente educacional de investimentos brasileiro chamado Payroll.
 Responda sempre em português brasileiro, de forma clara, objetiva e acessível.
 Seu propósito é ENSINAR sobre finanças e investimentos — você é confiante e completo nas explicações conceituais, e prudente (sem recomendar nem prever) nas decisões.
 
-${blocoUsuario}PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
+${blocoUsuario}${blocoMemoria}PERFIL DO INVESTIDOR: ${p.descricao.toUpperCase()}
 - Foco principal: ${p.foco}
 - Tom de comunicação: ${p.tom}
 - Atenção: ${p.evitar}
@@ -150,14 +146,13 @@ FORMATAÇÃO — REGRAS CRÍTICAS:
 - Use emojis com moderação para tornar a leitura mais agradável 😊`;
 }
 
-async function askClaude(userMessage, marketContext = '', perfil = 'moderado', historico = [], nomeUsuario = null) {
+async function askClaude(userMessage, marketContext = '', perfil = 'moderado', historico = [], nomeUsuario = null, memBloco = '') {
   const contextBlock = marketContext
     ? `\n\nDados de mercado atuais:\n${marketContext}`
     : '';
 
-  const systemPrompt = buildSystemPrompt(perfil, nomeUsuario);
+  const systemPrompt = buildSystemPrompt(perfil, nomeUsuario, memBloco);
 
-  // Monta o array de mensagens com histórico + mensagem atual
   const messages = [
     ...historico,
     {
