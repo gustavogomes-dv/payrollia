@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <>
+    <div className="lp">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
         :root {
@@ -327,9 +327,6 @@ export default function LandingPage() {
           .footer-copy{white-space:normal}
           .footer-cvm{max-width:100%}
           .footer-link{padding:3px 0}
-          .integrations{padding:20px 16px}.pills-grid{gap:8px}
-          .pill{padding:6px 12px 6px 6px}.pill-text{font-size:12px}
-          .pill-icon{width:22px;height:22px}.pill-icon img{width:16px;height:16px}
           .quote-section,.pricing-section{padding:56px 20px}
         }
         @media(max-width:560px){
@@ -493,7 +490,7 @@ export default function LandingPage() {
         {/* INTEGRATIONS */}
         <div className="integrations">
           <p className="int-label">Integrações</p>
-        <div className="pills-grid">
+          <div className="pills-grid">
             <div className="pill p1"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=whatsapp.com&sz=64" alt="WhatsApp"/></div><span className="pill-text">WhatsApp</span></div>
             <div className="pill p2"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=anthropic.com&sz=64" alt="Claude AI"/></div><span className="pill-text">Claude AI</span></div>
             <div className="pill p3"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=b3.com.br&sz=64" alt="B3"/></div><span className="pill-text">B3</span></div>
@@ -508,6 +505,7 @@ export default function LandingPage() {
             <div className="pill p12"><div className="pill-icon"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vercel"><rect width="32" height="32" rx="6" fill="#000"/><path d="M16 8l7 12H9l7-12z" fill="#fff"/></svg></div><span className="pill-text">Vercel</span></div>
             <div className="pill p13"><div className="pill-icon"><img src="https://www.google.com/s2/favicons?domain=infomoney.com.br&sz=64" alt="InfoMoney"/></div><span className="pill-text">InfoMoney</span></div>
           </div>
+        </div>
 
         {/* FEATURES */}
         <section className="section" id="features">
@@ -742,6 +740,6 @@ export default function LandingPage() {
           </div>
         </footer>
       </div>
-    </>
-  );
+    </div>
+  )
 }
