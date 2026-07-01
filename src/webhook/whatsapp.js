@@ -6,11 +6,7 @@ const processarFluxo = require('../suitability/fluxo');
 
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
 
-// ─── Valida a assinatura X-Hub-Signature-256 da Meta ──────────────────────────
-// A Meta assina cada POST com HMAC-SHA256 do corpo bruto usando o App Secret.
 function assinaturaValida(req) {
-  // Enquanto o App Secret não estiver configurado, NÃO bloqueia (modo aviso).
-  // Assim que WHATSAPP_APP_SECRET for adicionado no Railway, passa a exigir.
   if (!APP_SECRET) {
     console.warn('[WhatsApp] ⚠️ WHATSAPP_APP_SECRET não configurado — validação de assinatura DESATIVADA. Adicione o App Secret no Railway para ativar.');
     return true;
@@ -37,7 +33,6 @@ function assinaturaValida(req) {
   return crypto.timingSafeEqual(a, b);
 }
 
-// Verificação do webhook pela Meta (GET — não precisa de assinatura)
 router.get('/', (req, res) => {
     const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
     const mode = req.query['hub.mode'];
@@ -53,15 +48,12 @@ router.get('/', (req, res) => {
     res.sendStatus(403);
 });
 
-// Recebe mensagens do WhatsApp
 router.post('/', async (req, res) => {
-    // Valida a assinatura ANTES de processar — rejeita requisições forjadas
     if (!assinaturaValida(req)) {
         console.warn('[WhatsApp] ❌ Assinatura inválida — requisição rejeitada');
         return res.sendStatus(403);
     }
 
-  // Responde 200 imediatamente — a Meta exige resposta rápida
     res.sendStatus(200);
 
     try {
@@ -72,7 +64,6 @@ router.post('/', async (req, res) => {
     const value = body.entry?.[0]?.changes?.[0]?.value;
     const message = value?.messages?.[0];
 
-    // Ignora se não for mensagem de texto
     if (!message || message.type !== 'text') {
         console.log(`Mensagem ignorada — tipo: ${message?.type || 'desconhecido'}`);
         return;
@@ -84,13 +75,15 @@ router.post('/', async (req, res) => {
 
     console.log(`📩 Mensagem de ${userPhone}: ${userText}`);
 
-    // Busca ou cria o usuário
+    // Liga o "digitando…" e marca a mensagem como lida enquanto o bot processa.
+    // Não bloqueia o fluxo se falhar (é só indicador visual).
+    await sendTypingIndicator(message.id);
+
     let user = await getUserByPhone(tenantId, userPhone);
     if (!user) {
         user = await createUser(tenantId, userPhone);
     }
 
-    // Busca sessão — com auto-recuperação caso o usuário do cache esteja obsoleto
     let session;
     try {
         session = await getOrCreateSession(user.id);
@@ -100,7 +93,6 @@ router.post('/', async (req, res) => {
         session = await getOrCreateSession(user.id);
     }
 
-    // Tudo passa pelo fluxo — ele decide se é suitability ou IA
     const reply = await processarFluxo(user, session, userText);
 
     if (reply) {
@@ -112,6 +104,36 @@ router.post('/', async (req, res) => {
     console.error('❌ Erro no webhook:', error.message);
     }
 });
+
+// ─── Indicador "digitando…" ────────────────────────────────────────────────
+// Na Cloud API, o typing vem junto com o read receipt: uma única chamada marca
+// a mensagem como lida E acende o "digitando…". O indicador some sozinho após
+// ~25s ou quando a resposta é enviada — o que vier primeiro.
+async function sendTypingIndicator(messageId) {
+    const axios = require('axios');
+    if (!messageId) return;
+
+    try {
+    await axios.post(
+        `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+        {
+        messaging_product: 'whatsapp',
+        status: 'read',
+        message_id: messageId,
+        typing_indicator: { type: 'text' },
+        },
+        {
+        headers: {
+            Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        }
+    );
+    } catch (error) {
+    // Não é crítico — só um indicador visual. Loga e segue.
+    console.warn('[WhatsApp] Falha ao enviar typing indicator:', error.response?.data?.error?.message || error.message);
+    }
+}
 
 async function sendWhatsAppMessage(to, text) {
     const axios = require('axios');
