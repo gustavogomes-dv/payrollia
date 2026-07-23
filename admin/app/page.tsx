@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// Logo oficial Payroll — SVG fiel ao design system (viewBox 64, barras curta·longa·média, ordem FIXA)
+// Logo oficial Payroll: SVG fiel ao design system (viewBox 64, barras curta·longa·média, ordem FIXA)
 function PayrollLogo() {
   return (
     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Payroll Chatbot">
@@ -67,15 +67,15 @@ export default function LandingPage() {
           align-items:center;
         }
         .hero-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:24px;opacity:.8}
-        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:72px;line-height:1.0;color:var(--bone);letter-spacing:-0.03em;margin-bottom:28px}
+        .hero-h{font-family:'Instrument Serif',serif;font-style:italic;font-size:66px;line-height:1.05;color:var(--bone);letter-spacing:-0.03em;margin-bottom:28px}
         .hero-h em{font-style:normal;color:var(--lime)}
-        .hero-p{font-size:17px;color:rgba(250,248,244,.6);line-height:1.7;max-width:400px;margin-bottom:44px}
+        .hero-p{font-size:17px;color:rgba(250,248,244,.6);line-height:1.7;max-width:430px;margin-bottom:44px}
         .hero-btns{display:flex;gap:12px;align-items:center}
         .btn-lime{background:var(--lime);color:var(--aubergine);padding:14px 32px;border-radius:100px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block;letter-spacing:-0.01em}
         .btn-outline{border:1px solid rgba(250,248,244,.15);color:rgba(250,248,244,.7);padding:14px 28px;border-radius:100px;font-size:14px;text-decoration:none;display:inline-block}
         .hero-note{margin-top:20px;font-size:12px;color:rgba(250,248,244,.25);letter-spacing:.02em}
 
-        /* CHAT CARD — estilo fintech limpo */
+        /* CHAT CARD */
         .chat-card{
           background:#FFFFFF;
           border-radius:20px;
@@ -227,7 +227,7 @@ export default function LandingPage() {
         .section-alt{background:var(--bone2)}
         .sec-tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
         .sec-h{font-size:38px;font-weight:600;color:var(--ink);letter-spacing:-0.025em;line-height:1.15;margin-bottom:12px}
-        .sec-p{font-size:17px;color:var(--mute);line-height:1.6;max-width:500px}
+        .sec-p{font-size:17px;color:var(--mute);line-height:1.6;max-width:520px}
         .feats{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:48px}
         .feat{padding:32px 28px;background:var(--bone);border:1px solid var(--bone3)}
         .feat:first-child{border-radius:16px 0 0 0}.feat:nth-child(2){border-radius:0 16px 0 0}
@@ -249,14 +249,14 @@ export default function LandingPage() {
         .faq-teaser{background:var(--bone2);padding:72px 48px;border-top:1px solid var(--bone3)}
         .faq-teaser-inner{max-width:820px;margin:0 auto;text-align:center}
         .faq-teaser-h{font-size:32px;font-weight:600;color:var(--ink);letter-spacing:-0.02em;line-height:1.2;margin-bottom:12px}
-        .faq-teaser-p{font-size:16px;color:var(--mute);line-height:1.6;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto}
+        .faq-teaser-p{font-size:16px;color:var(--mute);line-height:1.6;margin-bottom:28px;max-width:540px;margin-left:auto;margin-right:auto}
         .faq-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:32px}
         .faq-chip{background:var(--bone);border:1px solid var(--bone3);border-radius:100px;padding:9px 18px;font-size:13.5px;color:var(--mute);text-decoration:none;transition:border-color .2s ease,color .2s ease}
         .faq-chip:hover{border-color:var(--lime-700);color:var(--ink)}
         .faq-teaser-btn{background:var(--aubergine);color:var(--lime);padding:14px 32px;border-radius:100px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block}
 
         .quote-section{background:var(--aubergine);padding:72px 48px;text-align:center}
-        .quote-text{font-family:'Instrument Serif',serif;font-style:italic;font-size:36px;color:var(--bone);max-width:640px;margin:0 auto 20px;line-height:1.25;letter-spacing:-0.01em}
+        .quote-text{font-family:'Instrument Serif',serif;font-style:italic;font-size:34px;color:var(--bone);max-width:700px;margin:0 auto 20px;line-height:1.3;letter-spacing:-0.01em}
         .quote-by{font-family:'Geist Mono',monospace;font-size:11px;color:var(--aubergine-400);letter-spacing:.1em;text-transform:uppercase}
         .stats{background:var(--bone);padding:48px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bone3);border-bottom:1px solid var(--bone3)}
         .stat{text-align:center;padding:20px;border-right:1px solid var(--bone3)}.stat:last-child{border-right:none}
@@ -328,7 +328,7 @@ export default function LandingPage() {
           .nav{padding:0 20px}
           .nav-links{display:none}
           .nav-toggle{display:flex}
-          .hero{padding:56px 20px}.hero-h{font-size:48px}
+          .hero{padding:56px 20px}.hero-h{font-size:46px}
           .section{padding:56px 20px}
           .feats{grid-template-columns:1fr}
           .feat:first-child{border-radius:16px 16px 0 0}.feat:last-child{border-radius:0 0 16px 16px}
@@ -345,6 +345,7 @@ export default function LandingPage() {
           .footer-cvm{max-width:100%}
           .footer-link{padding:3px 0}
           .quote-section,.pricing-section{padding:56px 20px}
+          .quote-text{font-size:26px}
           .faq-teaser{padding:56px 20px}
           .faq-teaser-h{font-size:26px}
           .faq-teaser-p{font-size:15px}
@@ -356,15 +357,15 @@ export default function LandingPage() {
         @media(max-width:480px){
           .hero{padding:44px 20px 40px}
           .hero-tag{margin-bottom:18px}
-          .hero-h{font-size:40px;margin-bottom:20px}
+          .hero-h{font-size:38px;margin-bottom:20px}
           .hero-p{font-size:15px;margin-bottom:32px}
           .hero-btns{flex-direction:column;align-items:stretch;gap:10px}
           .btn-lime,.btn-outline{text-align:center;padding:15px 24px}
           .sec-h{font-size:30px}
           .sec-p{font-size:15px}
           .stats{grid-template-columns:1fr 1fr;gap:0}
-          .stat{padding:18px 12px}.stat-n{font-size:28px}
-          .quote-text{font-size:26px}
+          .stat{padding:18px 12px}.stat-n{font-size:26px}
+          .quote-text{font-size:22px}
           .cta-h{font-size:32px}
           .plan{padding:26px 22px}.plan-price{font-size:34px}
           .legal{padding:56px 20px}
@@ -388,7 +389,7 @@ export default function LandingPage() {
             <a href="/faq" className="nav-link">Dúvidas</a>
             <a href="/indicacao" className="nav-link">Indicação</a>
             <a href="#privacidade" className="nav-link">Privacidade</a>
-            <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
+            <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis</a>
           </div>
           <button
             className={`nav-toggle ${menuOpen ? 'open' : ''}`}
@@ -407,7 +408,7 @@ export default function LandingPage() {
           <a href="/faq" onClick={() => setMenuOpen(false)}>Perguntas frequentes</a>
           <a href="/indicacao" onClick={() => setMenuOpen(false)}>Programa de indicação</a>
           <a href="#privacidade" onClick={() => setMenuOpen(false)}>Política e Privacidade</a>
-          <a href="https://wa.me/5535910148222" className="mm-cta" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Começar grátis →</a>
+          <a href="https://wa.me/5535910148222" className="mm-cta" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Começar grátis</a>
         </div>
 
         {/* HERO */}
@@ -416,16 +417,16 @@ export default function LandingPage() {
             {/* Esquerda */}
             <div>
               <p className="hero-tag">Educação financeira · WhatsApp</p>
-              <h1 className="hero-h">Da conversa<br/>ao <em>conhecimento.</em></h1>
-              <p className="hero-p">Entenda investimentos, conheça seu perfil de investidor e acesse dados do mercado — tudo pelo WhatsApp, sem app, sem burocracia.</p>
+              <h1 className="hero-h">Entenda investimentos<br/><em>conversando</em> no WhatsApp.</h1>
+              <p className="hero-p">Tire dúvidas sobre renda fixa, ações e indicadores econômicos. Descubra seu perfil de investidor pelo questionário da CVM e consulte cotações da B3.</p>
               <div className="hero-btns">
-                <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
+                <a href="https://wa.me/5535910148222" className="btn-lime" target="_blank" rel="noopener noreferrer">Começar grátis</a>
                 <a href="#planos" className="btn-outline">Ver planos</a>
               </div>
               <p className="hero-note">Disponível no WhatsApp · Grátis para começar</p>
             </div>
 
-            {/* Direita — Chat card estilo fintech */}
+            {/* Direita: chat card */}
             <div className="chat-card">
               <div className="chat-header">
                 <div className="chat-av">
@@ -440,11 +441,9 @@ export default function LandingPage() {
 
               <div className="chat-body">
 
-                {/* Boas-vindas */}
-
                 <div className="msg-bot">
                   <div className="msg-bot-b">
-                    Olá! Sou o <strong>Payroll Chatbot</strong>, seu assistente de <strong>educação financeira</strong>. Posso te ajudar a entender investimentos, conhecer seu perfil e consultar dados do mercado. Por onde quer começar?
+                    Olá! Sou o <strong>Payroll Chatbot</strong>, seu assistente de <strong>educação financeira</strong>. Posso explicar conceitos, mapear seu perfil de investidor e consultar dados do mercado. Por onde quer começar?
                     <div className="msg-time">12:03</div>
                   </div>
                 </div>
@@ -459,11 +458,9 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Suitability */}
-
                 <div className="msg-bot">
                   <div className="msg-bot-b">
-                    Ótimo ponto de partida! Vou te fazer <strong>8 perguntas</strong> baseadas nas normas da CVM para mapear seu perfil. Leva menos de 3 minutos. Pode começar?
+                    Ótimo ponto de partida. Vou te fazer <strong>8 perguntas</strong> baseadas nas normas da CVM para mapear seu perfil. Leva menos de 3 minutos. Pode começar?
                     <div className="msg-time">12:04</div>
                   </div>
                 </div>
@@ -478,7 +475,6 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Resposta Selic */}
                 <div className="msg-bot">
                   <div className="msg-bot-b">
                     📊 Dados do <strong>Banco Central</strong> (BCB):
@@ -496,7 +492,7 @@ export default function LandingPage() {
                         <span className="selic-val">4,83%</span>
                       </div>
                     </div>
-                    O retorno real (acima da inflação) é de aproximadamente <strong>5,4% ao ano</strong>.
+                    O retorno real, acima da inflação, fica em aproximadamente <strong>5,4% ao ano</strong>.
                     <div className="msg-time">12:05</div>
                   </div>
                 </div>
@@ -534,29 +530,29 @@ export default function LandingPage() {
         {/* FEATURES */}
         <section className="section" id="features">
           <p className="sec-tag">O que você aprende</p>
-          <h2 className="sec-h">Educação financeira<br/>no seu ritmo.</h2>
-          <p className="sec-p">Pergunte, entenda, compare. O Payroll Chatbot explica — a decisão é sempre sua.</p>
+          <h2 className="sec-h">O que o Payroll<br/>explica.</h2>
+          <p className="sec-p">O assistente apresenta os conceitos e os dados. A decisão de investir é sempre sua.</p>
           <div className="feats">
             {[
               {
                 icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
-                title:"Tudo no chat",
-                desc:"Tire dúvidas sobre finanças diretamente no WhatsApp, a qualquer hora, sem formulários nem espera."
+                title:"Atendimento pelo WhatsApp",
+                desc:"Envie sua pergunta a qualquer hora do dia e receba a resposta na mesma conversa, sem formulário."
               },
               {
                 icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 3 7v2a9 9 0 0 0 18 0V7z"/><path d="m9 12 2 2 4-4"/></svg>,
-                title:"Conceitos de renda fixa",
-                desc:"Entenda como funcionam Tesouro Direto, CDB, LCI e LCA — taxas, prazos, liquidez e tributação explicados de forma clara."
+                title:"Renda fixa",
+                desc:"Como funcionam Tesouro Direto, CDB, LCI e LCA: taxas, prazos, liquidez, garantias e tributação."
               },
               {
                 icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>,
                 title:"Dados de mercado",
-                desc:"Consulte cotações, índices fundamentalistas e indicadores econômicos em tempo real para embasar seu estudo."
+                desc:"Cotações da B3, indicadores fundamentalistas e séries do Banco Central, sempre de fonte oficial."
               },
               {
                 icon:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>,
                 title:"Perfil de investidor",
-                desc:"Descubra se você é conservador, moderado ou arrojado com base no questionário oficial de suitability da CVM."
+                desc:"Oito perguntas baseadas nas normas da CVM classificam seu perfil como conservador, moderado ou arrojado."
               },
             ].map((f,i)=>(
               <div key={i} className="feat">
@@ -571,12 +567,13 @@ export default function LandingPage() {
         {/* COMO FUNCIONA */}
         <section className="section section-alt" id="como-funciona">
           <p className="sec-tag">Como funciona</p>
-          <h2 className="sec-h">Três passos.<br/>Começa agora.</h2>
+          <h2 className="sec-h">Como começar.</h2>
+          <p className="sec-p">Três etapas até a primeira resposta.</p>
           <div className="steps">
             {[
-              {n:"01 · salve o número",h:"Mande um oi",p:"Salve (35) 91014-8222 e envie qualquer mensagem. O Payroll Chatbot responde na hora, todos os dias da semana."},
-              {n:"02 · suitability CVM",h:"Conheça seu perfil",p:"Oito perguntas baseadas nas normas da CVM. Conservador, moderado ou arrojado — você entende seu perfil em menos de 3 minutos."},
-              {n:"03 · estude e pergunte",h:"Aprenda no seu ritmo",p:"Tire dúvidas sobre qualquer ativo, taxa ou conceito financeiro. O bot explica com dados reais e linguagem acessível."},
+              {n:"01 · contato",h:"Salve o número",p:"Adicione o (35) 91014-8222 aos seus contatos e envie qualquer mensagem para iniciar a conversa."},
+              {n:"02 · suitability CVM",h:"Responda o questionário",p:"São oito perguntas baseadas nas normas da CVM. O resultado classifica seu perfil em menos de três minutos."},
+              {n:"03 · uso diário",h:"Comece a perguntar",p:"Envie dúvidas sobre qualquer conceito financeiro e receba explicações com dados de fontes oficiais."},
             ].map((s,i)=>(
               <div key={i} className="step">
                 <div className="step-n">{s.n}</div>
@@ -591,37 +588,37 @@ export default function LandingPage() {
         <section className="faq-teaser">
           <div className="faq-teaser-inner">
             <p className="sec-tag">Perguntas frequentes</p>
-            <h2 className="faq-teaser-h">Dúvidas que todo mundo tem<br/>(e ninguém pergunta).</h2>
-            <p className="faq-teaser-p">Do &ldquo;o que é Selic&rdquo; ao &ldquo;quanto preciso pra começar&rdquo;. Respostas diretas, sem economês.</p>
+            <h2 className="faq-teaser-h">As dúvidas mais comuns<br/>sobre investimentos.</h2>
+            <p className="faq-teaser-p">Reunimos as perguntas que mais aparecem nas conversas, com respostas curtas e sem jargão.</p>
             <div className="faq-chips">
               <a href="/faq" className="faq-chip">O que é a Selic?</a>
               <a href="/faq" className="faq-chip">O que é CDB?</a>
-              <a href="/faq" className="faq-chip">Quanto preciso pra começar?</a>
+              <a href="/faq" className="faq-chip">Quanto preciso para começar?</a>
               <a href="/faq" className="faq-chip">O que é reserva de emergência?</a>
               <a href="/faq" className="faq-chip">CDB ou Tesouro Direto?</a>
             </div>
-            <a href="/faq" className="faq-teaser-btn">Ver todas as perguntas →</a>
+            <a href="/faq" className="faq-teaser-btn">Ver todas as perguntas</a>
           </div>
         </section>
 
         {/* STATS */}
         <div className="stats">
-          {[{n:"24/7",l:"sempre disponível"},{n:"8",l:"perguntas de perfil CVM"},{n:"B3+BCB",l:"dados em tempo real"},{n:"PIX & Cartão",l:"ativação instantânea"}].map((s,i)=>(
+          {[{n:"24/7",l:"disponível todos os dias"},{n:"8",l:"perguntas no questionário CVM"},{n:"B3 e BCB",l:"fontes dos dados"},{n:"PIX e cartão",l:"formas de pagamento"}].map((s,i)=>(
             <div key={i} className="stat"><span className="stat-n">{s.n}</span><span className="stat-l">{s.l}</span></div>
           ))}
         </div>
 
-        {/* QUOTE */}
+        {/* POSICIONAMENTO */}
         <div className="quote-section">
-          <p className="quote-text">&ldquo;Finalmente entendo a diferença entre CDB e Tesouro Direto — sem precisar assistir horas de vídeo no YouTube.&rdquo;</p>
-          <p className="quote-by">Plano Free · Plano Pro · Plano Business</p>
+          <p className="quote-text">Educação financeira, não recomendação. O Payroll explica os conceitos e mostra os dados. A decisão de investir é sempre sua.</p>
+          <p className="quote-by">Resolução CVM nº 20/2021</p>
         </div>
 
         {/* PRICING */}
         <section className="pricing-section" id="planos">
           <p className="sec-tag" style={{color:"var(--lime)",opacity:.7}}>Planos</p>
-          <h2 className="sec-h" style={{color:"var(--bone)"}}>Simples assim.</h2>
-          <p className="sec-p" style={{color:"var(--bone3)"}}>Comece grátis. Evolua quando fizer sentido para você.</p>
+          <h2 className="sec-h" style={{color:"var(--bone)"}}>Planos e preços.</h2>
+          <p className="sec-p" style={{color:"var(--bone3)"}}>O plano gratuito não expira. Faça upgrade quando precisar de mais perguntas.</p>
           <div className="plans">
             <div className="plan">
               <div className="plan-name">Free</div>
@@ -629,10 +626,10 @@ export default function LandingPage() {
               <div className="plan-cycle">para sempre</div>
               <ul className="plan-items">
                 <li>3 perguntas por mês</li>
-                <li>Suitability CVM completo</li>
-                <li>Cotações em tempo real</li>
+                <li>Questionário de perfil completo</li>
+                <li>Cotações da B3</li>
                 <li className="off">Perguntas ilimitadas</li>
-                <li className="off">Dados fundamentalistas</li>
+                <li className="off">Indicadores fundamentalistas</li>
               </ul>
               <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-ghost" target="_blank" rel="noopener noreferrer">Começar grátis</a>
             </div>
@@ -643,12 +640,12 @@ export default function LandingPage() {
               <div className="plan-cycle">/mês · PIX ou cartão</div>
               <ul className="plan-items">
                 <li>Perguntas ilimitadas</li>
-                <li>Suitability CVM completo</li>
-                <li>Cotações B3 em tempo real</li>
-                <li>Dados fundamentalistas</li>
-                <li>Selic · CDI · IPCA ao vivo</li>
+                <li>Questionário de perfil completo</li>
+                <li>Cotações da B3</li>
+                <li>Indicadores fundamentalistas</li>
+                <li>Selic, CDI e IPCA atualizados</li>
               </ul>
-              <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-solid" target="_blank" rel="noopener noreferrer">Assinar Pro →</a>
+              <a href="https://wa.me/5535910148222" className="plan-btn plan-btn-solid" target="_blank" rel="noopener noreferrer">Assinar Pro</a>
             </div>
             <div className="plan">
               <div className="plan-name">Business</div>
@@ -667,10 +664,10 @@ export default function LandingPage() {
 
         {/* CTA */}
         <section className="cta-section">
-          <div><h2 className="cta-h">Comece a entender melhor seu dinheiro.</h2></div>
+          <div><h2 className="cta-h">Mande a primeira pergunta.</h2></div>
           <div className="cta-right">
-            <p className="cta-p">Grátis para começar. Sem download, sem cadastro complicado. Só o WhatsApp que você já usa.</p>
-            <div><a href="https://wa.me/5535910148222" className="btn-dark" target="_blank" rel="noopener noreferrer">Falar com o Payroll Chatbot →</a></div>
+            <p className="cta-p">O plano gratuito inclui o questionário de perfil completo e as primeiras perguntas. Não é preciso instalar nada.</p>
+            <div><a href="https://wa.me/5535910148222" className="btn-dark" target="_blank" rel="noopener noreferrer">Falar com o Payroll Chatbot</a></div>
             <span className="cta-num">(35) 91014-8222</span>
           </div>
         </section>
