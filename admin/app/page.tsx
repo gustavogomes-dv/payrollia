@@ -37,9 +37,10 @@ export default function LandingPage() {
         .logo-mark svg{width:100%;height:100%;display:block}
         .logo-name{font-size:15px;font-weight:600;color:var(--aubergine);letter-spacing:-0.01em}
         .logo-name span{font-weight:300;color:var(--mute)}
-        .nav-links{display:flex;align-items:center;gap:28px}
-        .nav-link{font-size:14px;color:var(--mute);text-decoration:none}
-        .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none}
+        .nav-links{display:flex;align-items:center;gap:24px}
+        .nav-link{font-size:14px;color:var(--mute);text-decoration:none;white-space:nowrap}
+        .nav-link:hover{color:var(--aubergine)}
+        .nav-pill{background:var(--aubergine);color:var(--lime);padding:9px 22px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
 
         /* HAMBÚRGUER (só aparece no mobile) */
         .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;background:none;border:none;cursor:pointer;padding:11px;border-radius:10px;-webkit-tap-highlight-color:transparent}
@@ -243,6 +244,17 @@ export default function LandingPage() {
         .step-n{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime-700);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;font-weight:500}
         .step-h{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:10px}
         .step-p{font-size:14px;color:var(--mute);line-height:1.55}
+
+        /* FAQ TEASER */
+        .faq-teaser{background:var(--bone2);padding:72px 48px;border-top:1px solid var(--bone3)}
+        .faq-teaser-inner{max-width:820px;margin:0 auto;text-align:center}
+        .faq-teaser-h{font-size:32px;font-weight:600;color:var(--ink);letter-spacing:-0.02em;line-height:1.2;margin-bottom:12px}
+        .faq-teaser-p{font-size:16px;color:var(--mute);line-height:1.6;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto}
+        .faq-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:32px}
+        .faq-chip{background:var(--bone);border:1px solid var(--bone3);border-radius:100px;padding:9px 18px;font-size:13.5px;color:var(--mute);text-decoration:none;transition:border-color .2s ease,color .2s ease}
+        .faq-chip:hover{border-color:var(--lime-700);color:var(--ink)}
+        .faq-teaser-btn{background:var(--aubergine);color:var(--lime);padding:14px 32px;border-radius:100px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block}
+
         .quote-section{background:var(--aubergine);padding:72px 48px;text-align:center}
         .quote-text{font-family:'Instrument Serif',serif;font-style:italic;font-size:36px;color:var(--bone);max-width:640px;margin:0 auto 20px;line-height:1.25;letter-spacing:-0.01em}
         .quote-by{font-family:'Geist Mono',monospace;font-size:11px;color:var(--aubergine-400);letter-spacing:.1em;text-transform:uppercase}
@@ -303,6 +315,11 @@ export default function LandingPage() {
         .footer-copy{font-family:'Geist Mono',monospace;font-size:11px;color:var(--mute);white-space:nowrap}
         .footer-cvm{font-size:12px;color:var(--mute);max-width:520px;line-height:1.6;opacity:.55}
 
+        @media(max-width:1120px){
+          .nav{padding:0 28px}
+          .nav-links{gap:18px}
+          .nav-link{font-size:13.5px}
+        }
         @media(max-width:1024px){
           .hero{grid-template-columns:1fr;padding:64px 32px 56px}
           .chat-card{display:none}
@@ -328,6 +345,10 @@ export default function LandingPage() {
           .footer-cvm{max-width:100%}
           .footer-link{padding:3px 0}
           .quote-section,.pricing-section{padding:56px 20px}
+          .faq-teaser{padding:56px 20px}
+          .faq-teaser-h{font-size:26px}
+          .faq-teaser-p{font-size:15px}
+          .faq-chip{font-size:12.5px;padding:8px 15px}
         }
         @media(max-width:560px){
           .footer-top{grid-template-columns:1fr;gap:30px;margin-bottom:36px}
@@ -348,6 +369,7 @@ export default function LandingPage() {
           .plan{padding:26px 22px}.plan-price{font-size:34px}
           .legal{padding:56px 20px}
           .legal-h1{font-size:22px}
+          .faq-teaser-h{font-size:24px}
         }
       `}</style>
 
@@ -363,8 +385,9 @@ export default function LandingPage() {
           <div className="nav-links">
             <a href="#como-funciona" className="nav-link">Como funciona</a>
             <a href="#planos" className="nav-link">Planos</a>
-            <a href="#privacidade" className="nav-link">Política e Privacidade</a>
-            <a href="/indicacao" className="nav-link">Programa de indicação</a>
+            <a href="/faq" className="nav-link">Dúvidas</a>
+            <a href="/indicacao" className="nav-link">Indicação</a>
+            <a href="#privacidade" className="nav-link">Privacidade</a>
             <a href="https://wa.me/5535910148222" className="nav-pill" target="_blank" rel="noopener noreferrer">Começar grátis →</a>
           </div>
           <button
@@ -381,8 +404,9 @@ export default function LandingPage() {
         <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
           <a href="#como-funciona" onClick={() => setMenuOpen(false)}>Como funciona</a>
           <a href="#planos" onClick={() => setMenuOpen(false)}>Planos</a>
-          <a href="#privacidade" onClick={() => setMenuOpen(false)}>Política e Privacidade</a>
+          <a href="/faq" onClick={() => setMenuOpen(false)}>Perguntas frequentes</a>
           <a href="/indicacao" onClick={() => setMenuOpen(false)}>Programa de indicação</a>
+          <a href="#privacidade" onClick={() => setMenuOpen(false)}>Política e Privacidade</a>
           <a href="https://wa.me/5535910148222" className="mm-cta" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Começar grátis →</a>
         </div>
 
@@ -563,6 +587,23 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* FAQ TEASER */}
+        <section className="faq-teaser">
+          <div className="faq-teaser-inner">
+            <p className="sec-tag">Perguntas frequentes</p>
+            <h2 className="faq-teaser-h">Dúvidas que todo mundo tem<br/>(e ninguém pergunta).</h2>
+            <p className="faq-teaser-p">Do &ldquo;o que é Selic&rdquo; ao &ldquo;quanto preciso pra começar&rdquo;. Respostas diretas, sem economês.</p>
+            <div className="faq-chips">
+              <a href="/faq" className="faq-chip">O que é a Selic?</a>
+              <a href="/faq" className="faq-chip">O que é CDB?</a>
+              <a href="/faq" className="faq-chip">Quanto preciso pra começar?</a>
+              <a href="/faq" className="faq-chip">O que é reserva de emergência?</a>
+              <a href="/faq" className="faq-chip">CDB ou Tesouro Direto?</a>
+            </div>
+            <a href="/faq" className="faq-teaser-btn">Ver todas as perguntas →</a>
+          </div>
+        </section>
+
         {/* STATS */}
         <div className="stats">
           {[{n:"24/7",l:"sempre disponível"},{n:"8",l:"perguntas de perfil CVM"},{n:"B3+BCB",l:"dados em tempo real"},{n:"PIX & Cartão",l:"ativação instantânea"}].map((s,i)=>(
@@ -697,6 +738,8 @@ export default function LandingPage() {
               <a href="#features" className="footer-link">Funcionalidades</a>
               <a href="#como-funciona" className="footer-link">Como funciona</a>
               <a href="#planos" className="footer-link">Planos</a>
+              <a href="/faq" className="footer-link">Perguntas frequentes</a>
+              <a href="/indicacao" className="footer-link">Programa de indicação</a>
               <a href="https://wa.me/5535910148222" className="footer-link" target="_blank" rel="noopener noreferrer">Falar com o bot</a>
             </div>
             <div>
