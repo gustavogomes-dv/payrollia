@@ -9,5 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/indicacao`,   lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/privacidade`, lastModified: now, changeFrequency: 'yearly',  priority: 0.3 },
     { url: `${BASE}/termos`,      lastModified: now, changeFrequency: 'yearly',  priority: 0.3 },
+    { url: 'https://payrollia.com.br/faq', lastModified: new Date(), priority: 0.8 }
     ];
 }
